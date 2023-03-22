@@ -5,19 +5,19 @@ This is a template for configuring Jupyter Book pages for PseudoLab studies.
 1. make a new repo in PseudoLab Github with the study group name as repo name
 
    ```
-   Pseudo-Lab/2021-Kaggle-Study
+   Pseudo-Lab/CPython-Guide
    ```
 
 2. clone the repo on your local computer
 
    ```
-   git clone https://github.com/Pseudo-Lab/2021-Kaggle-Study.git
+   git clone https://github.com/Pseudo-Lab/CPython-Guide.git
    ```
 
 3. clone this repo
 
    ```
-   git clone https://github.com/Pseudo-Lab/Jupyter-Book-Template
+   git clone https://github.com/Pseudo-Lab/CPython-Guide
    ```
 
 4. move `book` folder to the `2021-Kaggle-Study` folder which has been created at step 2. 
