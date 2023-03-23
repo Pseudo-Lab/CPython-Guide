@@ -20,7 +20,7 @@ jupyter-book github page 접속 주소: https://pseudo-lab.github.io/CPython-Gui
    git clone https://github.com/Pseudo-Lab/CPython-Guide
    ```
 
-4. move `book` folder to the `2021-Kaggle-Study` folder which has been created at step 2. 
+4. pull request 승인 후 push가 완료되면 자동으로 빌드됩니다.
 
 5. change the contents in `book/docs` folder with the contents from your studies
 
