@@ -1,20 +1,20 @@
-# Jupyter Book template for PseudoLab studies
+# CPython-Guide jupyter-book 작업 가이드
 
-This is a template for configuring Jupyter Book pages for PseudoLab studies. 
+jupyter-book github page 접속 주소: https://pseudo-lab.github.io/CPython-Guide
 
-1. make a new repo in PseudoLab Github with the study group name as repo name
+1. 저장소를 fork 합니다.
 
    ```
    Pseudo-Lab/CPython-Guide
    ```
 
-2. clone the repo on your local computer
+2. 작업을 진행합니다.
 
    ```
    git clone https://github.com/Pseudo-Lab/CPython-Guide.git
    ```
 
-3. clone this repo
+3. pull request를 날립니다.
 
    ```
    git clone https://github.com/Pseudo-Lab/CPython-Guide
