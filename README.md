@@ -8,25 +8,43 @@ jupyter-book github page 접속 주소: https://pseudo-lab.github.io/CPython-Gui
    Pseudo-Lab/CPython-Guide
    ```
 
-2. 작업을 진행합니다.
+2. 저장소를 받습니다.
 
-   ```
-   git clone https://github.com/Pseudo-Lab/CPython-Guide.git
-   ```
-
-3. pull request를 날립니다.
-
-   ```
-   git clone https://github.com/Pseudo-Lab/CPython-Guide
+   ```bash
+   git clone https://github.com/[작업자의 Github아이디]/CPython-Guide.git
    ```
 
-4. pull request 승인 후 push가 완료되면 자동으로 빌드됩니다.
+3. 담당 페이지 작업을 진행합니다.  
+그 후 빌드를 돌린 후 _build/html/index.html을 열어서 결과를 확인합니다.
 
-5. change the contents in `book/docs` folder with the contents from your studies
+   ```bash
+   # 작업 root 경로 (working directory)가 CPython-Guide 최상위 경로인 경우.
+   jupyter-book build ./book
+   ```
 
-6. configure `_toc.yml` file
+4. 정상적으로 완료되었다면 pull request를 날립니다.
 
-7. build the book using Jupyter Book command
+   ```bash
+   # TODO: pull request 하는 방법 첨부 예정.
+   ```
+
+5. pull request 승인 후 push, merge가 완료되면 자동으로 빌드됩니다.
+
+
+
+# jupyter-book 작업 구조
+```Diff
+CPython-Guide
+├── .github                # 
+├── book                   # 
+│   ├── _build   
+│   ├── docs
+│   ├── _config.yml
+│   ├── index.js
+├── README.md
+├── requirements.txt
+└── .gitignore
+```
 
    ```
    jupyter-book build 2021-Kaggle-Study/book

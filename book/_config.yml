@@ -1,12 +1,12 @@
 #######################################################################################
 # Book settings
-title : PseudoLab [Study Name]
+title : PseudoLab [CPython 파헤치기]
 author: PseudoLab
 logo: 'PseudoLab_logo.png'
 
 # Short description about the book
 description: >-
-  Basic Jupyter Book template for PseudoLab studies
+  CPython Guide for PseudoLab studies
 
 #######################################################################################
 # Execution settings
@@ -25,7 +25,7 @@ notebook_interface            : "notebook"
 #######################################################################################
 # Launch button settings
 repository:
-  url                         : https://github.com/pseudo-lab/Jupyter-Book-Template
+  url                         : https://github.com/pseudo-lab/CPython-Guide
   path_to_book                : "book"
 
 latex:
