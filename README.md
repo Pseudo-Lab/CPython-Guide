@@ -56,3 +56,7 @@ _toc.yml에 문서를 등록해야 페이지에 보입니다.
    (0_0_dev_env_setup.md, 0_1_directory_structure.md, 챕터 최상단은 0번 섹션으로 처리)
 2. images: 챕터폴더/사진순서(두자리)_사진내용  
    (0_dev_env_setup/00_vscode_plugin.png, 0_dev_env_setup/01_tasks_explorer_result.png)
+
+
+# 로컬에서 빌드한 페이지가 조금 이상할 때
+_build 폴더를 삭제 후 다시 빌드합니다. 이전 빌드 결과물에 대한 잔여물이 남는 케이스입니다.
