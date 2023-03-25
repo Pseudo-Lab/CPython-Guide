@@ -1,7 +1,13 @@
 format: jb-book
 root: intro
-chapters:
-  - file: docs/markdown-example
-    title: CPython 시작하기
-  - file: docs/notebook-example
-    title: 샘플 노트북
+parts:
+- caption: ◽ CPython 가이드
+  chapters:
+  - file: docs/0_dev_env_setup
+  - file: docs/1_directory_structure
+
+
+- caption: ◽ 샘플
+  chapters:
+  - file: docs/sample/markdown-example
+  - file: docs/sample/notebook-example
