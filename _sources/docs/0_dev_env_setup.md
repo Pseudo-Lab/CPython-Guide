@@ -1,0 +1,66 @@
+# CPython 개발 환경 세팅
+CPython-Guide는 CPython 파헤치기 책과 동일한 python3.9 버전을 기반으로 진행됩니다.
+
+## CPython git 저장소 받기
+```bash
+git clone --branch 3.9 https://github.com/python/cpython.git
+```
+저장소를 받은 후 Visual Studio Code로 해당 폴더를 열어줍니다.
+
+## Visual Studio Code 개발 환경 세팅
+![VSCode 설치 플러그인](../images/0_dev_env_setup/00_vscode_plugin.png)
+위 플러그인들을 설치합니다.
+
+## task.json 작성
+```json
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "build",
+			"type": "shell",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"windows": {
+				"command": "PCBuild/build.bat",
+				"args": ["-p", "x64", "-c", "Debug"]
+			},
+            "linux": {
+				"command": "make -j2 -s"
+			},
+            "osx": {
+				"command": "make -j2 -s"
+			}
+		}
+	]
+}
+```
+.vscode/task.json 파일을 생성하고 위 내용을 작성합니다.  
+
+![VSCode 설치 플러그인](../images/0_dev_env_setup/01_tasks_explorer_result.png)  
+task.json 작성을 완료하면 TASK EXPLORER의 vscode 하위에 작성한 build task가 추가된 것을 볼 수 있습니다.
+
+## launch.json 작성
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "msvc cl.exe debug cpython",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "./PCBuild/amd64/python_d.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "preLaunchTask": "build"
+        }
+    ]
+}
+```
+.vscode/launch.json 파일을 생성하고 위 내용을 작성합니다.
+
