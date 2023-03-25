@@ -8,10 +8,12 @@ jupyter-book github page 접속 주소: https://pseudo-lab.github.io/CPython-Gui
    Pseudo-Lab/CPython-Guide
    ```
 
-2. 저장소를 받습니다.
+2. 저장소 및 python 패키지를 받습니다.
 
    ```bash
    git clone https://github.com/[작업자의 Github아이디]/CPython-Guide.git
+   cd [CPython-Guide 폴더]  # 윈도우즈 command line의 /d 옵션도 같이
+   pip install -r requirements.txt  # jupyter-book 패키지 설치, ghp-import는 꼭 설치안해도됨. (git action용)
    ```
 
 3. 담당 페이지 작업을 진행합니다.  
@@ -28,39 +30,29 @@ jupyter-book github page 접속 주소: https://pseudo-lab.github.io/CPython-Gui
    # TODO: pull request 하는 방법 첨부 예정.
    ```
 
-5. pull request 승인 후 push, merge가 완료되면 자동으로 빌드됩니다.
+5. pull request 승인 후 push가 완료되면 자동으로 사이트가 빌드됩니다.
 
 
 
 # jupyter-book 작업 구조
-```Diff
+```yaml
 CPython-Guide
-├── .github                # 
-├── book                   # 
-│   ├── _build   
-│   ├── docs
-│   ├── _config.yml
-│   ├── index.js
+├── .github                #  git action workflow가 있습니다.
+├── book                   #  문서 메인 폴더 입니다.
+│   ├── docs               #  문서가 모여있는 폴더입니다.
+│   ├── images             #  문서에 들어가는 이미지 폴더입니다.
+│   ├── _config.yml        #  github page config 입니다.
+│   ├── _toc.yml           #  문서 레이아웃 구성 파일 입니다.
+│   ├── intro.md           #  문서의 시작 페이지 파일 입니다.
 ├── README.md
 ├── requirements.txt
 └── .gitignore
 ```
+문서는 book/docs 폴더에 추가하고 작성합니다.
+_toc.yml에 문서를 등록해야 페이지에 보입니다.
 
-   ```
-   jupyter-book build 2021-Kaggle-Study/book
-   ```
-
-8. sync your local and remote repositories
-
-   ```
-   cd 2021-Kaggle-Study
-   git add .
-   git commit -m "adding my first book!"
-   git push
-   ```
-
-9. Publish your Jupyter Book with Github Pages
-
-   ```
-   ghp-import -n -p -f book/_build/html -m "initial publishing"
-   ```
+# 파일명 규칙
+1. docs: 챕터번호_섹션번호_문서제목  
+   (0_0_dev_env_setup.md, 0_1_directory_structure.md, 챕터 최상단은 0번 섹션으로 처리)
+2. images: 챕터폴더/사진순서(두자리)_사진내용  
+   (0_dev_env_setup/00_vscode_plugin.png, 0_dev_env_setup/01_tasks_explorer_result.png)
