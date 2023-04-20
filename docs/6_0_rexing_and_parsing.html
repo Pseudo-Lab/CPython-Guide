@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>파이썬 언어와 문법 &#8212; PseudoLab [CPython 파헤치기]</title>
+    <title>렉싱과 파싱 &#8212; PseudoLab [CPython 파헤치기]</title>
   
   
   
@@ -62,12 +62,11 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/4_0_python_grammar';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/6_0_rexing_and_parsing';</script>
     <link rel="shortcut icon" href="../_static/PseudoLab_logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="렉싱과 파싱" href="6_0_rexing_and_parsing.html" />
-    <link rel="prev" title="CPython 디렉터리 구조" href="0_1_directory_structure.html" />
+    <link rel="prev" title="파이썬 언어와 문법" href="4_0_python_grammar.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -164,8 +163,8 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l2"><a class="reference internal" href="0_1_directory_structure.html">CPython 디렉터리 구조</a></li>
 </ul>
 </li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">파이썬 언어와 문법</a></li>
-<li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">렉싱과 파싱</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_0_python_grammar.html">파이썬 언어와 문법</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">렉싱과 파싱</a></li>
 </ul>
 
     </div>
@@ -237,7 +236,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="https://github.com/pseudo-lab/CPython-Guide/issues/new?title=Issue%20on%20page%20%2Fdocs/4_0_python_grammar.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/pseudo-lab/CPython-Guide/issues/new?title=Issue%20on%20page%20%2Fdocs/6_0_rexing_and_parsing.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -267,7 +266,7 @@ const thebe_selector_output = ".output, .cell_output"
       
       
       
-      <li><a href="../_sources/docs/4_0_python_grammar.md" target="_blank"
+      <li><a href="../_sources/docs/6_0_rexing_and_parsing.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -349,7 +348,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>파이썬 언어와 문법</h1>
+    <h1>렉싱과 파싱</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -359,14 +358,11 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-c">4.1 CPython이 파이썬이 아니라 C로 작성된 이유</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">4.2 파이썬 언어 사양</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">언어 레퍼넌스</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">문법</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parser">Parser</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">4.4 토큰</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.0 개요</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cst">6.1 CST 생성</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">6.2 파서 &amp; 토크나이저</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">6.3 추상 구문 트리</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">6.4 정리</a></li>
 </ul>
             </nav>
         </div>
@@ -379,67 +375,88 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
-<h1>파이썬 언어와 문법<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
-<section id="cpython-c">
-<h2>4.1 CPython이 파이썬이 아니라 C로 작성된 이유<a class="headerlink" href="#cpython-c" title="Permalink to this heading">#</a></h2>
-<p>CPython은 C로 만들어진 컴파일러를 사용한다.</p>
+<h1>렉싱과 파싱<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
 <ul class="simple">
-<li><p>파이썬에서 이용하는 많은 라이브러리가 C로 되어있기 때문</p></li>
+<li><p><span class="xref myst">렉싱과 파싱</span></p>
+<ul>
+<li><p><span class="xref myst">6.0 개요</span></p></li>
+<li><p><span class="xref myst">6.1 CST 생성</span></p></li>
+<li><p><span class="xref myst">6.2 파서 &amp; 토크나이저</span></p></li>
+<li><p><span class="xref myst">6.3 추상 구문 트리</span></p></li>
+<li><p><span class="xref myst">6.4 정리</span></p></li>
 </ul>
-</section>
+</li>
+</ul>
+<br/>
+<br/>
+<br/>
 <section id="id2">
-<h2>4.2 파이썬 언어 사양<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<h2>6.0 개요<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<p>파이썬은 문법을 해석하기 위해서 CST(Concrete syntax tree) 와 AST(Abstract syntax tree) 두 가지 구조를 사용합니다. CST 와 AST 2단계를 통해서 문법을 파싱하게 되는데, 이번 챕터를 통해서 CST 와 AST 를 살펴보겠습니다.
+<br/></p>
+<p><img alt="parse_tree" src="../_images/01_parse_tree.png" /></p>
+<br/>
+<br/>
+<br/>
+</section>
+<section id="cst">
+<h2>6.1 CST 생성<a class="headerlink" href="#cst" title="Permalink to this heading">#</a></h2>
+<p>파스 트리라고도 부르는 CST 는 작성한 코드를 루트와 순서가 있는 트리구조로 바꾸는 일련의 작업을 의미합니다. 다음은 CST 구문을 사용하여 a + 1 을 산술표현식으로 표현한 예입니다.</p>
+<p><img alt="CST_EXPR" src="../_images/00_CST_EXPR.jpg" /></p>
+<br/>
+<br/>
+<br/>
+<p>CST 를 구성하는 문법은 Grammar 폴더의 Grammar 에서 정의하며, arith_expr, term, factor, power 등 여러 심볼들이 존재합니다. 또한 흔히 말하는 토큰은 Grammar 폴더의 Tokens 에서 정의하고 있으며,NAME 토큰은 변수나 함수, 클래스 모듈의 이름을 표현합니다.</p>
+<p><img alt="Parsing_Name" src="../_images/03_Parsing_Name.jpg" /></p>
+<br/>
+<br/>
+<br/>
+</section>
 <section id="id3">
-<h3>언어 레퍼넌스<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
-<p>Doc/reference에 언어의 구조, 키워드를 정의해둔다</p>
+<h2>6.2 파서 &amp; 토크나이저<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
+<p>C-Python의 파서-토크나이저를 통해서, CST 의 골격 구조를 완성할 수 있는데, 다음과 같이 파서-토크나이저를 통해 연속적인 CST 트리 구조를 완성할 수 있습니다.</p>
+<p><img alt="Parser_Tokenizer" src="../_images/02_Parser_Tokenizer.jpg" /></p>
+<br/>
+<br/>
+<br/>
+<p>파서 토크나이저는 PyParser_ASTFromFileObject() 를 통해서 파서의 진입점을 찾을 수 있습니다.PyParser_ASTFromFileObject( ) 은 다음 두 단계를 거쳐 CST -&gt; AST 파싱을 진행합니다.</p>
+<ol class="arabic simple">
+<li><p>PyParser_ParserFileObject() 를 통해 CST 로 변환.</p></li>
+<li><p>PyAST_FromNodeObject() 를 사용해 CST 를 AST 로 변환.</p></li>
+</ol>
+<p>하게 됩니다.</p>
+<p>:sparkles: 저와 같은 경우, 파이썬 3.9 에서 PyParser_ASTFromFileObject() 가 중단점이 걸리지 않아 확인해 보니, PEG 옵션을 켜두어 <em>_use_peg_parser</em> 를 꺼놓고 진행했습니다.</p>
+<br/>
+<br/>
+<br/>
 </section>
 <section id="id4">
-<h3>문법<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
-<p>PEG 표현식을 이용</p>
-<ul class="simple">
-<li><p>* 반복을 의미</p></li>
-<li><p>+ 최소 한번의 반복</p></li>
-<li><p>[] 선택적</p></li>
-<li><p>| 대안</p></li>
-<li><p>() 그룹</p></li>
-</ul>
-<p>eg)
-coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
-<p>milk: ‘full-fat’ | ‘skimmed’ | ‘soy’</p>
-<p>철도 다이어그램
-<img alt="철도 다이어그램" src="../_images/train_diagram.svg" /></p>
-</section>
-<section id="parser">
-<h3>Parser<a class="headerlink" href="#parser" title="Permalink to this heading">#</a></h3>
-<p>Grammar/python.gram에 파이썬 문법이 PEG로 정의가 되어있다</p>
-<p><img alt="small_stmt 예시" src="../_images/small_stmt.png" /></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;pass&#39;</span> <span class="p">{</span> <span class="n">_Py_Pass</span><span class="p">(</span><span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span>
-</pre></div>
-</div>
-<p>줄을</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;pass&#39;</span><span class="o">|</span><span class="s1">&#39;proceed&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="n">_Py_Pass</span><span class="p">(</span><span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span>
-</pre></div>
-</div>
-<p>로 바꾸고 컴파일 하면,</p>
-<p>proceed라는 함수가 pass랑 동일한 action을 하게 된다</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test1</span><span class="p">():</span>
-    <span class="k">pass</span>
-
-<span class="k">def</span> <span class="nf">test2</span><span class="p">():</span>
-    <span class="n">proceed</span>
-</pre></div>
-</div>
-<p>위에서 test1()이랑 test2()의 action은 동일하다.</p>
-<p>python.gram파일 수정을 통해서 파이썬 문법을 변경할 수 있다</p>
-</section>
+<h2>6.3 추상 구문 트리<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h2>
+<p><em>추상 구문 트리 단계</em>는 CST 로 변환한 트리를 좀 더 논리적인 구조로 변환하는 단계입니다. CST는 코드 파일의 텍트를 있는 그대로 표현하는 구조로 텍스트로부터 토큰을 추출하여, 토큰 종류만 구분해 둔 상태에 불과합니다.(즉 CST 로 기본적인 문법 구조를 알 수 있지만, 함수, 스코프, 루프 등등 상세한 정보를 파악하기는 힘들다고 합니다..) 따라서 코드를 컴파일하기 전에 CST 를 실제 파이썬 언어 구조와 의미 요소를 표현하는 고수준 구조인 AST 로 변환해야 합니다.</p>
+<p>다음은 AST 와 관련된 소스파일 목록입니다.</p>
+<ol class="arabic simple">
+<li><p>Include -&gt; python-ast.h</p></li>
+<li><p>Parser -&gt; Python.asdl</p></li>
+<li><p>Python -&gt; ast.c</p></li>
+</ol>
+<p>ast 모듈은 문법을 다시 생성할 때, Python-ast.h 를 임포트하게 된느데, 이 파일은 Parser-&gt;Python.asdl 에서 다시 생성되게 됩니다. 즉 Include -&gt; python-ast.h의 파라미터와 이름은 Parser-&gt;python.asdl 의 정의를 따르도록 재생성 됩니다.</p>
+<p>그 후, AST 의 진입점인 PyAST_FromNodeObject( ) 는 TYPE(n) 에 대한 switch 문을 실행하고, 결과로 심벌 또는 토큰 타입을 반환하게 됩니다.</p>
+<br/>
+<br/>
+<br/>
 </section>
 <section id="id5">
-<h2>4.4 토큰<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h2>
-<p>Grammar/Tokens 파일은 파스 트리의 Leaf node에서 사용되는 고유 토큰들을 정의한다. 코드 tokenization은 추후에 compiling할때 이용된다.</p>
-<p><img alt="tokens 예시" src="../_images/tokens.png" /></p>
-<p>python코드가 tokenizer를 통해서 토큰으로 파싱이 된다. 위 코드를 tokenize를 하면:</p>
-<p><img alt="코드 token화 예시" src="../_images/code_tokenized.png" /></p>
-</section>
+<h2>6.4 정리<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>AST : 파이썬 문법과 문장들에 대한 <em>문맥</em>(context) 있는* 트리 집합.</p></li>
+<li><p>CST : 토큰과 심벌에 대한 <em>문맥(context)이 없는</em> 트리 집합</p></li>
+<li><p>토큰 : 심벌의 종류 중 하나.</p></li>
+<li><p>토큰화 : 텍스트를 토큰들로 변환하는 과정이다.</p></li>
+<li><p>파싱 : 텍스트를 CST 나 AST 로 변환하는 과정이다.</p></li>
+</ul>
+<br/>
+<br/>
+<br/></section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -471,22 +488,13 @@ coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="0_1_directory_structure.html"
+       href="4_0_python_grammar.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">CPython 디렉터리 구조</p>
+        <p class="prev-next-title">파이썬 언어와 문법</p>
       </div>
-    </a>
-    <a class="right-next"
-       href="6_0_rexing_and_parsing.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">렉싱과 파싱</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
     </a>
 </div>
                 </footer>
@@ -503,14 +511,11 @@ coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-c">4.1 CPython이 파이썬이 아니라 C로 작성된 이유</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">4.2 파이썬 언어 사양</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">언어 레퍼넌스</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">문법</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parser">Parser</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">4.4 토큰</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.0 개요</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cst">6.1 CST 생성</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">6.2 파서 &amp; 토크나이저</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">6.3 추상 구문 트리</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">6.4 정리</a></li>
 </ul>
   </nav></div>
 
