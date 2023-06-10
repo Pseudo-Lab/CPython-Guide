@@ -8,6 +8,7 @@ parts:
       - file: docs/0_1_directory_structure
   - file: docs/4_0_python_grammar
   - file: docs/6_0_rexing_and_parsing
+  - file: docs/7_0_compiler
 
 #- caption: ◽ 샘플
 #  - file: docs/sample/markdown-example
