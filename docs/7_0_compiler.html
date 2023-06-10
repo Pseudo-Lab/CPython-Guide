@@ -1,0 +1,683 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>컴파일러 &#8212; PseudoLab [CPython 파헤치기]</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/7_0_compiler';</script>
+    <link rel="shortcut icon" href="../_static/PseudoLab_logo.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="렉싱과 파싱" href="6_0_rexing_and_parsing.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/PseudoLab_logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../_static/PseudoLab_logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    CPython Guide for PseudoLab
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">◽ CPython 가이드</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="0_0_dev_env_setup.html">CPython 개발 환경 세팅</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="0_1_directory_structure.html">CPython 디렉터리 구조</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="4_0_python_grammar.html">파이썬 언어와 문법</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">렉싱과 파싱</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">컴파일러</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/pseudo-lab/CPython-Guide" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/pseudo-lab/CPython-Guide/issues/new?title=Issue%20on%20page%20%2Fdocs/7_0_compiler.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/docs/7_0_compiler.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>컴파일러</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">컴파일 과정</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">컴파일과 관련된 소스</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">컴파일러 인스턴스 생성</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">퓨처 플래그와 컴파일러 플래그</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">심벌 테이블</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">심벌 테이블 구현</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="id1">
+<h1>컴파일러<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<p><img alt="컴파일 과정" src="../_images/00_compile_process.png" /><br />
+파이썬 코드를 파싱하면 연산자, 함수, 클래스, 이름 공간을 포함하는 AST가 생성<br />
+AST를 CPU 명령으로 바꾸는 것이 <strong>컴파일러</strong></p>
+<section id="id2">
+<h2>컴파일 과정<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<p><img alt="컴파일 과정2" src="../_images/01_compile_process2.png" />
+컴파일 과정을 그림으로 표현<br />
+앞장에서 본 렉싱과 파서를 통하여 생성한 AST를 컴파일러를 통하여 CFG(Control Flow Graph)로 변환<br />
+어셈블러를 통하여 CFG의 노드를 순서대로 <strong>바이트 코드로 변환</strong> 후 <strong>실행</strong></p>
+<section id="id3">
+<h3>컴파일과 관련된 소스<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>파일</p></th>
+<th class="head"><p>목적</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Python/compile.c</p></td>
+<td><p>컴파일러의 구현</p></td>
+</tr>
+<tr class="row-odd"><td><p>Include/compile.h</p></td>
+<td><p>컴파일러 API와 타입 정의</p></td>
+</tr>
+</tbody>
+</table>
+<p>PyAST_CompileObject() CPython 컴파일러의 주 진입점</p>
+<p><img alt="컴파일 과정2" src="../_images/02_compile_status.png" />
+<strong>컴파일러 상태</strong>는 심벌 테이블을 담는 타입<br />
+<strong>심벌 테이블</strong>은 변수 이름을 포함하고 추가로 하위 심벌 테이블을 포함할 수 있음<br />
+<strong>컴파일러 타입</strong>에는 컴파일러 유닛도 포함<br />
+각 <strong>컴파일러 유닛</strong>은 이름, 변수 이름, 상수, 셀(cell) 변수들을 포함<br />
+컴파일러 유닛은 <strong>기본 프레임 블록</strong>을 포함
+기본 프레임 블록은 <strong>바이트코드 명령</strong>을 포함</p>
+</section>
+</section>
+<section id="id4">
+<h2>컴파일러 인스턴스 생성<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h2>
+<p>컴파일러를 실행하기 앞서 전역 컴파일러 상태가 생성<br />
+compiler 타입은 컴파일러 플래그, 스택, PyArena 등 컴파일러를 위한 다양한 프로퍼티를 포함<br />
+컴파일러 상태는 심벌 테이블 등의 다른 구조체도 포함</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">c_filename</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">symtable</span><span class="w"> </span><span class="o">*</span><span class="n">c_st</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyFutureFeatures</span><span class="w"> </span><span class="o">*</span><span class="n">c_future</span><span class="p">;</span><span class="w"> </span><span class="cm">/* pointer to module&#39;s __future__ */</span>
+<span class="w">    </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">c_flags</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">c_optimize</span><span class="p">;</span><span class="w">              </span><span class="cm">/* optimization level */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">c_interactive</span><span class="p">;</span><span class="w">           </span><span class="cm">/* true if in interactive mode */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">c_nestlevel</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">c_do_not_emit_bytecode</span><span class="p">;</span><span class="w">  </span><span class="cm">/* The compiler won&#39;t emit any bytecode</span>
+<span class="cm">                                    if this value is different from zero.</span>
+<span class="cm">                                    This can be used to temporarily visit</span>
+<span class="cm">                                    nodes without emitting bytecode to</span>
+<span class="cm">                                    check only errors. */</span>
+
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">c_const_cache</span><span class="p">;</span><span class="w">     </span><span class="cm">/* Python dict holding all constants,</span>
+<span class="cm">                                    including names tuple */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler_unit</span><span class="w"> </span><span class="o">*</span><span class="n">u</span><span class="p">;</span><span class="w"> </span><span class="cm">/* compiler state for current block */</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">c_stack</span><span class="p">;</span><span class="w">           </span><span class="cm">/* Python list holding compiler_unit ptrs */</span>
+<span class="w">    </span><span class="n">PyArena</span><span class="w"> </span><span class="o">*</span><span class="n">c_arena</span><span class="p">;</span><span class="w">            </span><span class="cm">/* pointer to memory allocation arena */</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>PyAST_CompileObject()가 다음과 같이 컴파일러 상태 초기화</p>
+<p>모듈에 문서화 문자열(__doc__)이 없다면 빈 문서화 문자열 생성<br />
+__annotations__ 프로퍼티도 동일 작업 수행
+스택 트레이스 및 예외 처리에 필요한 파일 이름을 컴파일러 상태에 설정<br />
+인터프리터가 사용한 메모리 할당 아레나(arena)를 컴파일러의 메모리 할당 아레나로 설정 (메모리 할당자는 9장 메모리 관리 참고)<br />
+코드 컴파일 전 퓨처 플래그들을 설정</p>
+</section>
+<section id="id5">
+<h2>퓨처 플래그와 컴파일러 플래그<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h2>
+<p>컴파일러 기능 설정</p>
+<ol class="arabic simple">
+<li><p>환경 변수 명령줄 플래그를 담는 구성 상태</p></li>
+<li><p>모듈 소스 코드의 __future__ 문</p></li>
+</ol>
+<p><strong>퓨처 플래그</strong>는 Python 2와 3 간 이식 지원을 위해 사용</p>
+<p><strong>컴파일러 플래그</strong>는 실행 환경에 의존적, 실행 방식을 변경 할 수 있음<br />
+예시로 -O 플래그는 디버그 용도의 assert 문을 비활성화 하는 최적화를 진행<br />
+PYTHONOPTIMIZE=1 환경 변수로도 활성화 가능</p>
+</section>
+<section id="id6">
+<h2>심벌 테이블<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h2>
+<p>코드 컴파일 전 PySymtable_BuildObject() API로 심벌 테이블 생성<br />
+전역, 지역 등 이름 공간 목록을 컴파일러에 제공<br />
+컴파일러는 심벌 테이블에서 얻은 이름 공간에서 스코프를 결정, 참조를 실행</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">symtable</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">st_filename</span><span class="p">;</span><span class="w">          </span><span class="cm">/* name of file being compiled,</span>
+<span class="cm">                                       decoded from the filesystem encoding */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">_symtable_entry</span><span class="w"> </span><span class="o">*</span><span class="n">st_cur</span><span class="p">;</span><span class="w"> </span><span class="cm">/* current symbol table entry */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">_symtable_entry</span><span class="w"> </span><span class="o">*</span><span class="n">st_top</span><span class="p">;</span><span class="w"> </span><span class="cm">/* symbol table entry for module */</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">st_blocks</span><span class="p">;</span><span class="w">            </span><span class="cm">/* dict: map AST node addresses</span>
+<span class="cm">                                     *       to symbol table entries */</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">st_stack</span><span class="p">;</span><span class="w">             </span><span class="cm">/* list: stack of namespace info */</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">st_global</span><span class="p">;</span><span class="w">            </span><span class="cm">/* borrowed ref to st_top-&gt;ste_symbols */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">st_nblocks</span><span class="p">;</span><span class="w">                 </span><span class="cm">/* number of blocks used. kept for</span>
+<span class="cm">                                       consistency with the corresponding</span>
+<span class="cm">                                       compiler structure */</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">st_private</span><span class="p">;</span><span class="w">           </span><span class="cm">/* name of current class or NULL */</span>
+<span class="w">    </span><span class="n">PyFutureFeatures</span><span class="w"> </span><span class="o">*</span><span class="n">st_future</span><span class="p">;</span><span class="w">    </span><span class="cm">/* module&#39;s future features that affect</span>
+<span class="cm">                                       the symbol table */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">recursion_depth</span><span class="p">;</span><span class="w">            </span><span class="cm">/* current recursion depth */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">recursion_limit</span><span class="p">;</span><span class="w">            </span><span class="cm">/* recursion limit */</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>컴파일러당 하나의 symtable 인스턴스만 사용, 공간 관리 중요<br />
+두 클래스가 동일한 이름의 메서드를 가지고 있을 경우 모듈에서 어떤 메서드를 호출할지 정해주는 것<br />
+하위 스코프의 변수를 상위 스코프에서 사용하지 못하게 하는 것<br />
+위 두 가지가 symtable의 역할</p>
+<section id="id7">
+<h3>심벌 테이블 구현<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
+<p>symtable.c 에서 찾을 수 있다<br />
+주 인터페이스는 PySymtable_BuildObject()<br />
+mod_ty 타입(Module, Interactive, Expression, FunctionType)에 따라 모듈 내의 문장을 순회<br />
+mod_ty 타입인 AST의 노드의 분기를 재귀적으로 탐색하며 symtable의 엔트리로 추가</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">symtable</span><span class="w"> </span><span class="o">*</span>
+<span class="n">PySymtable_BuildObject</span><span class="p">(</span><span class="n">mod_ty</span><span class="w"> </span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">PyFutureFeatures</span><span class="w"> </span><span class="o">*</span><span class="n">future</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">symtable</span><span class="w"> </span><span class="o">*</span><span class="n">st</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">symtable_new</span><span class="p">();</span>
+<span class="w">    </span><span class="n">asdl_seq</span><span class="w"> </span><span class="o">*</span><span class="n">seq</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyThreadState</span><span class="w"> </span><span class="o">*</span><span class="n">tstate</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">recursion_limit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Py_GetRecursionLimit</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">starting_recursion_depth</span><span class="p">;</span>
+<span class="p">...</span>
+<span class="w">    </span><span class="n">st</span><span class="o">-&gt;</span><span class="n">st_top</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">st</span><span class="o">-&gt;</span><span class="n">st_cur</span><span class="p">;</span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">kind</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Module_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="n">seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Module</span><span class="p">.</span><span class="n">body</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">asdl_seq_LEN</span><span class="p">(</span><span class="n">seq</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">symtable_visit_stmt</span><span class="p">(</span><span class="n">st</span><span class="p">,</span>
+<span class="w">                        </span><span class="p">(</span><span class="n">stmt_ty</span><span class="p">)</span><span class="n">asdl_seq_GET</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)))</span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Expression_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">symtable_visit_expr</span><span class="p">(</span><span class="n">st</span><span class="p">,</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Expression</span><span class="p">.</span><span class="n">body</span><span class="p">))</span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Interactive_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="n">seq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Interactive</span><span class="p">.</span><span class="n">body</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">asdl_seq_LEN</span><span class="p">(</span><span class="n">seq</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">symtable_visit_stmt</span><span class="p">(</span><span class="n">st</span><span class="p">,</span>
+<span class="w">                        </span><span class="p">(</span><span class="n">stmt_ty</span><span class="p">)</span><span class="n">asdl_seq_GET</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">)))</span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">FunctionType_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_RuntimeError</span><span class="p">,</span>
+<span class="w">                        </span><span class="s">&quot;this compiler does not handle FunctionTypes&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">...</span>
+</pre></div>
+</div>
+<p>모듈의 각 문을 순회, symtable_visit_stmt() 를 호출<br />
+Parser → Python.asdl에서 정의한 모든문 타입에 대한 case를 가지고 있는 거대한 swich 문</p>
+<p>각 문 타입마다 심벌을 처리하는 함수 존재<br />
+함수 정의문 타입을 처리하는 함수는 다음 처리를 위한 로직이 있다</p>
+<ul class="simple">
+<li><p>현재 재귀 깊이가 제귀 제한을 넘지 않았는지 검사</p></li>
+<li><p>함수가 함수 객체로 넘겨지거나 호출될 수 있도록 함수 이름 심벌 테이블에 추가</p></li>
+<li><p>기본 인자 중 리터럴이 아닌 인자는 심벌 테이블에서 찾음</p></li>
+<li><p>타입 힌트 처리</p></li>
+<li><p>함수 데코레이터 처리</p></li>
+</ul>
+<p>마지막으로 symtable_enter_block()이 함수 블록을 방문해 인자와 함수 본문 처리</p>
+<p>이렇게 생성된 심벌 테이블은 컴파일러로 넘김</p>
+</section>
+</section>
+<section id="id8">
+<h2>핵심 컴파일 과정<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h2>
+<p>PyAST_CompileObject()에 컴파일러 상태와 symtable, AST로 파싱된 모듈이 준비되면 컴파일 시작</p>
+<ol class="arabic simple">
+<li><p>컴파일러 상태, 심벌 테이블, AST를 제어 흐름 그래프로 변환</p></li>
+<li><p>논리 오류나 코드 오류를 탐지, 실행 단계를 런타임 예외로부터 보호</p></li>
+</ol>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="6_0_rexing_and_parsing.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">렉싱과 파싱</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">컴파일 과정</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">컴파일과 관련된 소스</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">컴파일러 인스턴스 생성</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">퓨처 플래그와 컴파일러 플래그</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">심벌 테이블</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">심벌 테이블 구현</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By PseudoLab
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
