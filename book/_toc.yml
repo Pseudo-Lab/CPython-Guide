@@ -7,8 +7,23 @@ parts:
     sections:
       - file: docs/0_1_directory_structure
   - file: docs/4_0_python_grammar
+  - file: docs/5_0_config_and_input
   - file: docs/6_0_rexing_and_parsing
   - file: docs/7_0_compiler
+  - file: docs/8_0_eval_loop
+  - file: docs/9_0_memory
+    sections:
+      - file: docs/9_1_memory_pool
+      - file: docs/9_2_garbage_collection
+  - file: docs/10_0_parallel_and_concurrent
+    sections:
+      - file: docs/10_1_process
+      - file: docs/10_2_thread
+      - file: docs/10_3_async
+  - file: docs/11_0_object_and_type
+  - file: docs/12_0_standard_library
+  - file: docs/13_0_test_suite
+  - file: docs/14_0_c_extension
 
 #- caption: ◽ 샘플
 #  - file: docs/sample/markdown-example
