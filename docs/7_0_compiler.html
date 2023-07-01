@@ -388,6 +388,7 @@ document.write(`
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">어셈블리</a></li>
 </ul>
             </nav>
         </div>
@@ -580,6 +581,12 @@ Parser → Python.asdl에서 정의한 모든문 타입에 대한 case를 가지
 <li><p>논리 오류나 코드 오류를 탐지, 실행 단계를 런타임 예외로부터 보호</p></li>
 </ol>
 </section>
+<section id="id9">
+<h2>어셈블리<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h2>
+<p>컴파일 단계가 끝나면 블록 리스트 완성<br />
+각 프레임 블록은 명령 리스트와 다음 블록을 가리키는 포인터를 가짐<br />
+기본 프레임 블록들에 깊이 우선 탐색(DFS)를 실행, 명령들을 단일한 바이트 코드 시퀀스로 병합</p>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -654,6 +661,7 @@ Parser → Python.asdl에서 정의한 모든문 타입에 대한 case를 가지
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">어셈블리</a></li>
 </ul>
   </nav></div>
 

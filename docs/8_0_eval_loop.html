@@ -414,7 +414,7 @@ document.write(`
 이번 장에서는 값 스택 이라는 개념을 소개하는데, 컴파일된 코드 객체의 바이트 코드 연산들은 값 스택에서, 변수를 생성하고 변경하여 사용하게 됩니다.
 CPython 에서 코드는 <strong>평가 루프</strong> 라는 개념을 통해 루프(Loop)를 돌며 실행되게 됩니다.</p>
 <br/>
-<p><img alt="parse_tree" src="images/8_eval_loop/01_eval1.jpg" /></p>
+<p><img alt="parse_tree" src="../_images/01_eval1.JPG" /></p>
 <p>다음은 이번 장을 통해 살펴볼 개념들입니다.
 <br/></p>
 <ol class="arabic simple">
@@ -432,7 +432,7 @@ CPython 에서 코드는 <strong>평가 루프</strong> 라는 개념을 통해 
 <h2>8.1 스레드 상태 생성하기<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
 <p>프레임을 실행하려면 스레드에 연결해야 합니다.(스레드에서 생성하기 떄문). 인터프리터 상태에서 인터프리터는 스레드들을 연결 리스트의 형태로 스레드들을 관리하게 됩니다.</p>
 <p>앞서 설명하였듯이, 스레드는 각자 고유의 스레드 상태를 가지게 되는데, 스레드 상태를 나타내는 PyThreadState 가 그 상태를 나타내게 됩니다.</p>
-<p><img alt="CST_EXPR" src="images/8_eval_loop/02_eval2.jpg" />
+<p><img alt="CST_EXPR" src="../_images/02_eval2.JPG" />
 위의 PyThreadState는 _ts 의 별칭으로 사용되게 됩니다. 코드를 살펴보게 되면, 고유 식별자, 다른 스레드 상태와 연결된 연결 리스트, 인터프리터의 상태, 재귀 깊이 등을 나타내는 값들로 이루어져 있습니다.</p>
 <br/>
 <br/>
@@ -445,12 +445,12 @@ CPython 에서 코드는 <strong>평가 루프</strong> 라는 개념을 통해 
 <br/>
 <br/>
 다음은 프레임 타입 객체 PyFrameObject 가 가진 프로퍼티입니다.</p>
-<p><img alt="Parser_Tokenizer" src="images/8_eval_loop/03_eval3.jpg" /></p>
+<p><img alt="Parser_Tokenizer" src="../_images/03_eval3.JPG" /></p>
 <p>다음은 프로퍼티를 가진 CPython 의 코드 입니다.</p>
-<p><img alt="Parser_Tokenizer" src="images/8_eval_loop/04_eval4.jpg" /></p>
+<p><img alt="Parser_Tokenizer" src="../_images/04_eval4.JPG" /></p>
 <p>인터프리터에 의해 만들어진 PyFrameObject 는 초기화 과정을 거치게 되는데, PyEval_EvalCode( ) 라는 함수 안에서 초기화 과정을 거치게 됩니다.</p>
 <br/>
-<p><img alt="Parser_Tokenizer" src="images/8_eval_loop/05_eval5.jpg" /></p>
+<p><img alt="Parser_Tokenizer" src="../_images/05_eval5.JPG" /></p>
 <br/>
 <br/>
 <br/>

@@ -17,7 +17,7 @@ CPython 에서 코드는 **평가 루프** 라는 개념을 통해 루프(Loop)�
 
 <br/>
 
-![parse_tree](../images/8_eval_loop/01_eval1.jpg)  
+![parse_tree](../images/8_eval_loop/01_eval1.JPG)  
 
 다음은 이번 장을 통해 살펴볼 개념들입니다.
 <br/>
@@ -40,7 +40,7 @@ CPython 에서 코드는 **평가 루프** 라는 개념을 통해 루프(Loop)�
 
 
 
-![CST_EXPR](../images/8_eval_loop/02_eval2.jpg)
+![CST_EXPR](../images/8_eval_loop/02_eval2.JPG)
 위의 PyThreadState는 _ts 의 별칭으로 사용되게 됩니다. 코드를 살펴보게 되면, 고유 식별자, 다른 스레드 상태와 연결된 연결 리스트, 인터프리터의 상태, 재귀 깊이 등을 나타내는 값들로 이루어져 있습니다.
 
 
@@ -56,17 +56,17 @@ AST 를 거쳐 컴파일된 객체는 프레임 객체에 최종적으로 삽입
 <br/>
 다음은 프레임 타입 객체 PyFrameObject 가 가진 프로퍼티입니다.
 
-![Parser_Tokenizer](../images/8_eval_loop/03_eval3.jpg)
+![Parser_Tokenizer](../images/8_eval_loop/03_eval3.JPG)
 
 다음은 프로퍼티를 가진 CPython 의 코드 입니다.
 
-![Parser_Tokenizer](../images/8_eval_loop/04_eval4.jpg)
+![Parser_Tokenizer](../images/8_eval_loop/04_eval4.JPG)
 
 인터프리터에 의해 만들어진 PyFrameObject 는 초기화 과정을 거치게 되는데, PyEval_EvalCode( ) 라는 함수 안에서 초기화 과정을 거치게 됩니다. 
 
 <br/>
 
-![Parser_Tokenizer](../images/8_eval_loop/05_eval5.jpg)
+![Parser_Tokenizer](../images/8_eval_loop/05_eval5.JPG)
 
 <br/>
 <br/>
