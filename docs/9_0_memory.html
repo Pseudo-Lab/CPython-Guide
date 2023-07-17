@@ -62,6 +62,8 @@ const thebe_selector_input = "pre"
 const thebe_selector_output = ".output, .cell_output"
 </script>
     <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'docs/9_0_memory';</script>
     <link rel="shortcut icon" href="../_static/PseudoLab_logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -354,7 +356,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -370,6 +374,17 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">9.0 개요</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#c">9.1 C 메모리 할당</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">9.2 파이썬 메모리 관리 시스템의 설계</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-pymalloc">9.3 CPython 메모리 할당자 (pymalloc)</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -381,6 +396,160 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
 <h1>메모리 관리<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<ul class="simple">
+<li><p><span class="xref myst">메모리 관리</span></p>
+<ul>
+<li><p><span class="xref myst">9.0 개요</span></p></li>
+<li><p><span class="xref myst">9.1 C 메모리 할당</span></p></li>
+<li><p><span class="xref myst">9.2 파이썬 메모리 관리 시스템의 설계</span></p></li>
+<li><p><span class="xref myst">9.3 CPython 메모리 할당자 (pymalloc)</span></p></li>
+</ul>
+</li>
+</ul>
+<br/>
+<section id="id2">
+<h2>9.0 개요<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<p>동적 타입 언어인 CPython에서 메모리를 어떻게 할당 하고 해제하는지 그리고 메모리 누수를 관리 하는 방법에 대해서 알아 보겠습니다.
+<br/></p>
+</section>
+<section id="c">
+<h2>9.1 C 메모리 할당<a class="headerlink" href="#c" title="Permalink to this heading">#</a></h2>
+<p><img alt="C_memory_allocation" src="../_images/01_C_memory_allocation.png" /></p>
+<p>CPython을 구현하는 C 언어에서의 메모리 할당은 크게 3가지로 나뉩니다.</p>
+<ol class="arabic simple">
+<li><p>정적 메모리 할당(Static) : 컴파일 시간에 필요한 메모리가 계산되고 프로그램이 실행될 때 할당</p></li>
+<li><p>자동 메모리 할당(Stack)  : 함수 실행시에 스코프에 필요한 지역 변수가 콜 스택에 할당</p></li>
+<li><p>동적 메모리 할당(Heap)   : 런타임에 메모리를 동적으로 할당하며 제대로 반환하지 않으면 메모리 누수 발생
+<br/></p></li>
+</ol>
+</section>
+<section id="id3">
+<h2>9.2 파이썬 메모리 관리 시스템의 설계<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
+<p>메모리 관점에서 파이썬 언어 설계의 특징</p>
+<ol class="arabic simple">
+<li><p>변수의 크기를 컴파일 시간에 정할 수 없음</p></li>
+<li><p>코어 타입의 크기가 가변적임 (list, dict, int)</p></li>
+<li><p>타입이 달라도 같은 이름을 재사용 가능</p></li>
+</ol>
+<p>파이썬 객체 메모리는 개발자가 직접 할당 하는 대신 파이썬 언어에서 제공하는 메모리 할당 API에 의해 자동으로 할당됩니다.</p>
+<p>메모리 할당 API는 C언어의 동적 메모리 할당에 의존하여 개발되었으며 메모리 누수를 막기 위해 가비지 컬렉션과 참조 카운팅을 사용해 메모리를 자동으로 해제하는 안전장치가 추가되어 있습니다.</p>
+<p><img alt="Cpython_memory_hierarchy" src="../_images/02_cpython_memory_hierarchy.png" /><br />
+<a class="reference external" href="https://velog.io/&#64;qlgks1/python-%EB%A9%94%EB%AA%A8%EB%A6%AC-%EA%B4%80%EB%A6%AC-memory-optimization">이미지 출처</a></p>
+<p>CPython은 세가지 동적 메모리 할당자 도메인을 제공합니다.</p>
+<ol class="arabic simple">
+<li><p>PYMEM_DOMAIN_OBJ : 파이썬 객체 메모리 할당</p></li>
+<li><p>PYMEM_DOMAIN_MEM : 레거시 API용도 <a class="github reference external" href="https://github.com/python/cpython/blob/89867d2491c0c3ef77bc237899b2f0762f43c03c/Objects/obmalloc.c#L94C32-L94C32">python/cpython</a></p></li>
+<li><p>PYMEM_DOMAIN_RAW : 시스템 힙, 대용량 메모리, 비 객체 메모리 할당</p></li>
+</ol>
+<p>PYMEM_DOMAIN_MEM,PYMEM_DOMAIN_OBJ 할당자의 경우 기본 할당자로 pymalloc을 사용하며 GIL이 있는 상태에서 사용됩니다. PYMEM_DOMAIN_RAW의 경우에는 뮤텍스를 사용하여 스레드 안정성을 확보하며 malloc을 사용하여 시스템에서 직접 메모리를 할당 받습니다.</p>
+<p>각 도메인은 _Alloc, _Calloc, _Realoc, _Free 인터페이스를 구현합니다.
+<br/></p>
+</section>
+<section id="cpython-pymalloc">
+<h2>9.3 CPython 메모리 할당자 (pymalloc)<a class="headerlink" href="#cpython-pymalloc" title="Permalink to this heading">#</a></h2>
+<p>CPython의 메모리 할당 요청은 일반적으로 아래 표와 같이 고정된 크기의 작은 메모리를 요구 합니다.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>CPython OBject</p></th>
+<th class="head"><p>Size</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PyObject</p></td>
+<td><p>16byte</p></td>
+</tr>
+<tr class="row-odd"><td><p>PyASCIIObject</p></td>
+<td><p>42byte</p></td>
+</tr>
+<tr class="row-even"><td><p>PyCompactUnicodeObject</p></td>
+<td><p>72byte</p></td>
+</tr>
+<tr class="row-odd"><td><p>PyLongObject</p></td>
+<td><p>32byte</p></td>
+</tr>
+</tbody>
+</table>
+<p>이러한 메모리 사용 패턴에서 메모리 할당을 위해 C언어의 malloc 및 free를 반복적으로 호출하는 경우 시스템 오버헤드를 발생 시키며 프로그램이 장기간 유지되는 경우 메모리 파편화를 유발 할 수 있습니다.</p>
+<p>CPython의 메모리 할당자는 시스템 할당자 위에 구축되어 있지만 CPython에 특화 되어 있습니다.
+메모리 할당 알고리즘은 아레나/풀/블록 으로 계층화된 구조로 메모리를 할당 합니다.</p>
+<ol class="arabic simple">
+<li><p>아레나(Arena)</p>
+<ul class="simple">
+<li><p>가장 큰 단위의 메모리 그룹</p></li>
+<li><p>256KB 단위로 할당</p></li>
+<li><p>시스템 페이지 크기에 맞춰 정렬</p></li>
+<li><p>시스템 힙에 할당</p></li>
+<li><p>익명 메모리 매핑을 지원 하는 시스템에서 mmap()로 할당</p></li>
+<li><p>아레나들은 이중 연결 리스트로 연결 되어 있음</p></li>
+</ul>
+</li>
+</ol>
+<p><img alt="Cpython_memory_arena" src="../_images/03_arena.jpg" /><br />
+<a class="reference external" href="https://fanchao01.github.io/blog/2016/10/09/python-obmalloc/">이미지 출처</a></p>
+<ol class="arabic simple" start="2">
+<li><p>풀(Pool)</p>
+<ul class="simple">
+<li><p>메모리 풀에는 같은 크기의 블록들이 저장</p></li>
+<li><p>풀에 담을 수 있는 블록의 최대 크기는 512byte</p></li>
+<li><p>풀의 크기는 4096byte(=4KB)로 고정</p></li>
+<li><p>아레나당 풀 개수도 64개로 고정 (64*4KB = 256KB)</p></li>
+<li><p>같은 단위를 가지는 풀들은 풀 테이블(이중 연결 리스트)로 연결</p></li>
+<li><p>풀 테이블은 크기 인덱스 i로 분할</p>
+<ul>
+<li><p>인덱스가 i 일 때 usedpools[i+i]는 크기 단위가 i 인 사용 중인 풀 리스트의 헤더를 가리킴</p></li>
+<li><p>풀이 포화 상태가 되면 usedpools 리스트에서 제거</p></li>
+<li><p>풀에 있는 블록이 할당 해제되면 다시 usedpools[] 리스트 맨 앞에 배치되어 다음 할당 요청에 사용</p></li>
+<li><p>풀의 모든 블록이 할당 해제되면 usedpools 리스트에서 제거되고 freepools 맨 앞으로 이동</p></li>
+</ul>
+</li>
+<li><p>풀의 상태</p>
+<ul>
+<li><p>포화 : 모든 블록 할당</p></li>
+<li><p>사용중 : 일부 블록 할당</p></li>
+<li><p>미사용 : 풀은 할당 되었지만, 블록은 미 할당</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p><img alt="Cpython_memory_pool" src="../_images/04_pool.png" /><br />
+<a class="reference external" href="https://www.blog.subhashkumar.in/posts/python-memory-management/">이미지 출처</a></p>
+<ol class="arabic simple" start="3">
+<li><p>블록(Block)</p>
+<ul class="simple">
+<li><p>풀 내부에서 메모리는 블록 단위로 할당</p></li>
+<li><p>블록은 고정 크기로 할당, 해제</p></li>
+<li><p>사용되지 않은 블록은 풀 내부의 freeblock 에 연결</p></li>
+<li><p>할당 해제된 블록은 freeblock 맨 앞에 연결</p></li>
+<li><p>풀이 초기화 되면 첫 두 블록은 freeblock 리스트에 연결</p></li>
+<li><p>블록 할당 과정</p>
+<ul>
+<li><p>인덱스 설정</p>
+<ul>
+<li><p>32bit 시스템에서는 블록 크기가 8byte 단위로 증가하므로 64가지 블록 크기 사용 가능</p></li>
+<li><p>64bit 시스템에서는 블록 크기가 16byte 단위로 증가하므로 32가지 블록 크기 사용 가능</p></li>
+<li><p>할당 요청된 크기에 따라 적합한 크기 인덱스가 결정</p></li>
+<li><p>할당 요청이 0&lt;x≤512 인 경우 크기 인덱스는 다음과 같이 정의</p>
+<ul>
+<li><p>32bit 시스템 : <span class="math notranslate nohighlight">\(i = ceil(x/8) - 1\)</span></p></li>
+<li><p>64bit 시스템 : <span class="math notranslate nohighlight">\(i = ceil(x / 16) - 1\)</span></p></li>
+</ul>
+</li>
+<li><p>인덱스에 따라 크기에 맞는 풀이 할당 대상으로 결정</p></li>
+</ul>
+</li>
+<li><p>풀 확인</p>
+<ul>
+<li><p>할당 가능한 풀이 있는 지 확인하고 사용되지 않은 블록 사용</p></li>
+<li><p>사용 가능한 풀이 없으면 새 풀을 생성하고 새 풀의 첫 블록을 반환</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</section>
 <div class="toctree-wrapper compound">
 </div>
 </section>
@@ -437,6 +606,23 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">9.0 개요</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#c">9.1 C 메모리 할당</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">9.2 파이썬 메모리 관리 시스템의 설계</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-pymalloc">9.3 CPython 메모리 할당자 (pymalloc)</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
