@@ -1,4 +1,4 @@
-# 3. CPython 컴파일하기
+# 3. 컴파일하기
 
 > 지난 챕터까지는 CPython 개발 환경을 구성했다면,
 <br>이번 챕터에서는 CPython 소스 코드를 실제로 작동시키는 interpreter로 컴파일하고자 합니다 🚀
@@ -38,7 +38,7 @@ make -j2 -s   # -j2: 동시 작업 2개 / -s: 실행된 명령어 출력 X
 ```
 
 <details>
-<summary>💡 make란?</summary>
+<summary>make란?</summary>
 
 - 소프트웨어 빌드 자동화 도구로, C/C++ 프로젝트 빌드 자동화에서 사용합니다.
 - Makefile을 기반으로 실행되며, `make [옵션] [target]` 을 통해 해당하는 명령어(command)가 실행됩니다.
@@ -119,7 +119,7 @@ make -j2 -s   # -j2: 동시 작업 2개 / -s: 실행된 명령어 출력 X
 
 ### Windows
 
-> 여기에서는 “명령 프롬프트 사용하기” 방식만 다룰 예정이며, 
+여기에서는 “명령 프롬프트 사용하기” 방식만 다룰 예정이며, 
 <br>”Visual Studio에서 PCbuild/pcbuild.sln 열어서 빌드하기” 방식도 있습니다.
 <br>(CPython 파헤치기 도서 32페이지 참고)
 
