@@ -6,7 +6,7 @@ CPython-Guide는 CPython 파헤치기 책과 동일한 Python 3.9 버전을 기�
 
 ### 플러그인 설치
 아래와 같은 플러그인들을 설치해줍니다.
-![VSCode 설치 플러그인](../images/0_dev_env_setup/00_vscode_plugin.png)
+![VSCode 설치 플러그인](../images/2_settings/00_vscode_plugin.png)
 
 ### .vscode/task.json 작성
 프로젝트 실행 명령에 대한 json 파일 `.vscode/task.json`을 아래와 같이 생성해줍니다.
@@ -38,7 +38,7 @@ CPython-Guide는 CPython 파헤치기 책과 동일한 Python 3.9 버전을 기�
 ```
 
 위와 같이 파일 작성을 완료하면 TASK EXPLORER의 vscode 하위에 작성한 build task가 추가된 것을 볼 수 있습니다.
-![태스크 세팅 결과](../images/0_dev_env_setup/01_tasks_explorer_result.png)  
+![태스크 세팅 결과](../images/2_settings/01_tasks_explorer_result.png)  
 
 
 ### .vscode/launch.json 작성
@@ -88,4 +88,4 @@ CPython-Guide는 CPython 파헤치기 책과 동일한 Python 3.9 버전을 기�
 이제 F5를 누르면 CPython 빌드 진행 및 디버깅을 할 수 있습니다.  
 CPython의 진입점이 되는 Programs/python.c의 9번 라인에 디버그 브레이크를 걸고 실행해보면,
 아래와 같이 디버깅이 잡힌 것을 확인할 수 있습니다.
-![CPyhton 디버깅](../images/0_dev_env_setup/02_cpython_debugging.png)  
+![CPyhton 디버깅](../images/2_settings/02_cpython_debugging.png)  
