@@ -1,0 +1,769 @@
+
+
+<!DOCTYPE html>
+
+
+<html lang="en" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>3. 컴파일하기 &#8212; PseudoLab [CPython 파헤치기]</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=12da95d707ffb74b382d" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" href="../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.4045f2051d55cab465a707391d5b2007.min.css" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d" />
+
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/clipboard.min.js"></script>
+    <script src="../_static/copybutton.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"
+const thebe_selector = ".thebe,.cell"
+const thebe_selector_input = "pre"
+const thebe_selector_output = ".output, .cell_output"
+</script>
+    <script async="async" src="../_static/sphinx-thebe.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'docs/3_0_compile';</script>
+    <link rel="shortcut icon" href="../_static/PseudoLab_logo.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. 언어와 문법" href="4_0_python_grammar.html" />
+    <link rel="prev" title="2. 개발 환경 세팅" href="2_0_settings.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+  
+
+<a class="navbar-brand logo" href="../intro.html">
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/PseudoLab_logo.png" class="logo__image only-light" alt="Logo image"/>
+    <script>document.write(`<img src="../_static/PseudoLab_logo.png" class="logo__image only-dark" alt="Logo image"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../intro.html">
+                    CPython Guide for PseudoLab
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">◽ CPython 가이드</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="1_0_welcome_to_cpython.html">1. CPython 살펴보기</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_0_settings.html">2. 개발 환경 세팅</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">3. 컴파일하기</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_0_python_grammar.html">4. 언어와 문법</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5_0_config_and_input.html">5. 구성과 입력</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">6. 렉싱과 파싱</a></li>
+<li class="toctree-l1"><a class="reference internal" href="7_0_compiler.html">7. 컴파일러</a></li>
+<li class="toctree-l1"><a class="reference internal" href="8_0_eval_loop.html">8. 평가 루프</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="9_0_memory.html">9. 메모리 관리</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="9_1_memory_pool.html">메모리 풀</a></li>
+<li class="toctree-l2"><a class="reference internal" href="9_2_garbage_collection.html">레퍼런스 카운트와 가비지 컬렉션</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="10_0_parallel_and_concurrent.html">10. 병렬성과 동시성</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="10_1_process.html">프로세스</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_2_thread.html">스레드</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_3_async.html">비동기 프로그래밍</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="11_0_object_and_type.html">11. 객체와 타입</a></li>
+<li class="toctree-l1"><a class="reference internal" href="12_0_standard_library.html">12. 표준 라이브러리</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_0_test_suite.html">13. 테스트 스위트</a></li>
+<li class="toctree-l1"><a class="reference internal" href="14_0_c_extension.html">Python C 확장 개발 가이드</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/pseudo-lab/CPython-Guide" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/pseudo-lab/CPython-Guide/issues/new?title=Issue%20on%20page%20%2Fdocs/3_0_compile.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/docs/3_0_compile.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+<script>
+document.write(`
+  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
+    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
+    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  </button>
+`);
+</script>
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+  </button>
+`);
+</script>
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>3. 컴파일하기</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#macos">macOS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#windows">Windows</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">프로파일 기반 최적화</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="id1">
+<h1>3. 컴파일하기<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<blockquote>
+<div><p>지난 챕터까지는 CPython 개발 환경을 구성했다면,
+<br>이번 챕터에서는 CPython 소스 코드를 실제로 작동시키는 interpreter로 컴파일하고자 합니다 🚀</p>
+</div></blockquote>
+<aside>
+💡 컴파일(compile)이란?
+<ul class="simple">
+<li><p>프로그래밍 언어로 작성된 소스 코드를 컴퓨터가 직접 이해하고 실행할 수 있는 기계어 코드로 변환하는 과정입니다.
+<br>(<strong>소스 코드 → 실행 가능한 프로그램</strong>)</p></li>
+<li><p>컴파일러는 번역기처럼 한 언어(출발어: source language)를 다른 언어(도착어: target language)로 변환하는 것이 목표입니다.</p></li>
+</ul>
+</aside>
+<section id="macos">
+<h2>macOS<a class="headerlink" href="#macos" title="Permalink to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># C 컴파일러 툴킷(Xcode Command Line Tools) 설치</span>
+xcode-select<span class="w"> </span>--install<span class="w">  </span><span class="c1">## make, GNU Compiler Collection(gcc) 등 설치</span>
+
+<span class="c1"># 외부 라이브러리 설치</span>
+brew<span class="w"> </span>install<span class="w"> </span>openssl<span class="w"> </span>xz<span class="w"> </span>zlib<span class="w"> </span>gdbm<span class="w"> </span>sqlite
+
+<span class="c1"># Makefile 생성 (configure 스크립트 실행)</span>
+<span class="nv">CPPFLAGS</span><span class="o">=</span><span class="s2">&quot;-I</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>zlib<span class="k">)</span><span class="s2">/include&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="nv">LDFLAGS</span><span class="o">=</span><span class="s2">&quot;-L</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>zlib<span class="k">)</span><span class="s2">/lib&quot;</span><span class="w"> </span><span class="se">\</span>
+./configure<span class="w"> </span>--with-openssl<span class="o">=</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>openssl<span class="k">)</span><span class="w"> </span>--with-pydebug
+
+<span class="c1">## 애플칩(M1, M2, ...)은 아래와 같이 xz 경로도 추가해주기</span>
+<span class="nv">CPPFLAGS</span><span class="o">=</span><span class="s2">&quot;-I</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>zlib<span class="k">)</span><span class="s2">/include -I</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>xz<span class="k">)</span><span class="s2">/include&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="nv">LDFLAGS</span><span class="o">=</span><span class="s2">&quot;-L</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>zlib<span class="k">)</span><span class="s2">/lib -L</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>xz<span class="k">)</span><span class="s2">/lib&quot;</span><span class="w"> </span><span class="se">\</span>
+./configure<span class="w"> </span>--with-openssl<span class="o">=</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>openssl<span class="k">)</span><span class="w"> </span>--with-pydebug
+
+<span class="c1"># CPython 바이러니 빌드</span>
+make<span class="w"> </span>-j2<span class="w"> </span>-s<span class="w">   </span><span class="c1"># -j2: 동시 작업 2개 / -s: 실행된 명령어 출력 X</span>
+
+<span class="c1"># 바이너리 파일 실행</span>
+./python.exe
+</pre></div>
+</div>
+<details>
+<summary>make란?</summary>
+<ul>
+<li><p>소프트웨어 빌드 자동화 도구로, C/C++ 프로젝트 빌드 자동화에서 사용합니다.</p></li>
+<li><p>Makefile을 기반으로 실행되며, <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">[옵션]</span> <span class="pre">[target]</span></code> 을 통해 해당하는 명령어(command)가 실행됩니다.</p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># Makefile 형식</span>
+<span class="nf">목표(target)</span><span class="o">:</span><span class="w"> </span>의존성(<span class="n">dependencies</span>)
+<span class="w">    </span>명령어<span class="o">(</span>commands<span class="o">)</span>
+<span class="w">    </span>
+<span class="c"># 예시 (make docclean / make pythoninfo)</span>
+<span class="nf">docclean</span><span class="o">:</span>
+<span class="w">    </span>-rm<span class="w"> </span>-rf<span class="w"> </span>Doc/build
+<span class="w">    </span>-rm<span class="w"> </span>-rf<span class="w"> </span>Doc/tools/sphinx<span class="w"> </span>Doc/tools/pygments<span class="w"> </span>Doc/tools/docutils
+
+<span class="nf">pythoninfo</span><span class="o">:</span><span class="w"> </span><span class="n">build_all</span>
+<span class="w">        </span><span class="k">$(</span>RUNSHARED<span class="k">)</span><span class="w"> </span>./<span class="k">$(</span>BUILDPYTHON<span class="k">)</span><span class="w"> </span>-m<span class="w"> </span>test.pythoninfo
+</pre></div>
+</div>
+</li>
+<li><p>make 옵션</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-d</span></code>(<code class="docutils literal notranslate"><span class="pre">--debug</span></code>): 디버깅 정보 출력</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-e</span></code> (<code class="docutils literal notranslate"><span class="pre">—environment-overrides</span></code>): Makefile보다 우선할 환경 변수 지정</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-i</span></code>(<code class="docutils literal notranslate"><span class="pre">—-ignore-errors</span></code>): 에러 무시하기</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-j</span> <span class="pre">[N]</span></code>(<code class="docutils literal notranslate"><span class="pre">—-jobs</span></code>): N개 작업 동시 실행</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-k</span></code>(<code class="docutils literal notranslate"><span class="pre">—-keep-going</span></code>): 특정 타깃 실패하더라도 계속 진행</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-l</span> <span class="pre">[N]</span></code> (<code class="docutils literal notranslate"><span class="pre">--load-average</span></code>, <code class="docutils literal notranslate"><span class="pre">--max-load</span></code>): 평균 부하가 N 미만일 때 동시 작업 시작</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-n</span></code>(<code class="docutils literal notranslate"><span class="pre">-dry-run</span></code>): 명령 실행하지 않고 출력하기</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-s</span></code>(<code class="docutils literal notranslate"><span class="pre">--silent</span></code>): 실행 명령어 출력 X</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-S</span></code>(<code class="docutils literal notranslate"><span class="pre">--stop</span></code>): 타깃 실패하면 중지하기</p></li>
+</ul>
+</li>
+<li><p>make를 사용하는 이유</p>
+<ul class="simple">
+<li><p>C/C++ 같은 컴파일 언어 사용 시,
+애플리케이션을 소스에서 컴파일 할 때 시스템의 외부 라이브러리 링크해야 하는데,
+코드를 올바르게 로드하고 링크 및 컴파일하기 위해 많은 명령어를 실행해야 할 수도 있습니다.</p></li>
+<li><p>CPython에서처럼 <code class="docutils literal notranslate"><span class="pre">./configure</span></code> 실행 시 autoconf를 통해 필요한 라이브러리 위치 찾아서 Makefile에 붙여 넣어주고,
+make 실행을 통해 위와 같은 문제를 쉽게 실행할 수 있도록 해결해줍니다.</p></li>
+</ul>
+</li>
+<li><p>CPython make 타깃</p>
+<ul class="simple">
+<li><p>빌드 타깃</p>
+<ul>
+<li><p>all(기본): 컴파일러, 라이브러리, 모듈 빌드</p></li>
+<li><p>clinic: 모든 소스 파일에 대해 인자 클리닉 실행</p></li>
+<li><p>profile-opt: 프로파일 기반 최적화를 통해 파이썬 바이너리 빌드</p></li>
+<li><p>regen-all: 생성된 파일을 전부 다시 생성</p></li>
+<li><p>sharedmods: 공유 모듈 빌드</p></li>
+</ul>
+</li>
+<li><p>테스트 타깃</p>
+<ul>
+<li><p>coverage: 컴파일 후 gcov로 테스트 실행</p></li>
+<li><p>coverage-lcov: html 커버리지 보고 생성</p></li>
+<li><p>quicktest: 빠른 회귀 테스트만 실행 (오래 걸리는 테스트 제외)</p></li>
+<li><p>test: 기본적인 회귀 테스트 실행</p></li>
+<li><p>testall: .pyc 파일 없는/있는 상태로 한 번씩 전체 테스트 스위트 실행</p></li>
+<li><p>testuniversal: macOS 유니버셜 빌드에서 여러 아키텍처에 대한 테스트 스위트 실행</p></li>
+</ul>
+</li>
+<li><p>정리 타깃</p>
+<ul>
+<li><p>check-clean-src: 빌드 시 소스 검사</p></li>
+<li><p>clean: .pyc 파일과 컴파일된 라이브러리, 프로파일 삭제</p></li>
+<li><p>cleantest: 직전에 실패한 테스트의 test_python_* 경로 삭제</p></li>
+<li><p>clobber: 라이브러리, 태그, 구성, 빌드 삭제</p></li>
+<li><p>distclean: Makefile을 비롯한 소스에서 생성된 모든 파일 삭제</p></li>
+<li><p>docclean: Doc/ 경로에 생성된 문서 삭제</p></li>
+<li><p>profile-removal: 모든 최적화 프로파일 삭제</p></li>
+<li><p>pycremoval: .pyc 파일 삭제</p></li>
+</ul>
+</li>
+<li><p>설치 타깃</p>
+<ul>
+<li><p>altbininstall: 버전 명시한 python 인터프리터 설치 (ex: python3.9)</p></li>
+<li><p>altinstall: 공유 라이브러리, 바이너리, 문서를 버전 접미사와 함께 설치</p></li>
+<li><p>altmaninstall: 버전 붙은 매뉴얼 설치</p></li>
+<li><p>bininstall: python, idle, 2to3 등 모든 바이너리 설치</p></li>
+<li><p>commoninstall: 공유 라이브러리 및 모듈 설치</p></li>
+<li><p>libinstall: 공유 라이브러리 설치</p></li>
+<li><p>maninstall: 문서 설치</p></li>
+<li><p>install: 공유 라이브러리, 바이너리, 문서 설치
+(commoninstall + bininstall + maninstall 실행)</p></li>
+<li><p>sharedinstall: 동적으로 모듈 로드</p></li>
+</ul>
+</li>
+<li><p>기타 타깃</p>
+<ul>
+<li><p>autoconf: configure / <a class="reference external" href="http://pyconfig.h.in">pyconfig.h.in</a> 다시 생성</p></li>
+<li><p>python-config: python-config 스크립트 생성</p></li>
+<li><p>recheck: 이전과 같은 옵션으로 configure 다시 실행</p></li>
+<li><p>smelly: 내보내진 심벌이 Py 또는 _Py로 시작하는지 확인</p></li>
+<li><p>tags: vi용 태그 파일 생성</p></li>
+<li><p>TAGS: 이맥스용 태그 파일 생성</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</details>
+</section>
+<section id="windows">
+<h2>Windows<a class="headerlink" href="#windows" title="Permalink to this heading">#</a></h2>
+<p>여기에서는 “명령 프롬프트 사용하기” 방식만 다룰 예정이며,
+<br>”Visual Studio에서 PCbuild/pcbuild.sln 열어서 빌드하기” 방식도 있습니다.
+<br>(CPython 파헤치기 도서 32페이지 참고)</p>
+<div class="highlight-powershell notranslate"><div class="highlight"><pre><span></span><span class="c"># 의존성 설치 (외부 도구, 라이브러리, C 헤더 등 설치)</span>
+<span class="n">PCbuild</span><span class="p">/</span><span class="n">get_externals</span><span class="p">.</span><span class="n">bat</span>
+
+<span class="c"># PCbuild/amd64/python_d.exe 바이너리 파일 생성</span>
+<span class="n">build</span><span class="p">.</span><span class="n">bat</span> <span class="n">-p</span> <span class="n">x64</span> <span class="n">-c</span> <span class="n">Debug</span>    <span class="c"># 디버그 버전</span>
+<span class="c"># 디버그 버전 바이너리 파일 실행</span>
+<span class="n">amd64</span><span class="p">\</span><span class="n">python_d</span><span class="p">.</span><span class="n">exe</span>
+
+<span class="c"># PCbuild/amd64/python.exe 바이너리 파일 생성</span>
+<span class="n">build</span><span class="p">.</span><span class="n">bat</span> <span class="n">-p</span> <span class="n">x64</span> <span class="n">-c</span> <span class="n">Release</span>  <span class="c"># 릴리즈 버전 (프로파일 기반 최적화 구성 사용됨)</span>
+<span class="c"># 릴리즈 버전 바이너리 파일 실행</span>
+<span class="n">amd64</span><span class="p">\</span><span class="n">python</span><span class="p">.</span><span class="n">exe</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h2>프로파일 기반 최적화<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<ul>
+<li><p>프로파일 기반 최적화(PGO: Profile-Guided Optimization)는 컴파일러에서 제공하는 기능으로,
+최초 컴파일 후 → 일련의 테스트 실행 → 애플리케이션을 프로파일링하는 최적화 방식입니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">test</span> <span class="pre">--pgo</span></code>로 실행합니다. (Lib/test/libregrtest/pgo.py 회귀 테스트 실행)
+<img alt="프로파일 기반 최적화 실행" src="../_images/00_pgo.png" /></p></li>
+<li><p>출력 내용</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Raised</span> <span class="n">RLIMIT_NOFILE</span><span class="p">:</span> <span class="mi">256</span> <span class="o">-&gt;</span> <span class="mi">1024</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">2.78</span> <span class="n">Run</span> <span class="n">tests</span> <span class="n">sequentially</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">2.78</span> <span class="p">[</span> <span class="mi">1</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_array</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.64</span> <span class="p">[</span> <span class="mi">2</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_base64</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.64</span> <span class="p">[</span> <span class="mi">3</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_binascii</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.64</span> <span class="p">[</span> <span class="mi">4</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_binop</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.64</span> <span class="p">[</span> <span class="mi">5</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_bisect</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">02</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.64</span> <span class="p">[</span> <span class="mi">6</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_bytes</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">05</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.42</span> <span class="p">[</span> <span class="mi">7</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_bz2</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">06</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.42</span> <span class="p">[</span> <span class="mi">8</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_cmath</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">06</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.42</span> <span class="p">[</span> <span class="mi">9</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_codecs</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">09</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.42</span> <span class="p">[</span><span class="mi">10</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_collections</span>
+<span class="o">/</span><span class="n">Users</span><span class="o">/</span><span class="n">user</span><span class="o">/</span><span class="n">Documents</span><span class="o">/</span><span class="n">cpython</span><span class="o">/</span><span class="n">Lib</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">test_collections</span><span class="o">.</span><span class="n">py</span><span class="p">:</span><span class="mi">1509</span><span class="p">:</span> <span class="ne">DeprecationWarning</span><span class="p">:</span> <span class="n">Please</span> <span class="n">use</span> <span class="n">assertEqual</span> <span class="n">instead</span><span class="o">.</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">items</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">10</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.63</span> <span class="p">[</span><span class="mi">11</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_complex</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.63</span> <span class="p">[</span><span class="mi">12</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_dataclasses</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">11</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.63</span> <span class="p">[</span><span class="mi">13</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_datetime</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">18</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.66</span> <span class="p">[</span><span class="mi">14</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_decimal</span>
+<span class="o">------------------------------------------------</span> <span class="n">NOTICE</span> <span class="o">------------------------------------------------</span>
+<span class="n">test_decimal</span> <span class="n">may</span> <span class="n">generate</span> <span class="s2">&quot;malloc can&#39;t allocate region&quot;</span>
+<span class="n">warnings</span> <span class="n">on</span> <span class="n">macOS</span> <span class="n">systems</span><span class="o">.</span> <span class="n">This</span> <span class="n">behavior</span> <span class="ow">is</span> <span class="n">known</span><span class="o">.</span> <span class="n">Do</span> <span class="ow">not</span>
+<span class="n">report</span> <span class="n">a</span> <span class="n">bug</span> <span class="n">unless</span> <span class="n">tests</span> <span class="n">are</span> <span class="n">also</span> <span class="n">failing</span><span class="o">.</span> <span class="n">See</span> <span class="n">bpo</span><span class="o">-</span><span class="mf">40928.</span>
+<span class="o">--------------------------------------------------------------------------------------------------------</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">26</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.08</span> <span class="p">[</span><span class="mi">15</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_difflib</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">28</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.08</span> <span class="p">[</span><span class="mi">16</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_embed</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">36</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.62</span> <span class="p">[</span><span class="mi">17</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_float</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">36</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.62</span> <span class="p">[</span><span class="mi">18</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_fstring</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">37</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.62</span> <span class="p">[</span><span class="mi">19</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_functools</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">37</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.62</span> <span class="p">[</span><span class="mi">20</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_generators</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">38</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.62</span> <span class="p">[</span><span class="mi">21</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_hashlib</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">39</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.62</span> <span class="p">[</span><span class="mi">22</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_heapq</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">40</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.33</span> <span class="p">[</span><span class="mi">23</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_int</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">41</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.33</span> <span class="p">[</span><span class="mi">24</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_itertools</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">49</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.30</span> <span class="p">[</span><span class="mi">25</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_json</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">54</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.04</span> <span class="p">[</span><span class="mi">26</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_long</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.64</span> <span class="p">[</span><span class="mi">27</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_lzma</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">00</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.64</span> <span class="p">[</span><span class="mi">28</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_math</span> <span class="o">--</span> <span class="n">test_lzma</span> <span class="n">skipped</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">05</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.75</span> <span class="p">[</span><span class="mi">29</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_memoryview</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">06</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.75</span> <span class="p">[</span><span class="mi">30</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_operator</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">06</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.75</span> <span class="p">[</span><span class="mi">31</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_ordered_dict</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">07</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.75</span> <span class="p">[</span><span class="mi">32</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_pickle</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">18</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.11</span> <span class="p">[</span><span class="mi">33</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_pprint</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">19</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.11</span> <span class="p">[</span><span class="mi">34</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_re</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">21</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">5.10</span> <span class="p">[</span><span class="mi">35</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_set</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">30</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.63</span> <span class="p">[</span><span class="mi">36</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_sqlite</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">31</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.63</span> <span class="p">[</span><span class="mi">37</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_statistics</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">34</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.63</span> <span class="p">[</span><span class="mi">38</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_struct</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">35</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.58</span> <span class="p">[</span><span class="mi">39</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_tabnanny</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">36</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.58</span> <span class="p">[</span><span class="mi">40</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_time</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">38</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.58</span> <span class="p">[</span><span class="mi">41</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_unicode</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">40</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.37</span> <span class="p">[</span><span class="mi">42</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_xml_etree</span>
+<span class="mi">0</span><span class="p">:</span><span class="mi">01</span><span class="p">:</span><span class="mi">41</span> <span class="n">load</span> <span class="n">avg</span><span class="p">:</span> <span class="mf">4.37</span> <span class="p">[</span><span class="mi">43</span><span class="o">/</span><span class="mi">43</span><span class="p">]</span> <span class="n">test_xml_etree_c</span>
+
+<span class="n">Total</span> <span class="n">duration</span><span class="p">:</span> <span class="mi">1</span> <span class="nb">min</span> <span class="mi">43</span> <span class="n">sec</span>
+<span class="n">Tests</span> <span class="n">result</span><span class="p">:</span> <span class="n">SUCCESS</span>
+</pre></div>
+</div>
+</li>
+<li><p>최적화 된 파이썬 배포</p>
+<ul class="simple">
+<li><p>macOS: <code class="docutils literal notranslate"><span class="pre">./configure</span> <span class="pre">--enable-optimization</span></code></p></li>
+<li><p>Windows: <code class="docutils literal notranslate"><span class="pre">build.bat</span> <span class="pre">--pgo</span></code></p></li>
+</ul>
+</li>
+<li><p>최적화에 포함되는 기능</p>
+<ul class="simple">
+<li><p><strong>함수 inline 처리</strong>
+: 다른 함수에서 자주 호출될 경우, 스택 크기 줄이기 위해 inline으로 변경되거나 호출자 함수에 복사됩니다.</p></li>
+<li><p><strong>가상 호출 추론</strong>
+: 특정 함수에 대한 가상 함수 호출이 빈번하게 일어나면, 조건부로 실행되는 직접 호출을 대상 함수에 추가합니다.</p></li>
+<li><p><strong>레지스터 할당 최적화</strong>
+: 프로파일 데이터를 기반으로 최적화를 하면 레지스터 할당이 향상됩니다.</p></li>
+<li><p><strong>기본 블록 최적화</strong>
+: 지정된 프레임 내 일시적으로 자주 실행되는 기본 블록을 동일한 페이지 집합에 배치
+→ 사용되는 페이지 수 최소화 → 메모리 오버헤드도 최소화 시킵니다.</p></li>
+<li><p><strong>핫스팟 최적화</strong>
+: 가장 많이 실행되는 함수의 실행 시간을 최적화시킵니다.</p></li>
+<li><p><strong>함수 레이아웃 최적화</strong>
+: 호출 그래프에 따라 동일한 실행 경로를 따르는 함수를 컴파일된 애플리케이션의 동일한 섹션에 배치합니다.</p></li>
+<li><p><strong>조건부 분기 최적화</strong>
+: 같은 분기에서 가장 자주 사용되는 분기를 찾아 바로 실행될 수 있도록 해당 분기를 먼저 배치합니다.</p></li>
+<li><p><strong>미사용 코드 분리</strong>
+: 호출되지 않은 코드를 애플리케이션의 별도 섹션으로 옮깁니다.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./docs"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+                <footer class="bd-footer-article">
+                  <!-- Previous / next buttons -->
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="2_0_settings.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">2. 개발 환경 세팅</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="4_0_python_grammar.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">4. 언어와 문법</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#macos">macOS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#windows">Windows</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">프로파일 기반 최적화</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            <div class="bd-footer-content__inner">
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By PseudoLab
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  <p class="copyright">
+    
+      © Copyright 2022.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div></div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=12da95d707ffb74b382d"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=12da95d707ffb74b382d"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>구성과 입력 &#8212; PseudoLab [CPython 파헤치기]</title>
+    <title>5. 구성과 입력 &#8212; PseudoLab [CPython 파헤치기]</title>
   
   
   
@@ -66,8 +66,8 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="shortcut icon" href="../_static/PseudoLab_logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="렉싱과 파싱" href="6_0_rexing_and_parsing.html" />
-    <link rel="prev" title="파이썬 언어와 문법" href="4_0_python_grammar.html" />
+    <link rel="next" title="6. 렉싱과 파싱" href="6_0_rexing_and_parsing.html" />
+    <link rel="prev" title="4. 언어와 문법" href="4_0_python_grammar.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -160,29 +160,28 @@ const thebe_selector_output = ".output, .cell_output"
         </ul>
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">◽ CPython 가이드</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="0_0_dev_env_setup.html">CPython 개발 환경 세팅</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="0_1_directory_structure.html">CPython 디렉터리 구조</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="4_0_python_grammar.html">파이썬 언어와 문법</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">구성과 입력</a></li>
-<li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">렉싱과 파싱</a></li>
-<li class="toctree-l1"><a class="reference internal" href="7_0_compiler.html">컴파일러</a></li>
-<li class="toctree-l1"><a class="reference internal" href="8_0_eval_loop.html">평가 루프</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="9_0_memory.html">메모리 관리</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1"><a class="reference internal" href="1_0_welcome_to_cpython.html">1. CPython 살펴보기</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_0_settings.html">2. 개발 환경 세팅</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3_0_compile.html">3. 컴파일하기</a></li>
+<li class="toctree-l1"><a class="reference internal" href="4_0_python_grammar.html">4. 언어와 문법</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">5. 구성과 입력</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">6. 렉싱과 파싱</a></li>
+<li class="toctree-l1"><a class="reference internal" href="7_0_compiler.html">7. 컴파일러</a></li>
+<li class="toctree-l1"><a class="reference internal" href="8_0_eval_loop.html">8. 평가 루프</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="9_0_memory.html">9. 메모리 관리</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="9_1_memory_pool.html">메모리 풀</a></li>
 <li class="toctree-l2"><a class="reference internal" href="9_2_garbage_collection.html">레퍼런스 카운트와 가비지 컬렉션</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="10_0_parallel_and_concurrent.html">병렬성과 동시성</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="10_0_parallel_and_concurrent.html">10. 병렬성과 동시성</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="10_1_process.html">프로세스</a></li>
 <li class="toctree-l2"><a class="reference internal" href="10_2_thread.html">스레드</a></li>
 <li class="toctree-l2"><a class="reference internal" href="10_3_async.html">비동기 프로그래밍</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="11_0_object_and_type.html">객체와 타입</a></li>
-<li class="toctree-l1"><a class="reference internal" href="12_0_standard_library.html">표준 라이브러리</a></li>
-<li class="toctree-l1"><a class="reference internal" href="13_0_test_suite.html">테스트 스위트</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_0_object_and_type.html">11. 객체와 타입</a></li>
+<li class="toctree-l1"><a class="reference internal" href="12_0_standard_library.html">12. 표준 라이브러리</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_0_test_suite.html">13. 테스트 스위트</a></li>
 <li class="toctree-l1"><a class="reference internal" href="14_0_c_extension.html">Python C 확장 개발 가이드</a></li>
 </ul>
 
@@ -365,7 +364,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>구성과 입력</h1>
+    <h1>5. 구성과 입력</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -380,7 +379,7 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
-<h1>구성과 입력<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<h1>5. 구성과 입력<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
 </section>
 
     <script type="text/x-thebe-config">
@@ -417,7 +416,7 @@ document.write(`
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">파이썬 언어와 문법</p>
+        <p class="prev-next-title">4. 언어와 문법</p>
       </div>
     </a>
     <a class="right-next"
@@ -425,7 +424,7 @@ document.write(`
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">렉싱과 파싱</p>
+        <p class="prev-next-title">6. 렉싱과 파싱</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

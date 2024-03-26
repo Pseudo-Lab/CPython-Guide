@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>파이썬 언어와 문법 &#8212; PseudoLab [CPython 파헤치기]</title>
+    <title>4. 언어와 문법 &#8212; PseudoLab [CPython 파헤치기]</title>
   
   
   
@@ -66,8 +66,8 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="shortcut icon" href="../_static/PseudoLab_logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="구성과 입력" href="5_0_config_and_input.html" />
-    <link rel="prev" title="CPython 디렉터리 구조" href="0_1_directory_structure.html" />
+    <link rel="next" title="5. 구성과 입력" href="5_0_config_and_input.html" />
+    <link rel="prev" title="3. 컴파일하기" href="3_0_compile.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -160,29 +160,28 @@ const thebe_selector_output = ".output, .cell_output"
         </ul>
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">◽ CPython 가이드</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 has-children"><a class="reference internal" href="0_0_dev_env_setup.html">CPython 개발 환경 세팅</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="0_1_directory_structure.html">CPython 디렉터리 구조</a></li>
-</ul>
-</li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">파이썬 언어와 문법</a></li>
-<li class="toctree-l1"><a class="reference internal" href="5_0_config_and_input.html">구성과 입력</a></li>
-<li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">렉싱과 파싱</a></li>
-<li class="toctree-l1"><a class="reference internal" href="7_0_compiler.html">컴파일러</a></li>
-<li class="toctree-l1"><a class="reference internal" href="8_0_eval_loop.html">평가 루프</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="9_0_memory.html">메모리 관리</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1"><a class="reference internal" href="1_0_welcome_to_cpython.html">1. CPython 살펴보기</a></li>
+<li class="toctree-l1"><a class="reference internal" href="2_0_settings.html">2. 개발 환경 세팅</a></li>
+<li class="toctree-l1"><a class="reference internal" href="3_0_compile.html">3. 컴파일하기</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">4. 언어와 문법</a></li>
+<li class="toctree-l1"><a class="reference internal" href="5_0_config_and_input.html">5. 구성과 입력</a></li>
+<li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">6. 렉싱과 파싱</a></li>
+<li class="toctree-l1"><a class="reference internal" href="7_0_compiler.html">7. 컴파일러</a></li>
+<li class="toctree-l1"><a class="reference internal" href="8_0_eval_loop.html">8. 평가 루프</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="9_0_memory.html">9. 메모리 관리</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="9_1_memory_pool.html">메모리 풀</a></li>
 <li class="toctree-l2"><a class="reference internal" href="9_2_garbage_collection.html">레퍼런스 카운트와 가비지 컬렉션</a></li>
 </ul>
 </li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="10_0_parallel_and_concurrent.html">병렬성과 동시성</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="10_0_parallel_and_concurrent.html">10. 병렬성과 동시성</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="10_1_process.html">프로세스</a></li>
 <li class="toctree-l2"><a class="reference internal" href="10_2_thread.html">스레드</a></li>
 <li class="toctree-l2"><a class="reference internal" href="10_3_async.html">비동기 프로그래밍</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="11_0_object_and_type.html">객체와 타입</a></li>
-<li class="toctree-l1"><a class="reference internal" href="12_0_standard_library.html">표준 라이브러리</a></li>
-<li class="toctree-l1"><a class="reference internal" href="13_0_test_suite.html">테스트 스위트</a></li>
+<li class="toctree-l1"><a class="reference internal" href="11_0_object_and_type.html">11. 객체와 타입</a></li>
+<li class="toctree-l1"><a class="reference internal" href="12_0_standard_library.html">12. 표준 라이브러리</a></li>
+<li class="toctree-l1"><a class="reference internal" href="13_0_test_suite.html">13. 테스트 스위트</a></li>
 <li class="toctree-l1"><a class="reference internal" href="14_0_c_extension.html">Python C 확장 개발 가이드</a></li>
 </ul>
 
@@ -367,7 +366,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>파이썬 언어와 문법</h1>
+    <h1>4. 언어와 문법</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -379,12 +378,14 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-c">4.1 CPython이 파이썬이 아니라 C로 작성된 이유</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">4.2 파이썬 언어 사양</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">언어 레퍼넌스</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">문법</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parser">Parser</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">언어 레퍼런스</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">문법</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">문법 다시 생성해보기</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">4.4 토큰</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">토큰</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -397,49 +398,318 @@ document.write(`
                 <article class="bd-article" role="main">
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
-<h1>파이썬 언어와 문법<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<h1>4. 언어와 문법<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<ul class="simple">
+<li><p>파이썬 애플리케이션은 보통 소스 코드 형태로 배포됩니다.</p></li>
+<li><p>소스 코드를 바이트코드라는 중간 언어로 컴파일하고 → <code class="docutils literal notranslate"><span class="pre">.pyc</span></code> 파일에 저장 + 실행 위해 캐싱을 진행합니다.</p></li>
+<li><p>파이썬 인터프리터가 해당 바이트코드(<code class="docutils literal notranslate"><span class="pre">.pyc</span></code>)를 한 줄씩 읽고 실행합니다.</p>
+<ul>
+<li><p>CPython 런타임이 첫 번째 실행될 때 코드를 컴파일하지만, 일반 사용자에게 노출되지는 않습니다.</p></li>
+<li><p>코드 변경 없이 같은 파이썬 애플리케이션 다시 실행하면 → 컴파일된 바이트코드를 불러와서 더 빠르게 실행합니다.</p></li>
+</ul>
+</li>
+</ul>
+<details>
+<summary>💡 이식성(portability)을 기준으로 컴파일러를 선택한다면..</summary>
+<blockquote>
+<div><ul class="simple">
+<li><p>저수준 기계어</p>
+<ul>
+<li><p>시스템에서 바로 실행할 수 있는 기계어로 컴파일</p></li>
+<li><p>바이러니 실행 파일로 컴파일 → 컴파일한 플랫폼과 동일한 플랫폼에서 사용 가능</p></li>
+<li><p>ex) C, Go, C++, Pascal</p></li>
+</ul>
+</li>
+<li><p>중간 언어</p>
+<ul>
+<li><p>가상 머신에서 실행하기 위한 언어로 컴파일</p></li>
+<li><p>여러 시스템 아키텍처에서 사용 가능한 중간 언어로 컴파일</p></li>
+<li><p>ex) 닷넷 CLR, JAVA, <strong>Python</strong></p></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+</details>
 <section id="cpython-c">
 <h2>4.1 CPython이 파이썬이 아니라 C로 작성된 이유<a class="headerlink" href="#cpython-c" title="Permalink to this heading">#</a></h2>
-<p>CPython은 C로 만들어진 컴파일러를 사용한다.</p>
+<details>
+<summary>결론 먼저 보기</summary>
+<blockquote>
+<div><ul class="simple">
+<li><p>CPython은 파이썬에서 이용하는 많은 라이브러리가 C로 되어있기 때문에 C로 만들어진 컴파일러를 사용합니다.</p></li>
+<li><p>안정적인 언어로 다양한 표준 라이브러리 모듈을 이용하기 위해서 C 컴파일러를 사용하고 있습니다.</p></li>
+</ul>
+</div></blockquote>
+</details>
+<br>
 <ul class="simple">
-<li><p>파이썬에서 이용하는 많은 라이브러리가 C로 되어있기 때문</p></li>
+<li><p>새로운 프로그래밍 언어를 만들려면 한 언어(source language)를 다른 만들고자 하는 언어(target language)로 바꿔줄 컴파일러가 필요합니다.</p></li>
+<li><p>새로운 언어 개발 시 어떤 프로그램이든 실행할 수 있어야 하기 때문에 보통 <strong>더 오래되고 안정적인 언어</strong>로 컴파일러를 작성합니다.</p></li>
+</ul>
+<blockquote>
+<div><p>💡 <b>컴파일러 유형</b></p>
+<ul class="simple">
+<li><p>셀프 호스팅 컴파일러</p>
+<ul>
+<li><p>자기 자신으로 작성한 컴파일러 (부트스트래핑 단계를 통해 만들어짐)</p></li>
+<li><p>ex) Go(C로 작성된 첫번째 Go 컴파일러가 Go를 컴파일할 수 있게 되자 → 컴파일러를 Go로 재작성), PyPy(파이썬으로 작성된 파이썬 컴파일러)</p></li>
+</ul>
+</li>
+<li><p>소스 대 소스(source-to-source) 컴파일러</p>
+<ul>
+<li><p>이미 갖고 있는 다른 언어로 작성한 컴파일러</p></li>
+<li><p>ex) CPython (C → Python)</p></li>
+</ul>
+</li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>여러 표준 라이브러리 모듈(ssl, sockets 등)도 저수준 운영체제 API에 접근하기 위해서 C로 작성되어 있고,
+<br>네트워크 소켓 만들기, 파일 시스템 조작, 디스플레이와 상호작용하는 윈도우/리눅스 커널 API도 모두 C로 작성되어 있기 때문에 <strong>파이썬 또한 확장성을 고려하여 C로 작성되었다</strong>고 볼 수 있습니다.</p></li>
 </ul>
 </section>
 <section id="id2">
 <h2>4.2 파이썬 언어 사양<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>컴파일러가 언어를 실행하기 위해서는 문법 구조에 대한 엄격한 규칙인 <strong>언어 사양</strong>이 필요합니다.</p></li>
+<li><p>언어 사양은 모든 파이썬 인터프리터 구현이 사용하는 레퍼런스 사양으로,</p>
+<ul>
+<li><p>사람이 읽을 수 있는 형식 + 기계가 읽을 수 있는 형식으로 제공합니다.</p></li>
+<li><p>문법 형식 + 각 문법 요소가 실행되는 방식을 자세히 설명하고 있습니다.</p></li>
+</ul>
+</li>
+</ul>
 <section id="id3">
-<h3>언어 레퍼넌스<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
-<p>Doc/reference에 언어의 구조, 키워드를 정의해둔다</p>
+<h3>언어 레퍼런스<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<p>사람이 읽을 수 있는 형식으로, Doc/reference에 언어의 구조, 키워드를 정의해두고 있습니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Doc/reference
+├──<span class="w"> </span>index.rst<span class="w">               </span><span class="c1"># 언어 레퍼런스 목차</span>
+├──<span class="w"> </span>introduction.rst<span class="w">        </span><span class="c1"># 레퍼런스 문서 개요</span>
+├──<span class="w"> </span>compound_stmts.rst<span class="w">      </span><span class="c1"># 복합문 (if, while, for, 함수 정의 등)</span>
+├──<span class="w"> </span>datamodel.rst<span class="w">           </span><span class="c1"># 객체, 값, 타입</span>
+├──<span class="w"> </span>executionmodel.rst<span class="w">      </span><span class="c1"># 프로그램 구조</span>
+├──<span class="w"> </span>expressions.rst<span class="w">         </span><span class="c1"># 표현식 구성 요소</span>
+├──<span class="w"> </span>grammar.rst<span class="w">             </span><span class="c1"># 문법 규격(Grammar/Grammar 참조)</span>
+├──<span class="w"> </span>import.rst<span class="w">              </span><span class="c1"># import 시스템</span>
+├──<span class="w"> </span>lexical_analysis.rst<span class="w">    </span><span class="c1"># 어휘 구조 (줄, 들여쓰기, 토큰, 키워드 등)</span>
+├──<span class="w"> </span>simple_stmts.rst<span class="w">        </span><span class="c1"># 단순문 (assert, import, return, yield 등)</span>
+└──<span class="w"> </span>toplevel_components.rst<span class="w"> </span><span class="c1"># 스크립트 및 모듈 실행 방법 설명</span>
+</pre></div>
+</div>
+<details>
+<summary>ex1) if (compound_stmts.rst)</summary>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>.. _if:
+.. _elif:
+.. _else:
+
+<span class="gh">The :keyword:`!if` statement</span>
+<span class="gh">============================</span>
+
+.. index::
+    ! statement: if
+    keyword: elif
+    keyword: else
+    single: : (colon); compound statement
+
+The :keyword:`if` statement is used for conditional execution:
+
+.. productionlist:: python-grammar
+    if_stmt: &quot;if&quot; <span class="sb">`assignment_expression`</span> &quot;:&quot; <span class="sb">`suite`</span>
+            : (&quot;elif&quot; <span class="sb">`assignment_expression`</span> &quot;:&quot; <span class="sb">`suite`</span>)*
+            : [&quot;else&quot; &quot;:&quot; <span class="sb">`suite`</span>]
+
+It selects exactly one of the suites by evaluating the expressions one by one
+until one is found to be true (see section :ref:`booleans` for the definition of
+true and false); then that suite is executed (and no other part of the
+:keyword:`if` statement is executed or evaluated).  If all expressions are
+false, the suite of the :keyword:`else` clause, if present, is executed.
+</pre></div>
+</div>
+</details>
+<details>
+<summary>ex2) Class instance (datamodel.rst)</summary>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span>Class instances
+    .. index::
+        object: class instance
+        object: instance
+        pair: class; instance
+        pair: class instance; attribute
+
+    A class instance is created by calling a class object (see above).  A class
+    instance has a namespace implemented as a dictionary which is the first place
+    in which attribute references are searched.  When an attribute is not found
+    there, and the instance&#39;s class has an attribute by that name, the search
+    continues with the class attributes.  If a class attribute is found that is a
+    user-defined function object, it is transformed into an instance method
+    object whose :attr:`__self__` attribute is the instance.  Static method and
+    class method objects are also transformed; see above under &quot;Classes&quot;.  See
+    section :ref:`descriptors` for another way in which attributes of a class
+    retrieved via its instances may differ from the objects actually stored in
+    the class&#39;s :attr:`~object.__dict__`.  If no class attribute is found, and the
+    object&#39;s class has a :meth:`~object.__getattr__` method, that is called to satisfy
+    the lookup.
+
+    .. index:: triple: class instance; attribute; assignment
+
+    Attribute assignments and deletions update the instance&#39;s dictionary, never a
+    class&#39;s dictionary.  If the class has a :meth:`~object.__setattr__` or
+    :meth:`~object.__delattr__` method, this is called instead of updating the instance
+    dictionary directly.
+
+    .. index::
+        object: numeric
+        object: sequence
+        object: mapping
+
+    Class instances can pretend to be numbers, sequences, or mappings if they have
+    methods with certain special names.  See section :ref:`specialnames`.
+
+    .. index::
+        single: <span class="gs">__dict__</span> (instance attribute)
+        single: <span class="gs">__class__</span> (instance attribute)
+
+    Special attributes: :attr:`~object.__dict__` is the attribute dictionary;
+    :attr:`~instance.__class__` is the instance&#39;s class.
+</pre></div>
+</div>
+</details>
 </section>
 <section id="id4">
 <h3>문법<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
-<p>PEG 표현식을 이용</p>
+<p>기계가 읽을 수 있는 형식으로, Grammar/python.gram에 PEG 표현식을 통해 정의하고 있습니다.</p>
 <ul class="simple">
-<li><p>* 반복을 의미</p></li>
-<li><p>+ 최소 한번의 반복</p></li>
-<li><p>[] 선택적</p></li>
-<li><p>| 대안</p></li>
-<li><p>() 그룹</p></li>
+<li><p>파서 표현식 문법(parsing expression grammar, PEG) 사양</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">*</span></code>: 반복</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">+</span></code>: 최소 1번 반복</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[]</span></code>: 선택적인 부분</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">|</span></code>: 대안</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">()</span></code>: 그룹</p></li>
 </ul>
-<p>eg)
-coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
-<p>milk: ‘full-fat’ | ‘skimmed’ | ‘soy’</p>
-<p>철도 다이어그램
-<img alt="철도 다이어그램" src="../_images/train_diagram.svg" /></p>
-</section>
-<section id="parser">
-<h3>Parser<a class="headerlink" href="#parser" title="Permalink to this heading">#</a></h3>
-<p>Grammar/python.gram에 파이썬 문법이 PEG로 정의가 되어있다</p>
-<p><img alt="small_stmt 예시" src="../_images/small_stmt.png" /></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;pass&#39;</span> <span class="p">{</span> <span class="n">_Py_Pass</span><span class="p">(</span><span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span>
+</li>
+<li><p>철도 다이어그램
+<br><img alt="철도 다이어그램" src="../_images/00_train_diagram.svg" /></p></li>
+</ul>
+<details>
+<summary>ex0) 커피 레시피</summary>
+<ul>
+<li><p>예시</p>
+<ul class="simple">
+<li><p>컵 필요: <code class="docutils literal notranslate"><span class="pre">'cup'</span></code></p></li>
+<li><p>최소 에스프레소 한 샷 이상: <code class="docutils literal notranslate"><span class="pre">('espresso')+</span></code></p></li>
+<li><p>물 사용 (옵션): <code class="docutils literal notranslate"><span class="pre">['water']</span></code></p></li>
+<li><p>우유 사용 (옵션): <code class="docutils literal notranslate"><span class="pre">[milk]</span></code></p></li>
+<li><p>우유 사용했다면, 탈지우유나 두유 등 여러 종류의 우유 선택 가능: <code class="docutils literal notranslate"><span class="pre">milk:</span> <span class="pre">'full-fat'</span> <span class="pre">|</span> <span class="pre">'skimmed'</span> <span class="pre">|</span> <span class="pre">'soy'</span></code></p></li>
+</ul>
+</li>
+<li><p>정의</p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">coffee</span><span class="o">:</span><span class="w"> </span>&#39;<span class="n">cup</span>&#39; (&#39;<span class="n">espresso</span>&#39;)+ [&#39;<span class="n">water</span>&#39;] [<span class="n">milk</span>]
+<span class="nf">milk</span><span class="o">:</span><span class="w"> </span>&#39;<span class="n">full</span>-<span class="n">fat</span>&#39; <span class="p">|</span> &#39;<span class="n">skimmed</span>&#39; <span class="p">|</span> &#39;<span class="n">soy</span>&#39;
 </pre></div>
 </div>
-<p>줄을</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="s1">&#39;pass&#39;</span><span class="o">|</span><span class="s1">&#39;proceed&#39;</span><span class="p">)</span> <span class="p">{</span> <span class="n">_Py_Pass</span><span class="p">(</span><span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span>
+</li>
+<li><p>철도 다이어그램
+<img alt="커피 레시피 철도 다이어그램" src="../_images/01_train_diagram_coffee.png" /></p></li>
+</ul>
+</details>
+<details>
+<summary>ex1) while문</summary>
+<ul>
+<li><p>예시</p>
+<ol class="arabic">
+<li><p>표현식 &amp; <code class="docutils literal notranslate"><span class="pre">:</span></code> 단말 기호 &amp; 코드 블록으로 구성</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">finished</span><span class="p">:</span>
+        <span class="n">do_things</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>로 바꾸고 컴파일 하면,</p>
-<p>proceed라는 함수가 pass랑 동일한 action을 하게 된다</p>
+</li>
+<li><p>named_expression 대입 표현식 사용 (값 할당하는 동시에 그 값을 평가하는 표현식)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">letters</span> <span class="o">:=</span> <span class="n">read</span><span class="p">(</span><span class="n">document</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">letters</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>while문 다음에 else 블록 사용</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">item</span> <span class="o">:=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iterable is empty&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</li>
+<li><p>정의 (while_stmt 문법 파일)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Grammar/python.gram#L165</span>
+
+<span class="n">while_stmt</span><span class="p">[</span><span class="n">stmt_ty</span><span class="p">]:</span>
+        <span class="o">|</span> <span class="s1">&#39;while&#39;</span> <span class="n">a</span><span class="o">=</span><span class="n">named_expression</span> <span class="s1">&#39;:&#39;</span> <span class="n">b</span><span class="o">=</span><span class="n">block</span> <span class="n">c</span><span class="o">=</span><span class="p">[</span><span class="n">else_block</span><span class="p">]</span> <span class="o">...</span>
+</pre></div>
+</div>
+</li>
+<li><p>철도 다이어그램</p>
+<p><img alt="while문 철도 다이어그램" src="../_images/02_train_diagram_while.jpeg" /></p>
+</li>
+</ul>
+</details>
+<details>
+<summary>ex2) try문</summary>
+<ul>
+<li><p>정의</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span># Grammar/python.gram#L189
+
+try_stmt[stmt_ty]:
+    | &#39;try&#39; &#39;:&#39; b=block f=finally_block { _Py_Try(b, NULL, NULL, f, EXTRA) }
+    | &#39;try&#39; &#39;:&#39; b=block ex=except_block+ el=[else_block] f=[finally_block] { _Py_Try(b, ex, el, f, EXTRA) }
+
+finally_block[asdl_seq*]: &#39;finally&#39; &#39;:&#39; a=block { a }
+
+except_block[excepthandler_ty]:
+    | &#39;except&#39; e=expression t=[&#39;as&#39; z=NAME { z }] &#39;:&#39; b=block {
+        _Py_ExceptHandler(e, (t) ? ((expr_ty) t)-&gt;v.Name.id : NULL, b, EXTRA) }
+    | &#39;except&#39; &#39;:&#39; b=block { _Py_ExceptHandler(NULL, NULL, b, EXTRA) }
+
+else_block[asdl_seq*]: &#39;else&#39; &#39;:&#39; b=block { b }
+</pre></div>
+</div>
+</li>
+<li><p>철도 다이어그램</p>
+<p><img alt="try문 철도 다이어그램" src="../_images/03_train_diagram_try.png" /></p>
+</li>
+</ul>
+</details>
+<section id="id5">
+<h4>문법 다시 생성해보기<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h4>
+<p>Grammar/python.gram 에서 간단문 정의(small_stmt)에서 pass 문이 정의된 것을 볼 수 있습니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">small_stmt</span><span class="p">[</span><span class="n">stmt_ty</span><span class="p">]</span> <span class="p">(</span><span class="n">memo</span><span class="p">):</span>
+    <span class="o">|</span> <span class="n">assignment</span>
+    <span class="o">|</span> <span class="n">e</span><span class="o">=</span><span class="n">star_expressions</span> <span class="p">{</span> <span class="n">_Py_Expr</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="s1">&#39;return&#39;</span> <span class="n">return_stmt</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="p">(</span><span class="s1">&#39;import&#39;</span> <span class="o">|</span> <span class="s1">&#39;from&#39;</span><span class="p">)</span> <span class="n">import_stmt</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="s1">&#39;raise&#39;</span> <span class="n">raise_stmt</span>
+    <span class="o">**|</span> <span class="s1">&#39;pass&#39;</span> <span class="p">{</span> <span class="n">_Py_Pass</span><span class="p">(</span><span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span><span class="o">**</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="s1">&#39;del&#39;</span> <span class="n">del_stmt</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="s1">&#39;yield&#39;</span> <span class="n">yield_stmt</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="s1">&#39;assert&#39;</span> <span class="n">assert_stmt</span>
+    <span class="o">|</span> <span class="s1">&#39;break&#39;</span> <span class="p">{</span> <span class="n">_Py_Break</span><span class="p">(</span><span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span>
+    <span class="o">|</span> <span class="s1">&#39;continue&#39;</span> <span class="p">{</span> <span class="n">_Py_Continue</span><span class="p">(</span><span class="n">EXTRA</span><span class="p">)</span> <span class="p">}</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="s1">&#39;global&#39;</span> <span class="n">global_stmt</span>
+    <span class="o">|</span> <span class="o">&amp;</span><span class="s1">&#39;nonlocal&#39;</span> <span class="n">nonlocal_stmt</span>
+</pre></div>
+</div>
+<p>pass 정의 <code class="docutils literal notranslate"><span class="pre">'pass'</span> <span class="pre">{</span> <span class="pre">_Py_Pass(EXTRA)</span> <span class="pre">}</span></code>를
+<br><code class="docutils literal notranslate"><span class="pre">('pass'|'proceed')</span> <span class="pre">{</span> <span class="pre">_Py_Pass(EXTRA)</span> <span class="pre">}</span></code>로 바꾸고 아래와 같이 컴파일 하면,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># macOS</span>
+<span class="n">make</span> <span class="n">regen</span><span class="o">-</span><span class="n">pegen</span>
+<span class="n">make</span> <span class="o">-</span><span class="n">j2</span> <span class="o">-</span><span class="n">s</span>
+
+<span class="c1"># Windows</span>
+<span class="n">build</span><span class="o">.</span><span class="n">bat</span> <span class="o">--</span><span class="n">regen</span>
+<span class="n">build</span><span class="o">.</span><span class="n">bat</span> <span class="o">-</span><span class="n">t</span> <span class="n">CleanAll</span>
+<span class="n">build</span><span class="o">.</span><span class="n">bat</span> <span class="o">-</span><span class="n">t</span> <span class="n">Build</span>
+</pre></div>
+</div>
+<p>proceed라는 함수가 pass랑 동일한 action을 하게 됩니다.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test1</span><span class="p">():</span>
     <span class="k">pass</span>
 
@@ -447,16 +717,1010 @@ coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
     <span class="n">proceed</span>
 </pre></div>
 </div>
-<p>위에서 test1()이랑 test2()의 action은 동일하다.</p>
-<p>python.gram파일 수정을 통해서 파이썬 문법을 변경할 수 있다</p>
+<p>위에서 test1()이랑 test2()의 action은 동일하게 됩니다.
+<br>이처럼, python.gram 파일 수정을 통해서 파이썬 문법을 변경할 수 있습니다.</p>
+<aside>
+<p>💡 <strong>파서 생성기</strong></p>
+<ul class="simple">
+<li><p>파이썬 컴파일러는 문법 파일을 직접 사용하지 않고, 파서 생성기가 문법 파일에서 생성한 파서를 사용합니다.</p></li>
+<li><p>문법 파일을 수정하면 → 파서 재생성 후 → CPython을 다시 컴파일해야 합니다.</p></li>
+<li><p>Python 3.9부터는 파서 테이블 생성기(pgen 모듈) 대신 문맥 의존 문법 파서(pegen)를 사용합니다.</p></li>
+</ul>
+</aside>
 </section>
 </section>
-<section id="id5">
-<h2>4.4 토큰<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h2>
-<p>Grammar/Tokens 파일은 파스 트리의 Leaf node에서 사용되는 고유 토큰들을 정의한다. 코드 tokenization은 추후에 compiling할때 이용된다.</p>
-<p><img alt="tokens 예시" src="../_images/tokens.png" /></p>
-<p>python코드가 tokenizer를 통해서 토큰으로 파싱이 된다. 위 코드를 tokenize를 하면:</p>
-<p><img alt="코드 token화 예시" src="../_images/code_tokenized.png" /></p>
+<section id="id6">
+<h3>토큰<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<p>Grammar/Tokens 파일은 파스 트리의 Leaf node에서 사용되는 고유 토큰들을 정의합니다.
+코드 tokenization은 추후 컴파일링 할 때 이용되며,
+각 토큰별로 이름, 자동으로 생성된 고유 ID를 지니고 있습니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">LPAR</span>                    <span class="s1">&#39;(&#39;</span>
+<span class="n">RPAR</span>                    <span class="s1">&#39;)&#39;</span>
+<span class="n">LSQB</span>                    <span class="s1">&#39;[&#39;</span>
+<span class="n">RSQB</span>                    <span class="s1">&#39;]&#39;</span>
+<span class="n">COLON</span>                   <span class="s1">&#39;:&#39;</span>
+<span class="n">COMMA</span>                   <span class="s1">&#39;,&#39;</span>
+</pre></div>
+</div>
+<p>tokenizer를 통해서 토큰으로 파싱이 되며, 아래 예시를 통해 tokenize 되는 결과를 확인할 수 있습니다.</p>
+<ul>
+<li><p>예시 스크립트 파일 (test_tokens.py)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">my_function</span><span class="p">():</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">./python.exe</span> <span class="pre">-m</span> <span class="pre">tokenize</span> <span class="pre">-e</span> <span class="pre">test_tokens.py</span></code> (토큰 목록 출력)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="o">-</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span>            <span class="n">ENCODING</span>       <span class="s1">&#39;utf-8&#39;</span>
+<span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span>            <span class="n">NAME</span>           <span class="s1">&#39;def&#39;</span>
+<span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">15</span><span class="p">:</span>           <span class="n">NAME</span>           <span class="s1">&#39;my_function&#39;</span>
+<span class="mi">1</span><span class="p">,</span><span class="mi">15</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">16</span><span class="p">:</span>          <span class="n">LPAR</span>           <span class="s1">&#39;(&#39;</span>
+<span class="mi">1</span><span class="p">,</span><span class="mi">16</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">17</span><span class="p">:</span>          <span class="n">RPAR</span>           <span class="s1">&#39;)&#39;</span>
+<span class="mi">1</span><span class="p">,</span><span class="mi">17</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">18</span><span class="p">:</span>          <span class="n">COLON</span>          <span class="s1">&#39;:&#39;</span>
+<span class="mi">1</span><span class="p">,</span><span class="mi">18</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">19</span><span class="p">:</span>          <span class="n">NEWLINE</span>        <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">:</span>            <span class="n">INDENT</span>         <span class="s1">&#39;    &#39;</span>
+<span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">8</span><span class="p">:</span>            <span class="n">NAME</span>           <span class="s1">&#39;pass&#39;</span>
+<span class="mi">2</span><span class="p">,</span><span class="mi">8</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="mi">9</span><span class="p">:</span>            <span class="n">NEWLINE</span>        <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+<span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span>            <span class="n">DEDENT</span>         <span class="s1">&#39;&#39;</span>
+<span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span><span class="p">:</span>            <span class="n">ENDMARKER</span>      <span class="s1">&#39;&#39;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<details>  
+<summary>`./python.exe -d test_tokens.py` (디버그 빌드)</summary>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>    &gt; file[0-0]: statements? $
+    &gt; statements[0-0]: statement+
+    &gt; _loop1_11[0-0]: statement
+    &gt; statement[0-0]: compound_stmt
+        &gt; compound_stmt[0-0]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def
+        &gt; _tmp_15[0-0]: &#39;def&#39;
+        + _tmp_15[0-1]: &#39;def&#39; succeeded!
+        &gt; function_def[0-0]: decorators function_def_raw
+        &gt; decorators[0-0]: ((&#39;@&#39; named_expression NEWLINE))+
+        &gt; _loop1_68[0-0]: (&#39;@&#39; named_expression NEWLINE)
+            &gt; _tmp_140[0-0]: &#39;@&#39; named_expression NEWLINE
+            - _tmp_140[0-0]: &#39;@&#39; named_expression NEWLINE failed!
+        - _loop1_68[0-0]: (&#39;@&#39; named_expression NEWLINE) failed!
+        - decorators[0-0]: ((&#39;@&#39; named_expression NEWLINE))+ failed!
+        - function_def[0-0]: decorators function_def_raw failed!
+        &gt; function_def[0-0]: function_def_raw
+        &gt; function_def_raw[0-0]: &#39;def&#39; NAME &#39;(&#39; params? &#39;)&#39; [&#39;-&gt;&#39; expression] &#39;:&#39; func_type_comment? block
+        &gt; params[3-3]: parameters
+            &gt; parameters[3-3]: slash_no_default param_no_default* param_with_default* star_etc?
+            &gt; slash_no_default[3-3]: param_no_default+ &#39;/&#39; &#39;,&#39;
+            &gt; _loop1_60[3-3]: param_no_default
+            &gt; param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT?
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39;
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop1_60[3-3]: param_no_default failed!
+            - slash_no_default[3-3]: param_no_default+ &#39;/&#39; &#39;,&#39; failed!
+            &gt; slash_no_default[3-3]: param_no_default+ &#39;/&#39; &amp;&#39;)&#39;
+            &gt; _loop1_61[3-3]: param_no_default
+            &gt; param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT?
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39;
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop1_61[3-3]: param_no_default failed!
+            - slash_no_default[3-3]: param_no_default+ &#39;/&#39; &amp;&#39;)&#39; failed!
+            - parameters[3-3]: slash_no_default param_no_default* param_with_default* star_etc? failed!
+            &gt; parameters[3-3]: slash_with_default param_with_default* star_etc?
+            &gt; slash_with_default[3-3]: param_no_default* param_with_default+ &#39;/&#39; &#39;,&#39;
+            &gt; _loop0_62[3-3]: param_no_default
+            &gt; param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT?
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39;
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop0_62[3-3]: param_no_default failed!
+            &gt; _loop1_63[3-3]: param_with_default
+            &gt; param_with_default[3-3]: param default &#39;,&#39; TYPE_COMMENT?
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_with_default[3-3]: param default &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_with_default[3-3]: param default TYPE_COMMENT? &amp;&#39;)&#39;
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_with_default[3-3]: param default TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop1_63[3-3]: param_with_default failed!
+            - slash_with_default[3-3]: param_no_default* param_with_default+ &#39;/&#39; &#39;,&#39; failed!
+            &gt; slash_with_default[3-3]: param_no_default* param_with_default+ &#39;/&#39; &amp;&#39;)&#39;
+            &gt; _loop0_64[3-3]: param_no_default
+            &gt; param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT?
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39;
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop0_64[3-3]: param_no_default failed!
+            &gt; _loop1_65[3-3]: param_with_default
+            &gt; param_with_default[3-3]: param default &#39;,&#39; TYPE_COMMENT?
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_with_default[3-3]: param default &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_with_default[3-3]: param default TYPE_COMMENT? &amp;&#39;)&#39;
+                &gt; param[3-3]: NAME annotation?
+                - param[3-3]: NAME annotation? failed!
+            - param_with_default[3-3]: param default TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop1_65[3-3]: param_with_default failed!
+            - slash_with_default[3-3]: param_no_default* param_with_default+ &#39;/&#39; &amp;&#39;)&#39; failed!
+            - parameters[3-3]: slash_with_default param_with_default* star_etc? failed!
+            &gt; parameters[3-3]: param_no_default+ param_with_default* star_etc?
+            &gt; _loop1_57[3-3]: param_no_default
+            &gt; param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT?
+            &gt; param[3-3]: NAME annotation?
+            - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39;
+            &gt; param[3-3]: NAME annotation?
+            - param[3-3]: NAME annotation? failed!
+            - param_no_default[3-3]: param TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop1_57[3-3]: param_no_default failed!
+            - parameters[3-3]: param_no_default+ param_with_default* star_etc? failed!
+            &gt; parameters[3-3]: param_with_default+ star_etc?
+            &gt; _loop1_59[3-3]: param_with_default
+            &gt; param_with_default[3-3]: param default &#39;,&#39; TYPE_COMMENT?
+            &gt; param[3-3]: NAME annotation?
+            - param[3-3]: NAME annotation? failed!
+            - param_with_default[3-3]: param default &#39;,&#39; TYPE_COMMENT? failed!
+            &gt; param_with_default[3-3]: param default TYPE_COMMENT? &amp;&#39;)&#39;
+            &gt; param[3-3]: NAME annotation?
+            - param[3-3]: NAME annotation? failed!
+            - param_with_default[3-3]: param default TYPE_COMMENT? &amp;&#39;)&#39; failed!
+            - _loop1_59[3-3]: param_with_default failed!
+            - parameters[3-3]: param_with_default+ star_etc? failed!
+            &gt; parameters[3-3]: star_etc
+            &gt; star_etc[3-3]: &#39;*&#39; param_no_default param_maybe_default* kwds?
+            - star_etc[3-3]: &#39;*&#39; param_no_default param_maybe_default* kwds? failed!
+            &gt; star_etc[3-3]: &#39;*&#39; &#39;,&#39; param_maybe_default+ kwds?
+            - star_etc[3-3]: &#39;*&#39; &#39;,&#39; param_maybe_default+ kwds? failed!
+            &gt; star_etc[3-3]: kwds
+            &gt; kwds[3-3]: &#39;**&#39; param_no_default
+            - kwds[3-3]: &#39;**&#39; param_no_default failed!
+            - star_etc[3-3]: kwds failed!
+            - parameters[3-3]: star_etc failed!
+        - params[3-3]: parameters failed!
+        &gt; _tmp_51[4-4]: &#39;-&gt;&#39; expression
+        - _tmp_51[4-4]: &#39;-&gt;&#39; expression failed!
+        &gt; func_type_comment[5-5]: NEWLINE TYPE_COMMENT &amp;(NEWLINE INDENT)
+        - func_type_comment[5-5]: NEWLINE TYPE_COMMENT &amp;(NEWLINE INDENT) failed!
+        &gt; func_type_comment[5-5]: TYPE_COMMENT
+        - func_type_comment[5-5]: TYPE_COMMENT failed!
+        &gt; block[5-5]: NEWLINE INDENT statements DEDENT
+            &gt; statements[7-7]: statement+
+            &gt; _loop1_11[7-7]: statement
+            &gt; statement[7-7]: compound_stmt
+            &gt; compound_stmt[7-7]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def
+                &gt; _tmp_15[7-7]: &#39;def&#39;
+                - _tmp_15[7-7]: &#39;def&#39; failed!
+                &gt; _tmp_15[7-7]: &#39;@&#39;
+                - _tmp_15[7-7]: &#39;@&#39; failed!
+                &gt; _tmp_15[7-7]: ASYNC
+                - _tmp_15[7-7]: ASYNC failed!
+            - compound_stmt[7-7]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def failed!
+            &gt; compound_stmt[7-7]: &amp;&#39;if&#39; if_stmt
+            - compound_stmt[7-7]: &amp;&#39;if&#39; if_stmt failed!
+            &gt; compound_stmt[7-7]: &amp;(&#39;class&#39; | &#39;@&#39;) class_def
+                &gt; _tmp_16[7-7]: &#39;class&#39;
+                - _tmp_16[7-7]: &#39;class&#39; failed!
+                &gt; _tmp_16[7-7]: &#39;@&#39;
+                - _tmp_16[7-7]: &#39;@&#39; failed!
+            - compound_stmt[7-7]: &amp;(&#39;class&#39; | &#39;@&#39;) class_def failed!
+            &gt; compound_stmt[7-7]: &amp;(&#39;with&#39; | ASYNC) with_stmt
+                &gt; _tmp_17[7-7]: &#39;with&#39;
+                - _tmp_17[7-7]: &#39;with&#39; failed!
+                &gt; _tmp_17[7-7]: ASYNC
+                - _tmp_17[7-7]: ASYNC failed!
+            - compound_stmt[7-7]: &amp;(&#39;with&#39; | ASYNC) with_stmt failed!
+            &gt; compound_stmt[7-7]: &amp;(&#39;for&#39; | ASYNC) for_stmt
+                &gt; _tmp_18[7-7]: &#39;for&#39;
+                - _tmp_18[7-7]: &#39;for&#39; failed!
+                &gt; _tmp_18[7-7]: ASYNC
+                - _tmp_18[7-7]: ASYNC failed!
+            - compound_stmt[7-7]: &amp;(&#39;for&#39; | ASYNC) for_stmt failed!
+            &gt; compound_stmt[7-7]: &amp;&#39;try&#39; try_stmt
+            - compound_stmt[7-7]: &amp;&#39;try&#39; try_stmt failed!
+            &gt; compound_stmt[7-7]: &amp;&#39;while&#39; while_stmt
+            - compound_stmt[7-7]: &amp;&#39;while&#39; while_stmt failed!
+            - statement[7-7]: compound_stmt failed!
+            &gt; statement[7-7]: simple_stmt
+            &gt; simple_stmt[7-7]: small_stmt !&#39;;&#39; NEWLINE
+                &gt; small_stmt[7-7]: assignment
+                &gt; assignment[7-7]: NAME &#39;:&#39; expression [&#39;=&#39; annotated_rhs]
+                - assignment[7-7]: NAME &#39;:&#39; expression [&#39;=&#39; annotated_rhs] failed!
+                &gt; assignment[7-7]: (&#39;(&#39; single_target &#39;)&#39; | single_subscript_attribute_target) &#39;:&#39; expression [&#39;=&#39; annotated_rhs]
+                &gt; _tmp_20[7-7]: &#39;(&#39; single_target &#39;)&#39;
+                - _tmp_20[7-7]: &#39;(&#39; single_target &#39;)&#39; failed!
+                &gt; _tmp_20[7-7]: single_subscript_attribute_target
+                &gt; single_subscript_attribute_target[7-7]: t_primary &#39;.&#39; NAME !t_lookahead
+                    &gt; t_primary[7-7]: t_primary &#39;.&#39; NAME &amp;t_lookahead
+                    - t_primary[7-7]: t_primary &#39;.&#39; NAME &amp;t_lookahead failed!
+                    &gt; t_primary[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; &amp;t_lookahead
+                    - t_primary[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; &amp;t_lookahead failed!
+                    &gt; t_primary[7-7]: t_primary genexp &amp;t_lookahead
+                    - t_primary[7-7]: t_primary genexp &amp;t_lookahead failed!
+                    &gt; t_primary[7-7]: t_primary &#39;(&#39; arguments? &#39;)&#39; &amp;t_lookahead
+                    - t_primary[7-7]: t_primary &#39;(&#39; arguments? &#39;)&#39; &amp;t_lookahead failed!
+                    &gt; t_primary[7-7]: atom &amp;t_lookahead
+                    &gt; atom[7-7]: NAME
+                    - atom[7-7]: NAME failed!
+                    &gt; atom[7-7]: &#39;True&#39;
+                    - atom[7-7]: &#39;True&#39; failed!
+                    &gt; atom[7-7]: &#39;False&#39;
+                    - atom[7-7]: &#39;False&#39; failed!
+                    &gt; atom[7-7]: &#39;None&#39;
+                    - atom[7-7]: &#39;None&#39; failed!
+                    &gt; atom[7-7]: &#39;__peg_parser__&#39;
+                    - atom[7-7]: &#39;__peg_parser__&#39; failed!
+                    &gt; atom[7-7]: &amp;STRING strings
+                    - atom[7-7]: &amp;STRING strings failed!
+                    &gt; atom[7-7]: NUMBER
+                    - atom[7-7]: NUMBER failed!
+                    &gt; atom[7-7]: &amp;&#39;(&#39; (tuple | group | genexp)
+                    - atom[7-7]: &amp;&#39;(&#39; (tuple | group | genexp) failed!
+                    &gt; atom[7-7]: &amp;&#39;[&#39; (list | listcomp)
+                    - atom[7-7]: &amp;&#39;[&#39; (list | listcomp) failed!
+                    &gt; atom[7-7]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp)
+                    - atom[7-7]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp) failed!
+                    &gt; atom[7-7]: &#39;...&#39;
+                    - atom[7-7]: &#39;...&#39; failed!
+                    - t_primary[7-7]: atom &amp;t_lookahead failed!
+                - single_subscript_attribute_target[7-7]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+                &gt; single_subscript_attribute_target[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+                - single_subscript_attribute_target[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+                - _tmp_20[7-7]: single_subscript_attribute_target failed!
+                - assignment[7-7]: (&#39;(&#39; single_target &#39;)&#39; | single_subscript_attribute_target) &#39;:&#39; expression [&#39;=&#39; annotated_rhs] failed!
+                &gt; assignment[7-7]: ((star_targets &#39;=&#39;))+ (yield_expr | star_expressions) !&#39;=&#39; TYPE_COMMENT?
+                &gt; _loop1_22[7-7]: (star_targets &#39;=&#39;)
+                &gt; _tmp_137[7-7]: star_targets &#39;=&#39;
+                    &gt; star_targets[7-7]: star_target !&#39;,&#39;
+                    &gt; star_target[7-7]: &#39;*&#39; (!&#39;*&#39; star_target)
+                    - star_target[7-7]: &#39;*&#39; (!&#39;*&#39; star_target) failed!
+                    &gt; star_target[7-7]: target_with_star_atom
+                    &gt; target_with_star_atom[7-7]: t_primary &#39;.&#39; NAME !t_lookahead
+                    - target_with_star_atom[7-7]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+                    &gt; target_with_star_atom[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+                    - target_with_star_atom[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+                    &gt; target_with_star_atom[7-7]: star_atom
+                    &gt; star_atom[7-7]: NAME
+                    - star_atom[7-7]: NAME failed!
+                    &gt; star_atom[7-7]: &#39;(&#39; target_with_star_atom &#39;)&#39;
+                    - star_atom[7-7]: &#39;(&#39; target_with_star_atom &#39;)&#39; failed!
+                    &gt; star_atom[7-7]: &#39;(&#39; star_targets_tuple_seq? &#39;)&#39;
+                    - star_atom[7-7]: &#39;(&#39; star_targets_tuple_seq? &#39;)&#39; failed!
+                    &gt; star_atom[7-7]: &#39;[&#39; star_targets_list_seq? &#39;]&#39;
+                    - star_atom[7-7]: &#39;[&#39; star_targets_list_seq? &#39;]&#39; failed!
+                    - target_with_star_atom[7-7]: star_atom failed!
+                    - star_target[7-7]: target_with_star_atom failed!
+                    - star_targets[7-7]: star_target !&#39;,&#39; failed!
+                    &gt; star_targets[7-7]: star_target ((&#39;,&#39; star_target))* &#39;,&#39;?
+                    - star_targets[7-7]: star_target ((&#39;,&#39; star_target))* &#39;,&#39;? failed!
+                - _tmp_137[7-7]: star_targets &#39;=&#39; failed!
+                - _loop1_22[7-7]: (star_targets &#39;=&#39;) failed!
+                - assignment[7-7]: ((star_targets &#39;=&#39;))+ (yield_expr | star_expressions) !&#39;=&#39; TYPE_COMMENT? failed!
+                &gt; assignment[7-7]: single_target augassign ~ (yield_expr | star_expressions)
+                &gt; single_target[7-7]: single_subscript_attribute_target
+                &gt; single_subscript_attribute_target[7-7]: t_primary &#39;.&#39; NAME !t_lookahead
+                - single_subscript_attribute_target[7-7]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+                &gt; single_subscript_attribute_target[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+                - single_subscript_attribute_target[7-7]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+                - single_target[7-7]: single_subscript_attribute_target failed!
+                &gt; single_target[7-7]: NAME
+                - single_target[7-7]: NAME failed!
+                &gt; single_target[7-7]: &#39;(&#39; single_target &#39;)&#39;
+                - single_target[7-7]: &#39;(&#39; single_target &#39;)&#39; failed!
+                - assignment[7-7]: single_target augassign ~ (yield_expr | star_expressions) failed!
+                - small_stmt[7-7]: assignment failed!
+                &gt; small_stmt[7-7]: star_expressions
+                &gt; star_expressions[7-7]: star_expression ((&#39;,&#39; star_expression))+ &#39;,&#39;?
+                &gt; star_expression[7-7]: &#39;*&#39; bitwise_or
+                - star_expression[7-7]: &#39;*&#39; bitwise_or failed!
+                &gt; star_expression[7-7]: expression
+                &gt; expression[7-7]: disjunction &#39;if&#39; disjunction &#39;else&#39; expression
+                    &gt; disjunction[7-7]: conjunction ((&#39;or&#39; conjunction))+
+                    &gt; conjunction[7-7]: inversion ((&#39;and&#39; inversion))+
+                    &gt; inversion[7-7]: &#39;not&#39; inversion
+                    - inversion[7-7]: &#39;not&#39; inversion failed!
+                    &gt; inversion[7-7]: comparison
+                    &gt; comparison[7-7]: bitwise_or compare_op_bitwise_or_pair+
+                        &gt; bitwise_or[7-7]: bitwise_or &#39;|&#39; bitwise_xor
+                        - bitwise_or[7-7]: bitwise_or &#39;|&#39; bitwise_xor failed!
+                        &gt; bitwise_or[7-7]: bitwise_xor
+                        &gt; bitwise_xor[7-7]: bitwise_xor &#39;^&#39; bitwise_and
+                        - bitwise_xor[7-7]: bitwise_xor &#39;^&#39; bitwise_and failed!
+                        &gt; bitwise_xor[7-7]: bitwise_and
+                            &gt; bitwise_and[7-7]: bitwise_and &#39;&amp;&#39; shift_expr
+                            - bitwise_and[7-7]: bitwise_and &#39;&amp;&#39; shift_expr failed!
+                            &gt; bitwise_and[7-7]: shift_expr
+                            &gt; shift_expr[7-7]: shift_expr &#39;&lt;&lt;&#39; sum
+                            - shift_expr[7-7]: shift_expr &#39;&lt;&lt;&#39; sum failed!
+                            &gt; shift_expr[7-7]: shift_expr &#39;&gt;&gt;&#39; sum
+                            - shift_expr[7-7]: shift_expr &#39;&gt;&gt;&#39; sum failed!
+                            &gt; shift_expr[7-7]: sum
+                                &gt; sum[7-7]: sum &#39;+&#39; term
+                                - sum[7-7]: sum &#39;+&#39; term failed!
+                                &gt; sum[7-7]: sum &#39;-&#39; term
+                                - sum[7-7]: sum &#39;-&#39; term failed!
+                                &gt; sum[7-7]: term
+                                &gt; term[7-7]: term &#39;*&#39; factor
+                                - term[7-7]: term &#39;*&#39; factor failed!
+                                &gt; term[7-7]: term &#39;/&#39; factor
+                                - term[7-7]: term &#39;/&#39; factor failed!
+                                &gt; term[7-7]: term &#39;//&#39; factor
+                                - term[7-7]: term &#39;//&#39; factor failed!
+                                &gt; term[7-7]: term &#39;%&#39; factor
+                                - term[7-7]: term &#39;%&#39; factor failed!
+                                &gt; term[7-7]: term &#39;@&#39; factor
+                                - term[7-7]: term &#39;@&#39; factor failed!
+                                &gt; term[7-7]: factor
+                                    &gt; factor[7-7]: &#39;+&#39; factor
+                                    - factor[7-7]: &#39;+&#39; factor failed!
+                                    &gt; factor[7-7]: &#39;-&#39; factor
+                                    - factor[7-7]: &#39;-&#39; factor failed!
+                                    &gt; factor[7-7]: &#39;~&#39; factor
+                                    - factor[7-7]: &#39;~&#39; factor failed!
+                                    &gt; factor[7-7]: power
+                                    &gt; power[7-7]: await_primary &#39;**&#39; factor
+                                    &gt; await_primary[7-7]: AWAIT primary
+                                    - await_primary[7-7]: AWAIT primary failed!
+                                    &gt; await_primary[7-7]: primary
+                                        &gt; primary[7-7]: primary &#39;.&#39; NAME
+                                        - primary[7-7]: primary &#39;.&#39; NAME failed!
+                                        &gt; primary[7-7]: primary genexp
+                                        - primary[7-7]: primary genexp failed!
+                                        &gt; primary[7-7]: primary &#39;(&#39; arguments? &#39;)&#39;
+                                        - primary[7-7]: primary &#39;(&#39; arguments? &#39;)&#39; failed!
+                                        &gt; primary[7-7]: primary &#39;[&#39; slices &#39;]&#39;
+                                        - primary[7-7]: primary &#39;[&#39; slices &#39;]&#39; failed!
+                                        &gt; primary[7-7]: atom
+                                        &gt; atom[7-7]: NAME
+                                        - atom[7-7]: NAME failed!
+                                        &gt; atom[7-7]: &#39;True&#39;
+                                        - atom[7-7]: &#39;True&#39; failed!
+                                        &gt; atom[7-7]: &#39;False&#39;
+                                        - atom[7-7]: &#39;False&#39; failed!
+                                        &gt; atom[7-7]: &#39;None&#39;
+                                        - atom[7-7]: &#39;None&#39; failed!
+                                        &gt; atom[7-7]: &#39;__peg_parser__&#39;
+                                        - atom[7-7]: &#39;__peg_parser__&#39; failed!
+                                        &gt; atom[7-7]: &amp;STRING strings
+                                        - atom[7-7]: &amp;STRING strings failed!
+                                        &gt; atom[7-7]: NUMBER
+                                        - atom[7-7]: NUMBER failed!
+                                        &gt; atom[7-7]: &amp;&#39;(&#39; (tuple | group | genexp)
+                                        - atom[7-7]: &amp;&#39;(&#39; (tuple | group | genexp) failed!
+                                        &gt; atom[7-7]: &amp;&#39;[&#39; (list | listcomp)
+                                        - atom[7-7]: &amp;&#39;[&#39; (list | listcomp) failed!
+                                        &gt; atom[7-7]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp)
+                                        - atom[7-7]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp) failed!
+                                        &gt; atom[7-7]: &#39;...&#39;
+                                        - atom[7-7]: &#39;...&#39; failed!
+                                        - primary[7-7]: atom failed!
+                                    - await_primary[7-7]: primary failed!
+                                    - power[7-7]: await_primary &#39;**&#39; factor failed!
+                                    &gt; power[7-7]: await_primary
+                                    - power[7-7]: await_primary failed!
+                                    - factor[7-7]: power failed!
+                                - term[7-7]: factor failed!
+                                - sum[7-7]: term failed!
+                            - shift_expr[7-7]: sum failed!
+                            - bitwise_and[7-7]: shift_expr failed!
+                        - bitwise_xor[7-7]: bitwise_and failed!
+                        - bitwise_or[7-7]: bitwise_xor failed!
+                    - comparison[7-7]: bitwise_or compare_op_bitwise_or_pair+ failed!
+                    &gt; comparison[7-7]: bitwise_or
+                    - comparison[7-7]: bitwise_or failed!
+                    - inversion[7-7]: comparison failed!
+                    - conjunction[7-7]: inversion ((&#39;and&#39; inversion))+ failed!
+                    &gt; conjunction[7-7]: inversion
+                    - conjunction[7-7]: inversion failed!
+                    - disjunction[7-7]: conjunction ((&#39;or&#39; conjunction))+ failed!
+                    &gt; disjunction[7-7]: conjunction
+                    - disjunction[7-7]: conjunction failed!
+                - expression[7-7]: disjunction &#39;if&#39; disjunction &#39;else&#39; expression failed!
+                &gt; expression[7-7]: disjunction
+                - expression[7-7]: disjunction failed!
+                &gt; expression[7-7]: lambdef
+                    &gt; lambdef[7-7]: &#39;lambda&#39; lambda_params? &#39;:&#39; expression
+                    - lambdef[7-7]: &#39;lambda&#39; lambda_params? &#39;:&#39; expression failed!
+                - expression[7-7]: lambdef failed!
+                - star_expression[7-7]: expression failed!
+                - star_expressions[7-7]: star_expression ((&#39;,&#39; star_expression))+ &#39;,&#39;? failed!
+                &gt; star_expressions[7-7]: star_expression &#39;,&#39;
+                - star_expressions[7-7]: star_expression &#39;,&#39; failed!
+                &gt; star_expressions[7-7]: star_expression
+                - star_expressions[7-7]: star_expression failed!
+                - small_stmt[7-7]: star_expressions failed!
+                &gt; small_stmt[7-7]: &amp;&#39;return&#39; return_stmt
+                - small_stmt[7-7]: &amp;&#39;return&#39; return_stmt failed!
+                &gt; small_stmt[7-7]: &amp;(&#39;import&#39; | &#39;from&#39;) import_stmt
+                &gt; _tmp_14[7-7]: &#39;import&#39;
+                - _tmp_14[7-7]: &#39;import&#39; failed!
+                &gt; _tmp_14[7-7]: &#39;from&#39;
+                - _tmp_14[7-7]: &#39;from&#39; failed!
+                - small_stmt[7-7]: &amp;(&#39;import&#39; | &#39;from&#39;) import_stmt failed!
+                &gt; small_stmt[7-7]: &amp;&#39;raise&#39; raise_stmt
+                - small_stmt[7-7]: &amp;&#39;raise&#39; raise_stmt failed!
+                &gt; small_stmt[7-7]: &#39;pass&#39;
+                + small_stmt[7-8]: &#39;pass&#39; succeeded!
+            + simple_stmt[7-9]: small_stmt !&#39;;&#39; NEWLINE succeeded!
+            + statement[7-9]: simple_stmt succeeded!
+            &gt; statement[9-9]: compound_stmt
+            &gt; compound_stmt[9-9]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def
+                &gt; _tmp_15[9-9]: &#39;def&#39;
+                - _tmp_15[9-9]: &#39;def&#39; failed!
+                &gt; _tmp_15[9-9]: &#39;@&#39;
+                - _tmp_15[9-9]: &#39;@&#39; failed!
+                &gt; _tmp_15[9-9]: ASYNC
+                - _tmp_15[9-9]: ASYNC failed!
+            - compound_stmt[9-9]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def failed!
+            &gt; compound_stmt[9-9]: &amp;&#39;if&#39; if_stmt
+            - compound_stmt[9-9]: &amp;&#39;if&#39; if_stmt failed!
+            &gt; compound_stmt[9-9]: &amp;(&#39;class&#39; | &#39;@&#39;) class_def
+                &gt; _tmp_16[9-9]: &#39;class&#39;
+                - _tmp_16[9-9]: &#39;class&#39; failed!
+                &gt; _tmp_16[9-9]: &#39;@&#39;
+                - _tmp_16[9-9]: &#39;@&#39; failed!
+            - compound_stmt[9-9]: &amp;(&#39;class&#39; | &#39;@&#39;) class_def failed!
+            &gt; compound_stmt[9-9]: &amp;(&#39;with&#39; | ASYNC) with_stmt
+                &gt; _tmp_17[9-9]: &#39;with&#39;
+                - _tmp_17[9-9]: &#39;with&#39; failed!
+                &gt; _tmp_17[9-9]: ASYNC
+                - _tmp_17[9-9]: ASYNC failed!
+            - compound_stmt[9-9]: &amp;(&#39;with&#39; | ASYNC) with_stmt failed!
+            &gt; compound_stmt[9-9]: &amp;(&#39;for&#39; | ASYNC) for_stmt
+                &gt; _tmp_18[9-9]: &#39;for&#39;
+                - _tmp_18[9-9]: &#39;for&#39; failed!
+                &gt; _tmp_18[9-9]: ASYNC
+                - _tmp_18[9-9]: ASYNC failed!
+            - compound_stmt[9-9]: &amp;(&#39;for&#39; | ASYNC) for_stmt failed!
+            &gt; compound_stmt[9-9]: &amp;&#39;try&#39; try_stmt
+            - compound_stmt[9-9]: &amp;&#39;try&#39; try_stmt failed!
+            &gt; compound_stmt[9-9]: &amp;&#39;while&#39; while_stmt
+            - compound_stmt[9-9]: &amp;&#39;while&#39; while_stmt failed!
+            - statement[9-9]: compound_stmt failed!
+            &gt; statement[9-9]: simple_stmt
+            &gt; simple_stmt[9-9]: small_stmt !&#39;;&#39; NEWLINE
+                &gt; small_stmt[9-9]: assignment
+                &gt; assignment[9-9]: NAME &#39;:&#39; expression [&#39;=&#39; annotated_rhs]
+                - assignment[9-9]: NAME &#39;:&#39; expression [&#39;=&#39; annotated_rhs] failed!
+                &gt; assignment[9-9]: (&#39;(&#39; single_target &#39;)&#39; | single_subscript_attribute_target) &#39;:&#39; expression [&#39;=&#39; annotated_rhs]
+                &gt; _tmp_20[9-9]: &#39;(&#39; single_target &#39;)&#39;
+                - _tmp_20[9-9]: &#39;(&#39; single_target &#39;)&#39; failed!
+                &gt; _tmp_20[9-9]: single_subscript_attribute_target
+                &gt; single_subscript_attribute_target[9-9]: t_primary &#39;.&#39; NAME !t_lookahead
+                    &gt; t_primary[9-9]: t_primary &#39;.&#39; NAME &amp;t_lookahead
+                    - t_primary[9-9]: t_primary &#39;.&#39; NAME &amp;t_lookahead failed!
+                    &gt; t_primary[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; &amp;t_lookahead
+                    - t_primary[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; &amp;t_lookahead failed!
+                    &gt; t_primary[9-9]: t_primary genexp &amp;t_lookahead
+                    - t_primary[9-9]: t_primary genexp &amp;t_lookahead failed!
+                    &gt; t_primary[9-9]: t_primary &#39;(&#39; arguments? &#39;)&#39; &amp;t_lookahead
+                    - t_primary[9-9]: t_primary &#39;(&#39; arguments? &#39;)&#39; &amp;t_lookahead failed!
+                    &gt; t_primary[9-9]: atom &amp;t_lookahead
+                    &gt; atom[9-9]: NAME
+                    - atom[9-9]: NAME failed!
+                    &gt; atom[9-9]: &#39;True&#39;
+                    - atom[9-9]: &#39;True&#39; failed!
+                    &gt; atom[9-9]: &#39;False&#39;
+                    - atom[9-9]: &#39;False&#39; failed!
+                    &gt; atom[9-9]: &#39;None&#39;
+                    - atom[9-9]: &#39;None&#39; failed!
+                    &gt; atom[9-9]: &#39;__peg_parser__&#39;
+                    - atom[9-9]: &#39;__peg_parser__&#39; failed!
+                    &gt; atom[9-9]: &amp;STRING strings
+                    - atom[9-9]: &amp;STRING strings failed!
+                    &gt; atom[9-9]: NUMBER
+                    - atom[9-9]: NUMBER failed!
+                    &gt; atom[9-9]: &amp;&#39;(&#39; (tuple | group | genexp)
+                    - atom[9-9]: &amp;&#39;(&#39; (tuple | group | genexp) failed!
+                    &gt; atom[9-9]: &amp;&#39;[&#39; (list | listcomp)
+                    - atom[9-9]: &amp;&#39;[&#39; (list | listcomp) failed!
+                    &gt; atom[9-9]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp)
+                    - atom[9-9]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp) failed!
+                    &gt; atom[9-9]: &#39;...&#39;
+                    - atom[9-9]: &#39;...&#39; failed!
+                    - t_primary[9-9]: atom &amp;t_lookahead failed!
+                - single_subscript_attribute_target[9-9]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+                &gt; single_subscript_attribute_target[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+                - single_subscript_attribute_target[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+                - _tmp_20[9-9]: single_subscript_attribute_target failed!
+                - assignment[9-9]: (&#39;(&#39; single_target &#39;)&#39; | single_subscript_attribute_target) &#39;:&#39; expression [&#39;=&#39; annotated_rhs] failed!
+                &gt; assignment[9-9]: ((star_targets &#39;=&#39;))+ (yield_expr | star_expressions) !&#39;=&#39; TYPE_COMMENT?
+                &gt; _loop1_22[9-9]: (star_targets &#39;=&#39;)
+                &gt; _tmp_137[9-9]: star_targets &#39;=&#39;
+                    &gt; star_targets[9-9]: star_target !&#39;,&#39;
+                    &gt; star_target[9-9]: &#39;*&#39; (!&#39;*&#39; star_target)
+                    - star_target[9-9]: &#39;*&#39; (!&#39;*&#39; star_target) failed!
+                    &gt; star_target[9-9]: target_with_star_atom
+                    &gt; target_with_star_atom[9-9]: t_primary &#39;.&#39; NAME !t_lookahead
+                    - target_with_star_atom[9-9]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+                    &gt; target_with_star_atom[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+                    - target_with_star_atom[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+                    &gt; target_with_star_atom[9-9]: star_atom
+                    &gt; star_atom[9-9]: NAME
+                    - star_atom[9-9]: NAME failed!
+                    &gt; star_atom[9-9]: &#39;(&#39; target_with_star_atom &#39;)&#39;
+                    - star_atom[9-9]: &#39;(&#39; target_with_star_atom &#39;)&#39; failed!
+                    &gt; star_atom[9-9]: &#39;(&#39; star_targets_tuple_seq? &#39;)&#39;
+                    - star_atom[9-9]: &#39;(&#39; star_targets_tuple_seq? &#39;)&#39; failed!
+                    &gt; star_atom[9-9]: &#39;[&#39; star_targets_list_seq? &#39;]&#39;
+                    - star_atom[9-9]: &#39;[&#39; star_targets_list_seq? &#39;]&#39; failed!
+                    - target_with_star_atom[9-9]: star_atom failed!
+                    - star_target[9-9]: target_with_star_atom failed!
+                    - star_targets[9-9]: star_target !&#39;,&#39; failed!
+                    &gt; star_targets[9-9]: star_target ((&#39;,&#39; star_target))* &#39;,&#39;?
+                    - star_targets[9-9]: star_target ((&#39;,&#39; star_target))* &#39;,&#39;? failed!
+                - _tmp_137[9-9]: star_targets &#39;=&#39; failed!
+                - _loop1_22[9-9]: (star_targets &#39;=&#39;) failed!
+                - assignment[9-9]: ((star_targets &#39;=&#39;))+ (yield_expr | star_expressions) !&#39;=&#39; TYPE_COMMENT? failed!
+                &gt; assignment[9-9]: single_target augassign ~ (yield_expr | star_expressions)
+                &gt; single_target[9-9]: single_subscript_attribute_target
+                &gt; single_subscript_attribute_target[9-9]: t_primary &#39;.&#39; NAME !t_lookahead
+                - single_subscript_attribute_target[9-9]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+                &gt; single_subscript_attribute_target[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+                - single_subscript_attribute_target[9-9]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+                - single_target[9-9]: single_subscript_attribute_target failed!
+                &gt; single_target[9-9]: NAME
+                - single_target[9-9]: NAME failed!
+                &gt; single_target[9-9]: &#39;(&#39; single_target &#39;)&#39;
+                - single_target[9-9]: &#39;(&#39; single_target &#39;)&#39; failed!
+                - assignment[9-9]: single_target augassign ~ (yield_expr | star_expressions) failed!
+                - small_stmt[9-9]: assignment failed!
+                &gt; small_stmt[9-9]: star_expressions
+                &gt; star_expressions[9-9]: star_expression ((&#39;,&#39; star_expression))+ &#39;,&#39;?
+                &gt; star_expression[9-9]: &#39;*&#39; bitwise_or
+                - star_expression[9-9]: &#39;*&#39; bitwise_or failed!
+                &gt; star_expression[9-9]: expression
+                &gt; expression[9-9]: disjunction &#39;if&#39; disjunction &#39;else&#39; expression
+                    &gt; disjunction[9-9]: conjunction ((&#39;or&#39; conjunction))+
+                    &gt; conjunction[9-9]: inversion ((&#39;and&#39; inversion))+
+                    &gt; inversion[9-9]: &#39;not&#39; inversion
+                    - inversion[9-9]: &#39;not&#39; inversion failed!
+                    &gt; inversion[9-9]: comparison
+                    &gt; comparison[9-9]: bitwise_or compare_op_bitwise_or_pair+
+                        &gt; bitwise_or[9-9]: bitwise_or &#39;|&#39; bitwise_xor
+                        - bitwise_or[9-9]: bitwise_or &#39;|&#39; bitwise_xor failed!
+                        &gt; bitwise_or[9-9]: bitwise_xor
+                        &gt; bitwise_xor[9-9]: bitwise_xor &#39;^&#39; bitwise_and
+                        - bitwise_xor[9-9]: bitwise_xor &#39;^&#39; bitwise_and failed!
+                        &gt; bitwise_xor[9-9]: bitwise_and
+                            &gt; bitwise_and[9-9]: bitwise_and &#39;&amp;&#39; shift_expr
+                            - bitwise_and[9-9]: bitwise_and &#39;&amp;&#39; shift_expr failed!
+                            &gt; bitwise_and[9-9]: shift_expr
+                            &gt; shift_expr[9-9]: shift_expr &#39;&lt;&lt;&#39; sum
+                            - shift_expr[9-9]: shift_expr &#39;&lt;&lt;&#39; sum failed!
+                            &gt; shift_expr[9-9]: shift_expr &#39;&gt;&gt;&#39; sum
+                            - shift_expr[9-9]: shift_expr &#39;&gt;&gt;&#39; sum failed!
+                            &gt; shift_expr[9-9]: sum
+                                &gt; sum[9-9]: sum &#39;+&#39; term
+                                - sum[9-9]: sum &#39;+&#39; term failed!
+                                &gt; sum[9-9]: sum &#39;-&#39; term
+                                - sum[9-9]: sum &#39;-&#39; term failed!
+                                &gt; sum[9-9]: term
+                                &gt; term[9-9]: term &#39;*&#39; factor
+                                - term[9-9]: term &#39;*&#39; factor failed!
+                                &gt; term[9-9]: term &#39;/&#39; factor
+                                - term[9-9]: term &#39;/&#39; factor failed!
+                                &gt; term[9-9]: term &#39;//&#39; factor
+                                - term[9-9]: term &#39;//&#39; factor failed!
+                                &gt; term[9-9]: term &#39;%&#39; factor
+                                - term[9-9]: term &#39;%&#39; factor failed!
+                                &gt; term[9-9]: term &#39;@&#39; factor
+                                - term[9-9]: term &#39;@&#39; factor failed!
+                                &gt; term[9-9]: factor
+                                    &gt; factor[9-9]: &#39;+&#39; factor
+                                    - factor[9-9]: &#39;+&#39; factor failed!
+                                    &gt; factor[9-9]: &#39;-&#39; factor
+                                    - factor[9-9]: &#39;-&#39; factor failed!
+                                    &gt; factor[9-9]: &#39;~&#39; factor
+                                    - factor[9-9]: &#39;~&#39; factor failed!
+                                    &gt; factor[9-9]: power
+                                    &gt; power[9-9]: await_primary &#39;**&#39; factor
+                                    &gt; await_primary[9-9]: AWAIT primary
+                                    - await_primary[9-9]: AWAIT primary failed!
+                                    &gt; await_primary[9-9]: primary
+                                        &gt; primary[9-9]: primary &#39;.&#39; NAME
+                                        - primary[9-9]: primary &#39;.&#39; NAME failed!
+                                        &gt; primary[9-9]: primary genexp
+                                        - primary[9-9]: primary genexp failed!
+                                        &gt; primary[9-9]: primary &#39;(&#39; arguments? &#39;)&#39;
+                                        - primary[9-9]: primary &#39;(&#39; arguments? &#39;)&#39; failed!
+                                        &gt; primary[9-9]: primary &#39;[&#39; slices &#39;]&#39;
+                                        - primary[9-9]: primary &#39;[&#39; slices &#39;]&#39; failed!
+                                        &gt; primary[9-9]: atom
+                                        &gt; atom[9-9]: NAME
+                                        - atom[9-9]: NAME failed!
+                                        &gt; atom[9-9]: &#39;True&#39;
+                                        - atom[9-9]: &#39;True&#39; failed!
+                                        &gt; atom[9-9]: &#39;False&#39;
+                                        - atom[9-9]: &#39;False&#39; failed!
+                                        &gt; atom[9-9]: &#39;None&#39;
+                                        - atom[9-9]: &#39;None&#39; failed!
+                                        &gt; atom[9-9]: &#39;__peg_parser__&#39;
+                                        - atom[9-9]: &#39;__peg_parser__&#39; failed!
+                                        &gt; atom[9-9]: &amp;STRING strings
+                                        - atom[9-9]: &amp;STRING strings failed!
+                                        &gt; atom[9-9]: NUMBER
+                                        - atom[9-9]: NUMBER failed!
+                                        &gt; atom[9-9]: &amp;&#39;(&#39; (tuple | group | genexp)
+                                        - atom[9-9]: &amp;&#39;(&#39; (tuple | group | genexp) failed!
+                                        &gt; atom[9-9]: &amp;&#39;[&#39; (list | listcomp)
+                                        - atom[9-9]: &amp;&#39;[&#39; (list | listcomp) failed!
+                                        &gt; atom[9-9]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp)
+                                        - atom[9-9]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp) failed!
+                                        &gt; atom[9-9]: &#39;...&#39;
+                                        - atom[9-9]: &#39;...&#39; failed!
+                                        - primary[9-9]: atom failed!
+                                    - await_primary[9-9]: primary failed!
+                                    - power[9-9]: await_primary &#39;**&#39; factor failed!
+                                    &gt; power[9-9]: await_primary
+                                    - power[9-9]: await_primary failed!
+                                    - factor[9-9]: power failed!
+                                - term[9-9]: factor failed!
+                                - sum[9-9]: term failed!
+                            - shift_expr[9-9]: sum failed!
+                            - bitwise_and[9-9]: shift_expr failed!
+                        - bitwise_xor[9-9]: bitwise_and failed!
+                        - bitwise_or[9-9]: bitwise_xor failed!
+                    - comparison[9-9]: bitwise_or compare_op_bitwise_or_pair+ failed!
+                    &gt; comparison[9-9]: bitwise_or
+                    - comparison[9-9]: bitwise_or failed!
+                    - inversion[9-9]: comparison failed!
+                    - conjunction[9-9]: inversion ((&#39;and&#39; inversion))+ failed!
+                    &gt; conjunction[9-9]: inversion
+                    - conjunction[9-9]: inversion failed!
+                    - disjunction[9-9]: conjunction ((&#39;or&#39; conjunction))+ failed!
+                    &gt; disjunction[9-9]: conjunction
+                    - disjunction[9-9]: conjunction failed!
+                - expression[9-9]: disjunction &#39;if&#39; disjunction &#39;else&#39; expression failed!
+                &gt; expression[9-9]: disjunction
+                - expression[9-9]: disjunction failed!
+                &gt; expression[9-9]: lambdef
+                    &gt; lambdef[9-9]: &#39;lambda&#39; lambda_params? &#39;:&#39; expression
+                    - lambdef[9-9]: &#39;lambda&#39; lambda_params? &#39;:&#39; expression failed!
+                - expression[9-9]: lambdef failed!
+                - star_expression[9-9]: expression failed!
+                - star_expressions[9-9]: star_expression ((&#39;,&#39; star_expression))+ &#39;,&#39;? failed!
+                &gt; star_expressions[9-9]: star_expression &#39;,&#39;
+                - star_expressions[9-9]: star_expression &#39;,&#39; failed!
+                &gt; star_expressions[9-9]: star_expression
+                - star_expressions[9-9]: star_expression failed!
+                - small_stmt[9-9]: star_expressions failed!
+                &gt; small_stmt[9-9]: &amp;&#39;return&#39; return_stmt
+                - small_stmt[9-9]: &amp;&#39;return&#39; return_stmt failed!
+                &gt; small_stmt[9-9]: &amp;(&#39;import&#39; | &#39;from&#39;) import_stmt
+                &gt; _tmp_14[9-9]: &#39;import&#39;
+                - _tmp_14[9-9]: &#39;import&#39; failed!
+                &gt; _tmp_14[9-9]: &#39;from&#39;
+                - _tmp_14[9-9]: &#39;from&#39; failed!
+                - small_stmt[9-9]: &amp;(&#39;import&#39; | &#39;from&#39;) import_stmt failed!
+                &gt; small_stmt[9-9]: &amp;&#39;raise&#39; raise_stmt
+                - small_stmt[9-9]: &amp;&#39;raise&#39; raise_stmt failed!
+                &gt; small_stmt[9-9]: &#39;pass&#39;
+                - small_stmt[9-9]: &#39;pass&#39; failed!
+                &gt; small_stmt[9-9]: &amp;&#39;del&#39; del_stmt
+                - small_stmt[9-9]: &amp;&#39;del&#39; del_stmt failed!
+                &gt; small_stmt[9-9]: &amp;&#39;yield&#39; yield_stmt
+                - small_stmt[9-9]: &amp;&#39;yield&#39; yield_stmt failed!
+                &gt; small_stmt[9-9]: &amp;&#39;assert&#39; assert_stmt
+                - small_stmt[9-9]: &amp;&#39;assert&#39; assert_stmt failed!
+                &gt; small_stmt[9-9]: &#39;break&#39;
+                - small_stmt[9-9]: &#39;break&#39; failed!
+                &gt; small_stmt[9-9]: &#39;continue&#39;
+                - small_stmt[9-9]: &#39;continue&#39; failed!
+                &gt; small_stmt[9-9]: &amp;&#39;global&#39; global_stmt
+                - small_stmt[9-9]: &amp;&#39;global&#39; global_stmt failed!
+                &gt; small_stmt[9-9]: &amp;&#39;nonlocal&#39; nonlocal_stmt
+                - small_stmt[9-9]: &amp;&#39;nonlocal&#39; nonlocal_stmt failed!
+            - simple_stmt[9-9]: small_stmt !&#39;;&#39; NEWLINE failed!
+            &gt; simple_stmt[9-9]: &#39;;&#39;.small_stmt+ &#39;;&#39;? NEWLINE
+                &gt; _gather_12[9-9]: small_stmt _loop0_13
+                - _gather_12[9-9]: small_stmt _loop0_13 failed!
+            - simple_stmt[9-9]: &#39;;&#39;.small_stmt+ &#39;;&#39;? NEWLINE failed!
+            - statement[9-9]: simple_stmt failed!
+            - _loop1_11[9-9]: statement failed!
+            + statements[7-9]: statement+ succeeded!
+        + block[5-10]: NEWLINE INDENT statements DEDENT succeeded!
+        + function_def_raw[0-10]: &#39;def&#39; NAME &#39;(&#39; params? &#39;)&#39; [&#39;-&gt;&#39; expression] &#39;:&#39; func_type_comment? block succeeded!
+        + function_def[0-10]: function_def_raw succeeded!
+        + compound_stmt[0-10]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def succeeded!
+    + statement[0-10]: compound_stmt succeeded!
+    &gt; statement[10-10]: compound_stmt
+        &gt; compound_stmt[10-10]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def
+        &gt; _tmp_15[10-10]: &#39;def&#39;
+        - _tmp_15[10-10]: &#39;def&#39; failed!
+        &gt; _tmp_15[10-10]: &#39;@&#39;
+        - _tmp_15[10-10]: &#39;@&#39; failed!
+        &gt; _tmp_15[10-10]: ASYNC
+        - _tmp_15[10-10]: ASYNC failed!
+        - compound_stmt[10-10]: &amp;(&#39;def&#39; | &#39;@&#39; | ASYNC) function_def failed!
+        &gt; compound_stmt[10-10]: &amp;&#39;if&#39; if_stmt
+        - compound_stmt[10-10]: &amp;&#39;if&#39; if_stmt failed!
+        &gt; compound_stmt[10-10]: &amp;(&#39;class&#39; | &#39;@&#39;) class_def
+        &gt; _tmp_16[10-10]: &#39;class&#39;
+        - _tmp_16[10-10]: &#39;class&#39; failed!
+        &gt; _tmp_16[10-10]: &#39;@&#39;
+        - _tmp_16[10-10]: &#39;@&#39; failed!
+        - compound_stmt[10-10]: &amp;(&#39;class&#39; | &#39;@&#39;) class_def failed!
+        &gt; compound_stmt[10-10]: &amp;(&#39;with&#39; | ASYNC) with_stmt
+        &gt; _tmp_17[10-10]: &#39;with&#39;
+        - _tmp_17[10-10]: &#39;with&#39; failed!
+        &gt; _tmp_17[10-10]: ASYNC
+        - _tmp_17[10-10]: ASYNC failed!
+        - compound_stmt[10-10]: &amp;(&#39;with&#39; | ASYNC) with_stmt failed!
+        &gt; compound_stmt[10-10]: &amp;(&#39;for&#39; | ASYNC) for_stmt
+        &gt; _tmp_18[10-10]: &#39;for&#39;
+        - _tmp_18[10-10]: &#39;for&#39; failed!
+        &gt; _tmp_18[10-10]: ASYNC
+        - _tmp_18[10-10]: ASYNC failed!
+        - compound_stmt[10-10]: &amp;(&#39;for&#39; | ASYNC) for_stmt failed!
+        &gt; compound_stmt[10-10]: &amp;&#39;try&#39; try_stmt
+        - compound_stmt[10-10]: &amp;&#39;try&#39; try_stmt failed!
+        &gt; compound_stmt[10-10]: &amp;&#39;while&#39; while_stmt
+        - compound_stmt[10-10]: &amp;&#39;while&#39; while_stmt failed!
+    - statement[10-10]: compound_stmt failed!
+    &gt; statement[10-10]: simple_stmt
+        &gt; simple_stmt[10-10]: small_stmt !&#39;;&#39; NEWLINE
+        &gt; small_stmt[10-10]: assignment
+        &gt; assignment[10-10]: NAME &#39;:&#39; expression [&#39;=&#39; annotated_rhs]
+        - assignment[10-10]: NAME &#39;:&#39; expression [&#39;=&#39; annotated_rhs] failed!
+        &gt; assignment[10-10]: (&#39;(&#39; single_target &#39;)&#39; | single_subscript_attribute_target) &#39;:&#39; expression [&#39;=&#39; annotated_rhs]
+        &gt; _tmp_20[10-10]: &#39;(&#39; single_target &#39;)&#39;
+        - _tmp_20[10-10]: &#39;(&#39; single_target &#39;)&#39; failed!
+        &gt; _tmp_20[10-10]: single_subscript_attribute_target
+            &gt; single_subscript_attribute_target[10-10]: t_primary &#39;.&#39; NAME !t_lookahead
+            &gt; t_primary[10-10]: t_primary &#39;.&#39; NAME &amp;t_lookahead
+            - t_primary[10-10]: t_primary &#39;.&#39; NAME &amp;t_lookahead failed!
+            &gt; t_primary[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; &amp;t_lookahead
+            - t_primary[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; &amp;t_lookahead failed!
+            &gt; t_primary[10-10]: t_primary genexp &amp;t_lookahead
+            - t_primary[10-10]: t_primary genexp &amp;t_lookahead failed!
+            &gt; t_primary[10-10]: t_primary &#39;(&#39; arguments? &#39;)&#39; &amp;t_lookahead
+            - t_primary[10-10]: t_primary &#39;(&#39; arguments? &#39;)&#39; &amp;t_lookahead failed!
+            &gt; t_primary[10-10]: atom &amp;t_lookahead
+            &gt; atom[10-10]: NAME
+            - atom[10-10]: NAME failed!
+            &gt; atom[10-10]: &#39;True&#39;
+            - atom[10-10]: &#39;True&#39; failed!
+            &gt; atom[10-10]: &#39;False&#39;
+            - atom[10-10]: &#39;False&#39; failed!
+            &gt; atom[10-10]: &#39;None&#39;
+            - atom[10-10]: &#39;None&#39; failed!
+            &gt; atom[10-10]: &#39;__peg_parser__&#39;
+            - atom[10-10]: &#39;__peg_parser__&#39; failed!
+            &gt; atom[10-10]: &amp;STRING strings
+            - atom[10-10]: &amp;STRING strings failed!
+            &gt; atom[10-10]: NUMBER
+            - atom[10-10]: NUMBER failed!
+            &gt; atom[10-10]: &amp;&#39;(&#39; (tuple | group | genexp)
+            - atom[10-10]: &amp;&#39;(&#39; (tuple | group | genexp) failed!
+            &gt; atom[10-10]: &amp;&#39;[&#39; (list | listcomp)
+            - atom[10-10]: &amp;&#39;[&#39; (list | listcomp) failed!
+            &gt; atom[10-10]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp)
+            - atom[10-10]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp) failed!
+            &gt; atom[10-10]: &#39;...&#39;
+            - atom[10-10]: &#39;...&#39; failed!
+            - t_primary[10-10]: atom &amp;t_lookahead failed!
+            - single_subscript_attribute_target[10-10]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+            &gt; single_subscript_attribute_target[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+            - single_subscript_attribute_target[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+        - _tmp_20[10-10]: single_subscript_attribute_target failed!
+        - assignment[10-10]: (&#39;(&#39; single_target &#39;)&#39; | single_subscript_attribute_target) &#39;:&#39; expression [&#39;=&#39; annotated_rhs] failed!
+        &gt; assignment[10-10]: ((star_targets &#39;=&#39;))+ (yield_expr | star_expressions) !&#39;=&#39; TYPE_COMMENT?
+        &gt; _loop1_22[10-10]: (star_targets &#39;=&#39;)
+            &gt; _tmp_137[10-10]: star_targets &#39;=&#39;
+            &gt; star_targets[10-10]: star_target !&#39;,&#39;
+            &gt; star_target[10-10]: &#39;*&#39; (!&#39;*&#39; star_target)
+            - star_target[10-10]: &#39;*&#39; (!&#39;*&#39; star_target) failed!
+            &gt; star_target[10-10]: target_with_star_atom
+            &gt; target_with_star_atom[10-10]: t_primary &#39;.&#39; NAME !t_lookahead
+            - target_with_star_atom[10-10]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+            &gt; target_with_star_atom[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+            - target_with_star_atom[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+            &gt; target_with_star_atom[10-10]: star_atom
+                &gt; star_atom[10-10]: NAME
+                - star_atom[10-10]: NAME failed!
+                &gt; star_atom[10-10]: &#39;(&#39; target_with_star_atom &#39;)&#39;
+                - star_atom[10-10]: &#39;(&#39; target_with_star_atom &#39;)&#39; failed!
+                &gt; star_atom[10-10]: &#39;(&#39; star_targets_tuple_seq? &#39;)&#39;
+                - star_atom[10-10]: &#39;(&#39; star_targets_tuple_seq? &#39;)&#39; failed!
+                &gt; star_atom[10-10]: &#39;[&#39; star_targets_list_seq? &#39;]&#39;
+                - star_atom[10-10]: &#39;[&#39; star_targets_list_seq? &#39;]&#39; failed!
+            - target_with_star_atom[10-10]: star_atom failed!
+            - star_target[10-10]: target_with_star_atom failed!
+            - star_targets[10-10]: star_target !&#39;,&#39; failed!
+            &gt; star_targets[10-10]: star_target ((&#39;,&#39; star_target))* &#39;,&#39;?
+            - star_targets[10-10]: star_target ((&#39;,&#39; star_target))* &#39;,&#39;? failed!
+            - _tmp_137[10-10]: star_targets &#39;=&#39; failed!
+        - _loop1_22[10-10]: (star_targets &#39;=&#39;) failed!
+        - assignment[10-10]: ((star_targets &#39;=&#39;))+ (yield_expr | star_expressions) !&#39;=&#39; TYPE_COMMENT? failed!
+        &gt; assignment[10-10]: single_target augassign ~ (yield_expr | star_expressions)
+        &gt; single_target[10-10]: single_subscript_attribute_target
+            &gt; single_subscript_attribute_target[10-10]: t_primary &#39;.&#39; NAME !t_lookahead
+            - single_subscript_attribute_target[10-10]: t_primary &#39;.&#39; NAME !t_lookahead failed!
+            &gt; single_subscript_attribute_target[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead
+            - single_subscript_attribute_target[10-10]: t_primary &#39;[&#39; slices &#39;]&#39; !t_lookahead failed!
+        - single_target[10-10]: single_subscript_attribute_target failed!
+        &gt; single_target[10-10]: NAME
+        - single_target[10-10]: NAME failed!
+        &gt; single_target[10-10]: &#39;(&#39; single_target &#39;)&#39;
+        - single_target[10-10]: &#39;(&#39; single_target &#39;)&#39; failed!
+        - assignment[10-10]: single_target augassign ~ (yield_expr | star_expressions) failed!
+        - small_stmt[10-10]: assignment failed!
+        &gt; small_stmt[10-10]: star_expressions
+        &gt; star_expressions[10-10]: star_expression ((&#39;,&#39; star_expression))+ &#39;,&#39;?
+        &gt; star_expression[10-10]: &#39;*&#39; bitwise_or
+        - star_expression[10-10]: &#39;*&#39; bitwise_or failed!
+        &gt; star_expression[10-10]: expression
+            &gt; expression[10-10]: disjunction &#39;if&#39; disjunction &#39;else&#39; expression
+            &gt; disjunction[10-10]: conjunction ((&#39;or&#39; conjunction))+
+            &gt; conjunction[10-10]: inversion ((&#39;and&#39; inversion))+
+            &gt; inversion[10-10]: &#39;not&#39; inversion
+            - inversion[10-10]: &#39;not&#39; inversion failed!
+            &gt; inversion[10-10]: comparison
+                &gt; comparison[10-10]: bitwise_or compare_op_bitwise_or_pair+
+                &gt; bitwise_or[10-10]: bitwise_or &#39;|&#39; bitwise_xor
+                - bitwise_or[10-10]: bitwise_or &#39;|&#39; bitwise_xor failed!
+                &gt; bitwise_or[10-10]: bitwise_xor
+                    &gt; bitwise_xor[10-10]: bitwise_xor &#39;^&#39; bitwise_and
+                    - bitwise_xor[10-10]: bitwise_xor &#39;^&#39; bitwise_and failed!
+                    &gt; bitwise_xor[10-10]: bitwise_and
+                    &gt; bitwise_and[10-10]: bitwise_and &#39;&amp;&#39; shift_expr
+                    - bitwise_and[10-10]: bitwise_and &#39;&amp;&#39; shift_expr failed!
+                    &gt; bitwise_and[10-10]: shift_expr
+                        &gt; shift_expr[10-10]: shift_expr &#39;&lt;&lt;&#39; sum
+                        - shift_expr[10-10]: shift_expr &#39;&lt;&lt;&#39; sum failed!
+                        &gt; shift_expr[10-10]: shift_expr &#39;&gt;&gt;&#39; sum
+                        - shift_expr[10-10]: shift_expr &#39;&gt;&gt;&#39; sum failed!
+                        &gt; shift_expr[10-10]: sum
+                        &gt; sum[10-10]: sum &#39;+&#39; term
+                        - sum[10-10]: sum &#39;+&#39; term failed!
+                        &gt; sum[10-10]: sum &#39;-&#39; term
+                        - sum[10-10]: sum &#39;-&#39; term failed!
+                        &gt; sum[10-10]: term
+                            &gt; term[10-10]: term &#39;*&#39; factor
+                            - term[10-10]: term &#39;*&#39; factor failed!
+                            &gt; term[10-10]: term &#39;/&#39; factor
+                            - term[10-10]: term &#39;/&#39; factor failed!
+                            &gt; term[10-10]: term &#39;//&#39; factor
+                            - term[10-10]: term &#39;//&#39; factor failed!
+                            &gt; term[10-10]: term &#39;%&#39; factor
+                            - term[10-10]: term &#39;%&#39; factor failed!
+                            &gt; term[10-10]: term &#39;@&#39; factor
+                            - term[10-10]: term &#39;@&#39; factor failed!
+                            &gt; term[10-10]: factor
+                            &gt; factor[10-10]: &#39;+&#39; factor
+                            - factor[10-10]: &#39;+&#39; factor failed!
+                            &gt; factor[10-10]: &#39;-&#39; factor
+                            - factor[10-10]: &#39;-&#39; factor failed!
+                            &gt; factor[10-10]: &#39;~&#39; factor
+                            - factor[10-10]: &#39;~&#39; factor failed!
+                            &gt; factor[10-10]: power
+                            &gt; power[10-10]: await_primary &#39;**&#39; factor
+                            &gt; await_primary[10-10]: AWAIT primary
+                            - await_primary[10-10]: AWAIT primary failed!
+                            &gt; await_primary[10-10]: primary
+                                &gt; primary[10-10]: primary &#39;.&#39; NAME
+                                - primary[10-10]: primary &#39;.&#39; NAME failed!
+                                &gt; primary[10-10]: primary genexp
+                                - primary[10-10]: primary genexp failed!
+                                &gt; primary[10-10]: primary &#39;(&#39; arguments? &#39;)&#39;
+                                - primary[10-10]: primary &#39;(&#39; arguments? &#39;)&#39; failed!
+                                &gt; primary[10-10]: primary &#39;[&#39; slices &#39;]&#39;
+                                - primary[10-10]: primary &#39;[&#39; slices &#39;]&#39; failed!
+                                &gt; primary[10-10]: atom
+                                &gt; atom[10-10]: NAME
+                                - atom[10-10]: NAME failed!
+                                &gt; atom[10-10]: &#39;True&#39;
+                                - atom[10-10]: &#39;True&#39; failed!
+                                &gt; atom[10-10]: &#39;False&#39;
+                                - atom[10-10]: &#39;False&#39; failed!
+                                &gt; atom[10-10]: &#39;None&#39;
+                                - atom[10-10]: &#39;None&#39; failed!
+                                &gt; atom[10-10]: &#39;__peg_parser__&#39;
+                                - atom[10-10]: &#39;__peg_parser__&#39; failed!
+                                &gt; atom[10-10]: &amp;STRING strings
+                                - atom[10-10]: &amp;STRING strings failed!
+                                &gt; atom[10-10]: NUMBER
+                                - atom[10-10]: NUMBER failed!
+                                &gt; atom[10-10]: &amp;&#39;(&#39; (tuple | group | genexp)
+                                - atom[10-10]: &amp;&#39;(&#39; (tuple | group | genexp) failed!
+                                &gt; atom[10-10]: &amp;&#39;[&#39; (list | listcomp)
+                                - atom[10-10]: &amp;&#39;[&#39; (list | listcomp) failed!
+                                &gt; atom[10-10]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp)
+                                - atom[10-10]: &amp;&#39;{&#39; (dict | set | dictcomp | setcomp) failed!
+                                &gt; atom[10-10]: &#39;...&#39;
+                                - atom[10-10]: &#39;...&#39; failed!
+                                - primary[10-10]: atom failed!
+                            - await_primary[10-10]: primary failed!
+                            - power[10-10]: await_primary &#39;**&#39; factor failed!
+                            &gt; power[10-10]: await_primary
+                            - power[10-10]: await_primary failed!
+                            - factor[10-10]: power failed!
+                            - term[10-10]: factor failed!
+                        - sum[10-10]: term failed!
+                        - shift_expr[10-10]: sum failed!
+                    - bitwise_and[10-10]: shift_expr failed!
+                    - bitwise_xor[10-10]: bitwise_and failed!
+                - bitwise_or[10-10]: bitwise_xor failed!
+                - comparison[10-10]: bitwise_or compare_op_bitwise_or_pair+ failed!
+                &gt; comparison[10-10]: bitwise_or
+                - comparison[10-10]: bitwise_or failed!
+            - inversion[10-10]: comparison failed!
+            - conjunction[10-10]: inversion ((&#39;and&#39; inversion))+ failed!
+            &gt; conjunction[10-10]: inversion
+            - conjunction[10-10]: inversion failed!
+            - disjunction[10-10]: conjunction ((&#39;or&#39; conjunction))+ failed!
+            &gt; disjunction[10-10]: conjunction
+            - disjunction[10-10]: conjunction failed!
+            - expression[10-10]: disjunction &#39;if&#39; disjunction &#39;else&#39; expression failed!
+            &gt; expression[10-10]: disjunction
+            - expression[10-10]: disjunction failed!
+            &gt; expression[10-10]: lambdef
+            &gt; lambdef[10-10]: &#39;lambda&#39; lambda_params? &#39;:&#39; expression
+            - lambdef[10-10]: &#39;lambda&#39; lambda_params? &#39;:&#39; expression failed!
+            - expression[10-10]: lambdef failed!
+        - star_expression[10-10]: expression failed!
+        - star_expressions[10-10]: star_expression ((&#39;,&#39; star_expression))+ &#39;,&#39;? failed!
+        &gt; star_expressions[10-10]: star_expression &#39;,&#39;
+        - star_expressions[10-10]: star_expression &#39;,&#39; failed!
+        &gt; star_expressions[10-10]: star_expression
+        - star_expressions[10-10]: star_expression failed!
+        - small_stmt[10-10]: star_expressions failed!
+        &gt; small_stmt[10-10]: &amp;&#39;return&#39; return_stmt
+        - small_stmt[10-10]: &amp;&#39;return&#39; return_stmt failed!
+        &gt; small_stmt[10-10]: &amp;(&#39;import&#39; | &#39;from&#39;) import_stmt
+        &gt; _tmp_14[10-10]: &#39;import&#39;
+        - _tmp_14[10-10]: &#39;import&#39; failed!
+        &gt; _tmp_14[10-10]: &#39;from&#39;
+        - _tmp_14[10-10]: &#39;from&#39; failed!
+        - small_stmt[10-10]: &amp;(&#39;import&#39; | &#39;from&#39;) import_stmt failed!
+        &gt; small_stmt[10-10]: &amp;&#39;raise&#39; raise_stmt
+        - small_stmt[10-10]: &amp;&#39;raise&#39; raise_stmt failed!
+        &gt; small_stmt[10-10]: &#39;pass&#39;
+        - small_stmt[10-10]: &#39;pass&#39; failed!
+        &gt; small_stmt[10-10]: &amp;&#39;del&#39; del_stmt
+        - small_stmt[10-10]: &amp;&#39;del&#39; del_stmt failed!
+        &gt; small_stmt[10-10]: &amp;&#39;yield&#39; yield_stmt
+        - small_stmt[10-10]: &amp;&#39;yield&#39; yield_stmt failed!
+        &gt; small_stmt[10-10]: &amp;&#39;assert&#39; assert_stmt
+        - small_stmt[10-10]: &amp;&#39;assert&#39; assert_stmt failed!
+        &gt; small_stmt[10-10]: &#39;break&#39;
+        - small_stmt[10-10]: &#39;break&#39; failed!
+        &gt; small_stmt[10-10]: &#39;continue&#39;
+        - small_stmt[10-10]: &#39;continue&#39; failed!
+        &gt; small_stmt[10-10]: &amp;&#39;global&#39; global_stmt
+        - small_stmt[10-10]: &amp;&#39;global&#39; global_stmt failed!
+        &gt; small_stmt[10-10]: &amp;&#39;nonlocal&#39; nonlocal_stmt
+        - small_stmt[10-10]: &amp;&#39;nonlocal&#39; nonlocal_stmt failed!
+        - simple_stmt[10-10]: small_stmt !&#39;;&#39; NEWLINE failed!
+        &gt; simple_stmt[10-10]: &#39;;&#39;.small_stmt+ &#39;;&#39;? NEWLINE
+        &gt; _gather_12[10-10]: small_stmt _loop0_13
+        - _gather_12[10-10]: small_stmt _loop0_13 failed!
+        - simple_stmt[10-10]: &#39;;&#39;.small_stmt+ &#39;;&#39;? NEWLINE failed!
+    - statement[10-10]: simple_stmt failed!
+    - _loop1_11[10-10]: statement failed!
+    + statements[0-10]: statement+ succeeded!
+    + file[0-11]: statements? $ succeeded!
+</pre></div>
+</div>
+</details>
+</section>
 </section>
 </section>
 
@@ -489,12 +1753,12 @@ coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
                   <!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
-       href="0_1_directory_structure.html"
+       href="3_0_compile.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">CPython 디렉터리 구조</p>
+        <p class="prev-next-title">3. 컴파일하기</p>
       </div>
     </a>
     <a class="right-next"
@@ -502,7 +1766,7 @@ coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">구성과 입력</p>
+        <p class="prev-next-title">5. 구성과 입력</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -523,12 +1787,14 @@ coffee: ‘cup’ (‘espresso’) + [‘water’] [milk]</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-c">4.1 CPython이 파이썬이 아니라 C로 작성된 이유</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">4.2 파이썬 언어 사양</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">언어 레퍼넌스</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">문법</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parser">Parser</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">언어 레퍼런스</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">문법</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">문법 다시 생성해보기</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">4.4 토큰</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">토큰</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
