@@ -3,9 +3,12 @@ root: intro
 parts:
 - caption: ◽ CPython 가이드
   chapters:
-  - file: docs/0_0_dev_env_setup
-    sections:
-      - file: docs/0_1_directory_structure
+  # - file: docs/0_0_dev_env_setup
+  #   sections:
+  #     - file: docs/0_1_directory_structure
+  - file: docs/1_0_welcome_to_cpython
+  - file: docs/2_0_settings
+  - file: docs/3_0_compile
   - file: docs/4_0_python_grammar
   - file: docs/5_0_config_and_input
   - file: docs/6_0_rexing_and_parsing
