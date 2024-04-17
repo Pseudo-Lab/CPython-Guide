@@ -353,7 +353,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -369,6 +371,33 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-interpreter-execution-overview">5.0 CPython Interpreter Execution Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-state">5.1 Configuration State (구성 상태)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preinitialization-configuration">Preinitialization Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#related-source-files">Related Source Files</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-configuration-data-structure">Runtime Configuration Data Structure</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-runtime-configuration-with-the-command-line">Setting Runtime Configuration with the Command Line</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#viewing-runtime-flags">Viewing Runtime Flags</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-configuration">5.2 Build Configuration (빌드 구성)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">5.3 입력에서 모듈 만들기</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">연관된 소스 파일 목록</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">입력과 파일 읽기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">명령줄 문자열 입력</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">로컬 모듈 입력</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">표준 입력 또는 스크립트 파일 입력</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">컴파일된 바이트 코드 입력</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -380,6 +409,998 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
 <h1>5. 구성과 입력<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<p>이번 챕터를 통해 다음 내용을 배울 수 있습니다.</p>
+<ol class="arabic simple">
+<li><p>CPython 인터프리터의 빌드부터 파이썬 코드 실행까지의 과정에 대한 코드 레벨의 이해</p></li>
+<li><p>인터프리터의 configuration 과정</p></li>
+<li><p>인터프리터의 입력에서 모듈을 만드는 과정</p></li>
+</ol>
+<section id="cpython-interpreter-execution-overview">
+<h2>5.0 CPython Interpreter Execution Overview<a class="headerlink" href="#cpython-interpreter-execution-overview" title="Permalink to this heading">#</a></h2>
+<p>인터프리터가 실행되는 흐름은 다음과 같습니다.
+<img alt="" src="../_images/interpreter_overview.png" />
+이 때, 세 가지 요소가 중요합니다.</p>
+<ol class="arabic simple">
+<li><p>실행할 모듈 (<strong>A module</strong> to execute)</p></li>
+<li><p>변수 등을 저장할 상태 (<strong>A state</strong> to hold information such as variables)</p></li>
+<li><p>활성화된 옵션 등의 구성 (<strong>A configuration</strong>, such as which options are enabled)</p></li>
+</ol>
+<p>세 가지 요소로 넘어가기 전에, 인터프리터가 실행되는 과정에 대한 이해를 높여보겠습니다. 인터프리터의 생성부터 실행까지의 과정을 코드 레벨로 정리하면 다음과 같습니다.</p>
+<ol class="arabic">
+<li><p>인터프리터 생성 (= <code class="docutils literal notranslate"><span class="pre">3.컴파일하기</span></code>)</p>
+<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>graph LR
+A(&quot;`CPython Source Code`&quot;) --&gt; |Build|C(&quot;`CPython Interpreter`&quot;)
+</pre></div>
+</div>
+<ul>
+<li><p>책에서는 CPython Source Code를 compile 해서 인터프리터를 생성한다고 표현하기도 하고, build한다고도 표현합니다. <strong>Build</strong> 과정에는 <strong>Compile</strong> 과정이 포함되어 있기 때문에, 굳이 구분하지 않고 혼용해서 사용하는 것으로 보입니다.</p></li>
+<li><p>또한, 빌드 결과물인 <strong>CPython Binary</strong>와 <strong>executable interpreter</strong>(작동하는 인터프리터)를 같은 용어로 사용하고 있습니다. <strong>CPython Interpreter</strong>로 이해해도 될 듯 합니다. <strong>“CPython 소스 코드를 빌드해서 파이썬 인터프리터를 생성했구나”</strong> 라고 생각하면 되겠습니다.</p></li>
+<li><p>인터프리터 파일은 윈도우, 맥 모두 <strong>python.exe</strong> 파일로 생성됩니다. 확장자는 <strong>Makefile</strong>의 <code class="docutils literal notranslate"><span class="pre">BUILDEXE</span></code> 변수로 변경할 수 있습니다.</p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># Executable suffix (.exe on Windows and Mac OS X)</span>
+<span class="nv">EXE</span><span class="o">=</span><span class="w">		</span>
+<span class="nv">BUILDEXE</span><span class="o">=</span><span class="w">	</span>.exe
+</pre></div>
+</div>
+</li>
+<li><p>인터프리터를 빌드할 때 사용되는 소스 코드는 <strong>Programs/python.c</strong> 입니다. 따라서, 인터프리터를 실행할 때 시작되는 entrypoint file은 <strong>Programs/python.c 입니다.</strong></p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># Default target</span>
+<span class="nf">all</span><span class="o">:</span><span class="w">		</span><span class="n">build_all</span>
+</pre></div>
+</div>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">build_all</span><span class="o">:</span><span class="w">	</span><span class="n">check</span>-<span class="n">clean</span>-<span class="n">src</span> <span class="k">$(</span><span class="nv">BUILDPYTHON</span><span class="k">)</span> <span class="n">oldsharedmods</span> <span class="n">sharedmods</span> <span class="n">gdbhooks</span> \
+        <span class="n">Programs</span>/<span class="n">_testembed</span> <span class="n">python</span>-<span class="n">config</span>
+</pre></div>
+</div>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># Build the interpreter</span>
+<span class="nf">$(BUILDPYTHON)</span><span class="o">:</span><span class="w">	</span><span class="n">Programs</span>/<span class="n">python</span>.<span class="n">o</span> <span class="k">$(</span><span class="nv">LIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">LDLIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">PY3LIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">EXPORTSYMS</span><span class="k">)</span>
+<span class="w">    </span><span class="k">$(</span>LINKCC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>PY_CORE_LDFLAGS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LINKFORSHARED<span class="k">)</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span><span class="w"> </span>Programs/python.o<span class="w"> </span><span class="k">$(</span>BLDLIBRARY<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LIBS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>MODLIBS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>SYSLIBS<span class="k">)</span>
+</pre></div>
+</div>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">Programs/python.o</span><span class="o">:</span><span class="w"> </span><span class="k">$(</span><span class="nv">srcdir</span><span class="k">)</span>/<span class="n">Programs</span>/<span class="n">python</span>.<span class="n">c</span>
+<span class="w">    </span><span class="k">$(</span>MAINCC<span class="k">)</span><span class="w"> </span>-c<span class="w"> </span><span class="k">$(</span>PY_CORE_CFLAGS<span class="k">)</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Programs/python.c
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>인터프리터 시작: 운영 체제에 따른 main 선택 (<code class="docutils literal notranslate"><span class="pre">./python.exe</span></code>)</p>
+<p><strong>Programs/python.c</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>```c
+/* Minimal main program -- everything is loaded from the library */
+
+#include &quot;Python.h&quot;
+
+#ifdef MS_WINDOWS
+int
+wmain(int argc, wchar_t **argv)
+{
+    return Py_Main(argc, argv);
+}
+#else
+int
+main(int argc, char **argv)
+{
+    return Py_BytesMain(argc, argv); // macOS
+}
+#endif
+
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>macOS는 <code class="docutils literal notranslate"><span class="pre">Py_BytesMain</span></code> 함수로 진입합니다.</p></li>
+</ul>
+</li>
+<li><p>Py_BytesMain: argument 포함시키기</p>
+<p><strong>Modules/main.c: L723-L732</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span>
+<span class="nf">Py_BytesMain</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_PyArgv</span><span class="w"> </span><span class="n">args</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">.</span><span class="n">argc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">use_bytes_argv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">bytes_argv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">argv</span><span class="p">,</span>
+<span class="w">        </span><span class="p">.</span><span class="n">wchar_argv</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">};</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">pymain_main</span><span class="p">(</span><span class="o">&amp;</span><span class="n">args</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>pymain_main: 인터프리터 전체 동작 흐름</p>
+<p><strong>Modules/main.c: L695-L708</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span>
+<span class="nf">pymain_main</span><span class="p">(</span><span class="n">_PyArgv</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyStatus</span><span class="w"> </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pymain_init</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyStatus_IS_EXIT</span><span class="p">(</span><span class="n">status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">pymain_free</span><span class="p">();</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">status</span><span class="p">.</span><span class="n">exitcode</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyStatus_EXCEPTION</span><span class="p">(</span><span class="n">status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">pymain_exit_error</span><span class="p">(</span><span class="n">status</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Py_RunMain</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">pymain_init()</span></code>의 리턴인 <code class="docutils literal notranslate"><span class="pre">PyStatus</span></code>는 <code class="docutils literal notranslate"><span class="pre">OK</span></code>, <code class="docutils literal notranslate"><span class="pre">ERROR</span></code>, <code class="docutils literal notranslate"><span class="pre">EXIT</span></code> 3가지 타입을 갖습니다.</p>
+<p><strong>Include/cpython/initconfig.h: L10-L19</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">enum</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_PyStatus_TYPE_OK</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="n">_PyStatus_TYPE_ERROR</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="w">        </span><span class="n">_PyStatus_TYPE_EXIT</span><span class="o">=</span><span class="mi">2</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">_type</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">func</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">err_msg</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">exitcode</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">PyStatus</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p>타입이 <code class="docutils literal notranslate"><span class="pre">OK</span></code>인 경우에만 <code class="docutils literal notranslate"><span class="pre">Py_RunMain()</span></code> 함수가 실행됩니다.</p></li>
+</ul>
+</li>
+<li><p>pymain_init: runtime configuration 설정 (5.1 ~ 5.2)</p>
+<p><strong>Modules/main.c: L33-L75</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">PyStatus</span>
+<span class="nf">pymain_init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">_PyArgv</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyStatus</span><span class="w"> </span><span class="n">status</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyRuntime_Initialize</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyStatus_EXCEPTION</span><span class="p">(</span><span class="n">status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">status</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">PyPreConfig</span><span class="w"> </span><span class="n">preconfig</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyPreConfig_InitPythonConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">preconfig</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_Py_PreInitializeFromPyArgv</span><span class="p">(</span><span class="o">&amp;</span><span class="n">preconfig</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyStatus_EXCEPTION</span><span class="p">(</span><span class="n">status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">status</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">PyConfig</span><span class="w"> </span><span class="n">config</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyConfig_InitPythonConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/* pass NULL as the config: config is read from command line arguments,</span>
+<span class="cm">       environment variables, configuration files */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">args</span><span class="o">-&gt;</span><span class="n">use_bytes_argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyConfig_SetBytesArgv</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="o">-&gt;</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="o">-&gt;</span><span class="n">bytes_argv</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyConfig_SetArgv</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="o">-&gt;</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="o">-&gt;</span><span class="n">wchar_argv</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyStatus_EXCEPTION</span><span class="p">(</span><span class="n">status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Py_InitializeFromConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyStatus_EXCEPTION</span><span class="p">(</span><span class="n">status</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyStatus_OK</span><span class="p">();</span>
+
+<span class="nl">done</span><span class="p">:</span>
+<span class="w">    </span><span class="n">PyConfig_Clear</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">status</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>Py_RunMain: 파이썬 코드 실행 (5.3)</p>
+<p><strong>Modules/main.c: L672:L692</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span>
+<span class="nf">Py_RunMain</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">exitcode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">pymain_run_python</span><span class="p">(</span><span class="o">&amp;</span><span class="n">exitcode</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Py_FinalizeEx</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* Value unlikely to be confused with a non-error exit status or</span>
+<span class="cm">           other special meaning */</span>
+<span class="w">        </span><span class="n">exitcode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">pymain_free</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_Py_UnhandledKeyboardInterrupt</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">exitcode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">exit_sigint</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">exitcode</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</section>
+<section id="configuration-state">
+<h2>5.1 Configuration State (구성 상태)<a class="headerlink" href="#configuration-state" title="Permalink to this heading">#</a></h2>
+<p>파이썬 코드를 실행하기 전에, CPython 런타임은 먼저 <strong>configuration of the runtime</strong>과 <strong>user-provided options</strong>을 설정합니다.</p>
+<p>Configuration of the runtime은 세 부분으로 나뉘어 있습니다. (<a class="reference external" href="https://peps.python.org/pep-0587/">PEP 587</a>).</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PyPreConfig</span></code>, used for preinitialization configuration</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PyConfig</span></code>, user for the runtime configuration</p></li>
+<li><p>The <strong>compiled(=build) configuration</strong> of the CPython Interpreter</p></li>
+</ol>
+<section id="preinitialization-configuration">
+<h3>Preinitialization Configuration<a class="headerlink" href="#preinitialization-configuration" title="Permalink to this heading">#</a></h3>
+<p><strong>preinitialization configuration</strong>은 operating system 혹은 user environment와 관련된 설정이기 때문에, runtime configuration과 구분됩니다.</p>
+<p>다음은 <code class="docutils literal notranslate"><span class="pre">PyPreConfig</span></code>의 세 가지 주요 기능입니다.</p>
+<ul>
+<li><p>[1] 파이썬 메모리 할당자(memory allocator) 설정하기</p></li>
+<li><p>[2] LC_CTYPE 로캘(locale)을 system 또는 user-preferred 로캘로 설정하기</p>
+<blockquote>
+<div><p>⭐ <strong>로캘(Locale)이란?</strong></p>
+<ul class="simple">
+<li><p>특정 지역, 국가, 또는 문화권에서 사용하는 언어, 통화, 날짜 및 시간 형식과 같은 <strong>지역 설정</strong>을 의미함.</p></li>
+<li><p>로캘의 정보는 일반적으로 <strong>언어 코드</strong>와 <strong>국가/지역 코드의 조합</strong>으로 표현된다. (ex&gt; **<code class="docutils literal notranslate"><span class="pre">en-US</span></code>**는 미국 영어, **<code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>**은 대한민국 한국어를 나타냄)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>[3] UTF-8 모드 설정하기 (<a class="reference external" href="https://peps.python.org/pep-0540/">PEP 540</a>)</p>
+<blockquote>
+<div><p>⭐ <strong>인코딩</strong></p>
+<ul class="simple">
+<li><p>파이썬은 3.7부터 로캘 설정과 상관 없이 UTF-8을 기본 인코딩으로 사용함</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">PyPreConfig</span></code> 구조체는 다음과 같은 int 타입 필드들을 포함합니다.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">allocator</span></code>: <code class="docutils literal notranslate"><span class="pre">PYMEM_ALLOCATOR_MALLOC</span></code> 같은 값을 사용해서 메모리 할당자를 선택합니다. <code class="docutils literal notranslate"><span class="pre">./configure</span> <span class="pre">—help</span></code>를 실행해 메모리 할당자에 대한 추가 정보를 얻을 수 있습니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">configure_locale</span></code>: LC_CTYPE 로캘을 user-preferred 로캘로 설정합니다. 0으로 설정하면 <code class="docutils literal notranslate"><span class="pre">coerce_c_locale</span></code>과 <code class="docutils literal notranslate"><span class="pre">coerce_c_locale_warn</span></code>을 0으로 설정합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coerce_c_locale</span></code>: 2로 설정하면 C 로캘을 강제로 적용합니다. 1로 설정하면 LC_CTYPE을 읽은 후 강제로 적용할지 결정합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coerce_c_locale_warn</span></code>: 0이 아니면 C 로캘이 강제로 적용될 때 경고가 발생합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dev_mode</span></code>: 개발 모드를 활성화합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">isolated</span></code>: 격리 모드를 활성화합니다. sys.path에 스크립트 디렉토리와 사용자의 사이트 패키지 디렉토리가 포함되지 않습니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">legacy_window_fs_encoding</span></code>(윈도우 전용): 0이 아니면 UTF-8 모드를 비활성화하고, 파이썬 파일 시스템 인코딩을 mbcs로 설정합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parse_argv</span></code>: 0이 아니면 명령줄 인자(command-line arguments)를 사용합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">use_environment</span></code>: 0보다 큰 값이면 환경 변수를 사용합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">utf8_mode</span></code>: 0이 아니면 UTF-8 모드를 활성화합니다.</p></li>
+<li>  <details>
+      <summary> (참고) PyPreConfig 구조체 </summary>
+<p><strong>Include/cpython/initconfig.h: L45-L125</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* --- PyPreConfig ----------------------------------------------- */</span>
+
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">_config_init</span><span class="p">;</span><span class="w">     </span><span class="cm">/* _PyConfigInitEnum value */</span>
+
+<span class="w">    </span><span class="cm">/* Parse Py_PreInitializeFromBytesArgs() arguments?</span>
+<span class="cm">       See PyConfig.parse_argv */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">parse_argv</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* If greater than 0, enable isolated mode: sys.path contains</span>
+<span class="cm">       neither the script&#39;s directory nor the user&#39;s site-packages directory.</span>
+
+<span class="cm">       Set to 1 by the -I command line option. If set to -1 (default), inherit</span>
+<span class="cm">       Py_IsolatedFlag value. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">isolated</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* If greater than 0: use environment variables.</span>
+<span class="cm">       Set to 0 by -E command line option. If set to -1 (default), it is</span>
+<span class="cm">       set to !Py_IgnoreEnvironmentFlag. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">use_environment</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Set the LC_CTYPE locale to the user preferred locale? If equals to 0,</span>
+<span class="cm">       set coerce_c_locale and coerce_c_locale_warn to 0. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">configure_locale</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Coerce the LC_CTYPE locale if it&#39;s equal to &quot;C&quot;? (PEP 538)</span>
+
+<span class="cm">       Set to 0 by PYTHONCOERCECLOCALE=0. Set to 1 by PYTHONCOERCECLOCALE=1.</span>
+<span class="cm">       Set to 2 if the user preferred LC_CTYPE locale is &quot;C&quot;.</span>
+
+<span class="cm">       If it is equal to 1, LC_CTYPE locale is read to decide if it should be</span>
+<span class="cm">       coerced or not (ex: PYTHONCOERCECLOCALE=1). Internally, it is set to 2</span>
+<span class="cm">       if the LC_CTYPE locale must be coerced.</span>
+
+<span class="cm">       Disable by default (set to 0). Set it to -1 to let Python decide if it</span>
+<span class="cm">       should be enabled or not. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">coerce_c_locale</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Emit a warning if the LC_CTYPE locale is coerced?</span>
+
+<span class="cm">       Set to 1 by PYTHONCOERCECLOCALE=warn.</span>
+
+<span class="cm">       Disable by default (set to 0). Set it to -1 to let Python decide if it</span>
+<span class="cm">       should be enabled or not. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">coerce_c_locale_warn</span><span class="p">;</span>
+
+<span class="cp">#ifdef MS_WINDOWS</span>
+<span class="w">    </span><span class="cm">/* If greater than 1, use the &quot;mbcs&quot; encoding instead of the UTF-8</span>
+<span class="cm">       encoding for the filesystem encoding.</span>
+
+<span class="cm">       Set to 1 if the PYTHONLEGACYWINDOWSFSENCODING environment variable is</span>
+<span class="cm">       set to a non-empty string. If set to -1 (default), inherit</span>
+<span class="cm">       Py_LegacyWindowsFSEncodingFlag value.</span>
+
+<span class="cm">       See PEP 529 for more details. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">legacy_windows_fs_encoding</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="cm">/* Enable UTF-8 mode? (PEP 540)</span>
+
+<span class="cm">       Disabled by default (equals to 0).</span>
+
+<span class="cm">       Set to 1 by &quot;-X utf8&quot; and &quot;-X utf8=1&quot; command line options.</span>
+<span class="cm">       Set to 1 by PYTHONUTF8=1 environment variable.</span>
+
+<span class="cm">       Set to 0 by &quot;-X utf8=0&quot; and PYTHONUTF8=0.</span>
+
+<span class="cm">       If equals to -1, it is set to 1 if the LC_CTYPE locale is &quot;C&quot; or</span>
+<span class="cm">       &quot;POSIX&quot;, otherwise it is set to 0. Inherit Py_UTF8Mode value value. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">utf8_mode</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* If non-zero, enable the Python Development Mode.</span>
+
+<span class="cm">       Set to 1 by the -X dev command line option. Set by the PYTHONDEVMODE</span>
+<span class="cm">       environment variable. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">dev_mode</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Memory allocator: PYTHONMALLOC env var.</span>
+<span class="cm">       See PyMemAllocatorName for valid values. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">allocator</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">PyPreConfig</span><span class="p">;</span>
+</pre></div>
+</div>
+</details>
+</li>
+</ul>
+</section>
+<section id="related-source-files">
+<h3>Related Source Files<a class="headerlink" href="#related-source-files" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Python/initconfig.c</span></code>: 시스템 환경에서 불러온 configuration을 명령줄 플래그(command-line flags)와 결합합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Include/cpython/initconfig.h</span></code>: <code class="docutils literal notranslate"><span class="pre">PyPreConfig</span></code>, <code class="docutils literal notranslate"><span class="pre">PyConfig</span></code>의 구조체가 정의되어 있습니다.</p></li>
+</ul>
+</section>
+<section id="runtime-configuration-data-structure">
+<h3>Runtime Configuration Data Structure<a class="headerlink" href="#runtime-configuration-data-structure" title="Permalink to this heading">#</a></h3>
+<p>Configuration의 두 번째 단계는 <strong>runtime configuration</strong>이다. <code class="docutils literal notranslate"><span class="pre">PyConfig</span></code>(runtime configuration 구조체)는 다음과 같은 값들을 포함합니다.</p>
+<ul>
+<li><p><strong>Runtime flags</strong> for modes like <code class="docutils literal notranslate"><span class="pre">debug</span></code> and <code class="docutils literal notranslate"><span class="pre">optimized</span></code></p></li>
+<li><p>The <strong>mode of execution</strong>, such as a <code class="docutils literal notranslate"><span class="pre">script</span> <span class="pre">file</span></code>, <code class="docutils literal notranslate"><span class="pre">stdin</span></code>, or <code class="docutils literal notranslate"><span class="pre">module</span></code></p></li>
+<li>  <details>
+      <summary> -X option 으로 설정 가능한 확장 옵션(extended options)</summary>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">X</span> <span class="n">opt</span> <span class="p">:</span> <span class="nb">set</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">option</span><span class="o">.</span> <span class="n">The</span> <span class="n">following</span> <span class="n">options</span> <span class="n">are</span> <span class="n">available</span><span class="p">:</span>
+
+         <span class="o">-</span><span class="n">X</span> <span class="n">faulthandler</span><span class="p">:</span> <span class="n">enable</span> <span class="n">faulthandler</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">oldparser</span><span class="p">:</span> <span class="n">enable</span> <span class="n">the</span> <span class="n">traditional</span> <span class="n">LL</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="n">parser</span><span class="p">;</span> <span class="n">also</span> <span class="n">PYTHONOLDPARSER</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">showrefcount</span><span class="p">:</span> <span class="n">output</span> <span class="n">the</span> <span class="n">total</span> <span class="n">reference</span> <span class="n">count</span> <span class="ow">and</span> <span class="n">number</span> <span class="n">of</span> <span class="n">used</span>
+             <span class="n">memory</span> <span class="n">blocks</span> <span class="n">when</span> <span class="n">the</span> <span class="n">program</span> <span class="n">finishes</span> <span class="ow">or</span> <span class="n">after</span> <span class="n">each</span> <span class="n">statement</span> <span class="ow">in</span> <span class="n">the</span>
+             <span class="n">interactive</span> <span class="n">interpreter</span><span class="o">.</span> <span class="n">This</span> <span class="n">only</span> <span class="n">works</span> <span class="n">on</span> <span class="n">debug</span> <span class="n">builds</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">tracemalloc</span><span class="p">:</span> <span class="n">start</span> <span class="n">tracing</span> <span class="n">Python</span> <span class="n">memory</span> <span class="n">allocations</span> <span class="n">using</span> <span class="n">the</span>
+             <span class="n">tracemalloc</span> <span class="n">module</span><span class="o">.</span> <span class="n">By</span> <span class="n">default</span><span class="p">,</span> <span class="n">only</span> <span class="n">the</span> <span class="n">most</span> <span class="n">recent</span> <span class="n">frame</span> <span class="ow">is</span> <span class="n">stored</span> <span class="ow">in</span> <span class="n">a</span>
+             <span class="n">traceback</span> <span class="n">of</span> <span class="n">a</span> <span class="n">trace</span><span class="o">.</span> <span class="n">Use</span> <span class="o">-</span><span class="n">X</span> <span class="n">tracemalloc</span><span class="o">=</span><span class="n">NFRAME</span> <span class="n">to</span> <span class="n">start</span> <span class="n">tracing</span> <span class="k">with</span> <span class="n">a</span>
+             <span class="n">traceback</span> <span class="n">limit</span> <span class="n">of</span> <span class="n">NFRAME</span> <span class="n">frames</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">importtime</span><span class="p">:</span> <span class="n">show</span> <span class="n">how</span> <span class="n">long</span> <span class="n">each</span> <span class="kn">import</span> <span class="nn">takes.</span> <span class="n">It</span> <span class="n">shows</span> <span class="n">module</span> <span class="n">name</span><span class="p">,</span>
+             <span class="n">cumulative</span> <span class="n">time</span> <span class="p">(</span><span class="n">including</span> <span class="n">nested</span> <span class="n">imports</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span> <span class="n">time</span> <span class="p">(</span><span class="n">excluding</span>
+             <span class="n">nested</span> <span class="n">imports</span><span class="p">)</span><span class="o">.</span> <span class="n">Note</span> <span class="n">that</span> <span class="n">its</span> <span class="n">output</span> <span class="n">may</span> <span class="n">be</span> <span class="n">broken</span> <span class="ow">in</span> <span class="n">multi</span><span class="o">-</span><span class="n">threaded</span>
+             <span class="n">application</span><span class="o">.</span> <span class="n">Typical</span> <span class="n">usage</span> <span class="ow">is</span> <span class="n">python3</span> <span class="o">-</span><span class="n">X</span> <span class="n">importtime</span> <span class="o">-</span><span class="n">c</span> <span class="s1">&#39;import asyncio&#39;</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">dev</span><span class="p">:</span> <span class="n">enable</span> <span class="n">CPython</span><span class="s1">&#39;s &quot;development mode&quot;, introducing additional runtime</span>
+             <span class="n">checks</span> <span class="n">which</span> <span class="n">are</span> <span class="n">too</span> <span class="n">expensive</span> <span class="n">to</span> <span class="n">be</span> <span class="n">enabled</span> <span class="n">by</span> <span class="n">default</span><span class="o">.</span> <span class="n">Effect</span> <span class="n">of</span> <span class="n">the</span>
+             <span class="n">developer</span> <span class="n">mode</span><span class="p">:</span>
+                <span class="o">*</span> <span class="n">Add</span> <span class="n">default</span> <span class="n">warning</span> <span class="nb">filter</span><span class="p">,</span> <span class="k">as</span> <span class="o">-</span><span class="n">W</span> <span class="n">default</span>
+                <span class="o">*</span> <span class="n">Install</span> <span class="n">debug</span> <span class="n">hooks</span> <span class="n">on</span> <span class="n">memory</span> <span class="n">allocators</span><span class="p">:</span> <span class="n">see</span> <span class="n">the</span> <span class="n">PyMem_SetupDebugHooks</span><span class="p">()</span> <span class="n">C</span> <span class="n">function</span>
+                <span class="o">*</span> <span class="n">Enable</span> <span class="n">the</span> <span class="n">faulthandler</span> <span class="n">module</span> <span class="n">to</span> <span class="n">dump</span> <span class="n">the</span> <span class="n">Python</span> <span class="n">traceback</span> <span class="n">on</span> <span class="n">a</span> <span class="n">crash</span>
+                <span class="o">*</span> <span class="n">Enable</span> <span class="n">asyncio</span> <span class="n">debug</span> <span class="n">mode</span>
+                <span class="o">*</span> <span class="n">Set</span> <span class="n">the</span> <span class="n">dev_mode</span> <span class="n">attribute</span> <span class="n">of</span> <span class="n">sys</span><span class="o">.</span><span class="n">flags</span> <span class="n">to</span> <span class="kc">True</span>
+                <span class="o">*</span> <span class="n">io</span><span class="o">.</span><span class="n">IOBase</span> <span class="n">destructor</span> <span class="n">logs</span> <span class="n">close</span><span class="p">()</span> <span class="n">exceptions</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">utf8</span><span class="p">:</span> <span class="n">enable</span> <span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="n">mode</span> <span class="k">for</span> <span class="n">operating</span> <span class="n">system</span> <span class="n">interfaces</span><span class="p">,</span> <span class="n">overriding</span> <span class="n">the</span> <span class="n">default</span>
+             <span class="n">locale</span><span class="o">-</span><span class="n">aware</span> <span class="n">mode</span><span class="o">.</span> <span class="o">-</span><span class="n">X</span> <span class="n">utf8</span><span class="o">=</span><span class="mi">0</span> <span class="n">explicitly</span> <span class="n">disables</span> <span class="n">UTF</span><span class="o">-</span><span class="mi">8</span> <span class="n">mode</span> <span class="p">(</span><span class="n">even</span> <span class="n">when</span> <span class="n">it</span> <span class="n">would</span>
+             <span class="n">otherwise</span> <span class="n">activate</span> <span class="n">automatically</span><span class="p">)</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">pycache_prefix</span><span class="o">=</span><span class="n">PATH</span><span class="p">:</span> <span class="n">enable</span> <span class="n">writing</span> <span class="o">.</span><span class="n">pyc</span> <span class="n">files</span> <span class="n">to</span> <span class="n">a</span> <span class="n">parallel</span> <span class="n">tree</span> <span class="n">rooted</span> <span class="n">at</span> <span class="n">the</span>
+             <span class="n">given</span> <span class="n">directory</span> <span class="n">instead</span> <span class="n">of</span> <span class="n">to</span> <span class="n">the</span> <span class="n">code</span> <span class="n">tree</span>
+         <span class="o">-</span><span class="n">X</span> <span class="n">int_max_str_digits</span><span class="o">=</span><span class="n">number</span><span class="p">:</span> <span class="n">limit</span> <span class="n">the</span> <span class="n">size</span> <span class="n">of</span> <span class="nb">int</span><span class="o">&lt;-&gt;</span><span class="nb">str</span> <span class="n">conversions</span><span class="o">.</span>
+             <span class="n">This</span> <span class="n">helps</span> <span class="n">avoid</span> <span class="n">denial</span> <span class="n">of</span> <span class="n">service</span> <span class="n">attacks</span> <span class="n">when</span> <span class="n">parsing</span> <span class="n">untrusted</span> <span class="n">data</span><span class="o">.</span>
+             <span class="n">The</span> <span class="n">default</span> <span class="ow">is</span> <span class="n">sys</span><span class="o">.</span><span class="n">int_info</span><span class="o">.</span><span class="n">default_max_str_digits</span><span class="o">.</span>  <span class="mi">0</span> <span class="n">disables</span><span class="o">.</span>
+</pre></div>
+</div>
+  </details>
+</li>
+<li><p>Environment variables for runtime settings</p></li>
+</ul>
+</section>
+<section id="setting-runtime-configuration-with-the-command-line">
+<h3>Setting Runtime Configuration with the Command Line<a class="headerlink" href="#setting-runtime-configuration-with-the-command-line" title="Permalink to this heading">#</a></h3>
+<p>파이썬은 다양한 명령줄 인터페이스 옵션(command-line interface options)을 제공합니다. 대표적인 예시로 verbose mode가 있습니다. 주로 CPython을 디버깅하려는 개발자들을 위한 모드입니다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">-v</span></code> 플래그로 verbose mode를 활성화하면, 파이썬은 모듈을 로딩할 때마다 화면에 메시지를 출력합니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>./python<span class="w"> </span>-v<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;print(&#39;hello world&#39;)&quot;</span>
+<span class="c1"># installing zipimport hook</span>
+import<span class="w"> </span>zipimport<span class="w"> </span><span class="c1"># builtin</span>
+<span class="c1"># installed zipimport hook</span>
+...
+</pre></div>
+</div>
+<p><strong>Runtime Configuration</strong>을 설정하는 방법은 다양하기 때문에, 우선순위가 지정되어 있습니다. 다음은 verbose mode 설정에 대한 우선순위입니다.</p>
+<ol class="arabic simple">
+<li><p>config→verbose의 기본값은 -1로 소스 코드에 하드코딩되어 있습니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PYTHONVERBOSE</span></code> 환경 변수를 config→verbose를 설정하는데 사용합니다.</p></li>
+<li><p>환경 변수가 없으면 기본값인 -1을 사용합니다.</p></li>
+<li><p><strong>Python/initconfig.c</strong>의 <code class="docutils literal notranslate"><span class="pre">config_parse_cmdline()</span></code>은 명시된 명령줄 플래그를 사용해 모드를 설정합니다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_Py_GetGlobalVariableAsDict()</span></code>가 값을 전역 변수 <code class="docutils literal notranslate"><span class="pre">Py_VerboseFlag</span></code>로 복사합니다.</p></li>
+</ol>
+<p>모든 <code class="docutils literal notranslate"><span class="pre">PyConfig</span></code> 값에는 같은 순서와 우선순위가 적용됩니다.
+<img alt="" src="../_images/config.png" /></p>
+</section>
+<section id="viewing-runtime-flags">
+<h3>Viewing Runtime Flags<a class="headerlink" href="#viewing-runtime-flags" title="Permalink to this heading">#</a></h3>
+<p>CPython 인터프리터는 많은 runtime flags가 있습니다. 플래그는 CPython의 특정 동작을 제어하는데 사용되는 고급 기능이다. 파이썬 세션 중에, <code class="docutils literal notranslate"><span class="pre">sys.flags</span></code> 네임드 튜플을 통해 runtime flags에 접근할 수 있습니다.</p>
+<ul>
+<li><p>플래그 사용 X</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./python.exe
+
+Python<span class="w"> </span><span class="m">3</span>.9.19+<span class="w"> </span><span class="o">(</span>heads/3.9:a04a0f6585,<span class="w"> </span>Mar<span class="w"> </span><span class="m">25</span><span class="w"> </span><span class="m">2024</span>,<span class="w"> </span><span class="m">08</span>:21:31<span class="o">)</span>
+<span class="o">[</span>Clang<span class="w"> </span><span class="m">15</span>.0.0<span class="w"> </span><span class="o">(</span>clang-1500.3.9.4<span class="o">)]</span><span class="w"> </span>on<span class="w"> </span>darwin
+Type<span class="w"> </span><span class="s2">&quot;help&quot;</span>,<span class="w"> </span><span class="s2">&quot;copyright&quot;</span>,<span class="w"> </span><span class="s2">&quot;credits&quot;</span><span class="w"> </span>or<span class="w"> </span><span class="s2">&quot;license&quot;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>sys<span class="p">;</span><span class="w"> </span>sys.flags
+sys.flags<span class="o">(</span><span class="nv">debug</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">inspect</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">interactive</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">optimize</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dont_write_bytecode</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_user_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">ignore_environment</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">verbose</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">bytes_warning</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">quiet</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">hash_randomization</span><span class="o">=</span><span class="m">1</span>,<span class="w"> </span><span class="nv">isolated</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dev_mode</span><span class="o">=</span>False,<span class="w"> </span><span class="nv">utf8_mode</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">int_max_str_digits</span><span class="o">=</span>-1<span class="o">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>-X dev 플래그 사용</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./python.exe<span class="w"> </span>-X<span class="w"> </span>dev
+
+Python<span class="w"> </span><span class="m">3</span>.9.19+<span class="w"> </span><span class="o">(</span>heads/3.9:a04a0f6585,<span class="w"> </span>Mar<span class="w"> </span><span class="m">25</span><span class="w"> </span><span class="m">2024</span>,<span class="w"> </span><span class="m">08</span>:21:31<span class="o">)</span>
+<span class="o">[</span>Clang<span class="w"> </span><span class="m">15</span>.0.0<span class="w"> </span><span class="o">(</span>clang-1500.3.9.4<span class="o">)]</span><span class="w"> </span>on<span class="w"> </span>darwin
+Type<span class="w"> </span><span class="s2">&quot;help&quot;</span>,<span class="w"> </span><span class="s2">&quot;copyright&quot;</span>,<span class="w"> </span><span class="s2">&quot;credits&quot;</span><span class="w"> </span>or<span class="w"> </span><span class="s2">&quot;license&quot;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>sys<span class="p">;</span><span class="w"> </span>sys.flags
+sys.flags<span class="o">(</span><span class="nv">debug</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">inspect</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">interactive</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">optimize</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dont_write_bytecode</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_user_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">ignore_environment</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">verbose</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">bytes_warning</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">quiet</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">hash_randomization</span><span class="o">=</span><span class="m">1</span>,<span class="w"> </span><span class="nv">isolated</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dev_mode</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">utf8_mode</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">int_max_str_digits</span><span class="o">=</span>-1<span class="o">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dev_mode</span></code>가 <code class="docutils literal notranslate"><span class="pre">True</span></code>로 변경됨.</p></li>
+</ul>
+</li>
+<li><p>-X dev -X utf8 플래그 사용</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./python.exe<span class="w"> </span>-X<span class="w"> </span>dev<span class="w"> </span>-X<span class="w"> </span>utf8
+
+Python<span class="w"> </span><span class="m">3</span>.9.19+<span class="w"> </span><span class="o">(</span>heads/3.9:a04a0f6585,<span class="w"> </span>Mar<span class="w"> </span><span class="m">25</span><span class="w"> </span><span class="m">2024</span>,<span class="w"> </span><span class="m">08</span>:21:31<span class="o">)</span>
+<span class="o">[</span>Clang<span class="w"> </span><span class="m">15</span>.0.0<span class="w"> </span><span class="o">(</span>clang-1500.3.9.4<span class="o">)]</span><span class="w"> </span>on<span class="w"> </span>darwin
+Type<span class="w"> </span><span class="s2">&quot;help&quot;</span>,<span class="w"> </span><span class="s2">&quot;copyright&quot;</span>,<span class="w"> </span><span class="s2">&quot;credits&quot;</span><span class="w"> </span>or<span class="w"> </span><span class="s2">&quot;license&quot;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>sys<span class="p">;</span><span class="w"> </span>sys.flags
+sys.flags<span class="o">(</span><span class="nv">debug</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">inspect</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">interactive</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">optimize</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dont_write_bytecode</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_user_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">ignore_environment</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">verbose</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">bytes_warning</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">quiet</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">hash_randomization</span><span class="o">=</span><span class="m">1</span>,<span class="w"> </span><span class="nv">isolated</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dev_mode</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">utf8_mode</span><span class="o">=</span><span class="m">1</span>,<span class="w"> </span><span class="nv">int_max_str_digits</span><span class="o">=</span>-1<span class="o">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">utf8_mode</span></code>가 <code class="docutils literal notranslate"><span class="pre">1</span></code>로 변경됨.</p></li>
+</ul>
+</li>
+<li><p>-X dev -q 플래그 사용</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>./python.exe<span class="w"> </span>-X<span class="w"> </span>dev<span class="w"> </span>-q
+
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>sys<span class="p">;</span><span class="w"> </span>sys.flags
+sys.flags<span class="o">(</span><span class="nv">debug</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">inspect</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">interactive</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">optimize</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dont_write_bytecode</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_user_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">no_site</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">ignore_environment</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">verbose</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">bytes_warning</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">quiet</span><span class="o">=</span><span class="m">1</span>,<span class="w"> </span><span class="nv">hash_randomization</span><span class="o">=</span><span class="m">1</span>,<span class="w"> </span><span class="nv">isolated</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">dev_mode</span><span class="o">=</span>True,<span class="w"> </span><span class="nv">utf8_mode</span><span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">int_max_str_digits</span><span class="o">=</span>-1<span class="o">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-q</span></code> (=quiet) 모드라서 파이썬 버전이 출력되지 않음.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">quiet</span></code>이 <code class="docutils literal notranslate"><span class="pre">1</span></code>로 변경됨.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="build-configuration">
+<h2>5.2 Build Configuration (빌드 구성)<a class="headerlink" href="#build-configuration" title="Permalink to this heading">#</a></h2>
+<p><strong>Runtime configuration</strong>을 <code class="docutils literal notranslate"><span class="pre">Include/cpython/initconfig.h</span></code>에 정의하듯이, <strong>build configuration</strong>은 root 디렉토리의 <code class="docutils literal notranslate"><span class="pre">pyconfig.h</span></code>에서 정의합니다. 이 파일은 <code class="docutils literal notranslate"><span class="pre">./configure</span></code> 단계 (macOS or Linux)나, <code class="docutils literal notranslate"><span class="pre">build.bat</span></code> 실행 (Windows) 중에 자동으로 생성됩니다.</p>
+<p>다음 명령어로 build configuration을 확인할 수 있습니다.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">./python.exe</span> <span class="pre">-m</span> <span class="pre">sysconfig</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>Platform:<span class="w"> </span><span class="s2">&quot;macosx-14.4-arm64&quot;</span>
+Python<span class="w"> </span>version:<span class="w"> </span><span class="s2">&quot;3.9&quot;</span>
+Current<span class="w"> </span>installation<span class="w"> </span>scheme:<span class="w"> </span><span class="s2">&quot;posix_prefix&quot;</span>
+
+Paths:
+<span class="w">	</span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local&quot;</span>
+<span class="w">	</span><span class="nv">include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/Users/donghee/Projects/cpython-internals/cpython/Include&quot;</span>
+<span class="w">	</span><span class="nv">platinclude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/Users/donghee/Projects/cpython-internals/cpython&quot;</span>
+<span class="w">	</span><span class="nv">platlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9/site-packages&quot;</span>
+<span class="w">	</span><span class="nv">platstdlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9&quot;</span>
+<span class="w">	</span><span class="nv">purelib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9/site-packages&quot;</span>
+<span class="w">	</span><span class="nv">scripts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/bin&quot;</span>
+<span class="w">	</span><span class="nv">stdlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9&quot;</span>
+
+Variables:
+<span class="w">	</span><span class="nv">ABIFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;d&quot;</span>
+<span class="w">	</span><span class="nv">AC_APPLE_UNIVERSAL_BUILD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
+<span class="w">	</span><span class="nv">AIX_BUILDDATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
+<span class="w">	</span><span class="nv">AIX_GENUINE_CPLUSPLUS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
+<span class="w">	</span>...
+</pre></div>
+</div>
+</li>
+</ul>
+<p>build configuration은 5가지의 key로 구성되어 있습니다.</p>
+<ul>
+<li><p>Platform</p></li>
+<li><p>Python version</p></li>
+<li><p>Current installation scheme</p></li>
+<li><p>Paths</p></li>
+<li><p>Variables</p></li>
+<li><p>(참고) CPython을 컴파일 하는 과정 중, <code class="docutils literal notranslate"><span class="pre">./configure</span></code> 스크립트를 실행할 때 포함시켰던 옵션들을 확인할 수 있습니다. <code class="docutils literal notranslate"><span class="pre">CPPFLAGS</span></code>, <code class="docutils literal notranslate"><span class="pre">LDFLAGS</span></code>는 build configuration의 Variables에 포함되어 있습니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>...
+<span class="nv">CONFIGURE_CPPFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-I/opt/homebrew/opt/zlib/include -I/opt/homebrew/opt/xz/include&quot;</span>
+...
+<span class="nv">CONFIGURE_LDFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;-L/opt/homebrew/opt/zlib/lib -L/opt/homebrew/opt/xz/lib&quot;</span>
+...
+</pre></div>
+</div>
+<ul>
+<li><p>(참고) <code class="docutils literal notranslate"><span class="pre">error:</span> <span class="pre">'lzma.h'</span> <span class="pre">file</span> <span class="pre">not</span> <span class="pre">found</span></code> 에러로 인해 <code class="docutils literal notranslate"><span class="pre">./configure</span></code> 스크립트를 실행할 때, <code class="docutils literal notranslate"><span class="pre">xz</span></code> 라이브러리를 추가하고 빌드했기 때문에 <code class="docutils literal notranslate"><span class="pre">xz</span></code> 라이브러리에 대한 경로가 포함되어 있습니다.</p></li>
+<li><p>사용했던 스크립트</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># xz 경로 추가</span>
+<span class="nv">CPPFLAGS</span><span class="o">=</span><span class="s2">&quot;-I</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>zlib<span class="k">)</span><span class="s2">/include -I</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>xz<span class="k">)</span><span class="s2">/include&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="nv">LDFLAGS</span><span class="o">=</span><span class="s2">&quot;-L</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>zlib<span class="k">)</span><span class="s2">/lib -L</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>xz<span class="k">)</span><span class="s2">/lib&quot;</span><span class="w"> </span><span class="se">\</span>
+./configure<span class="w"> </span>--with-openssl<span class="o">=</span><span class="k">$(</span>brew<span class="w"> </span>--prefix<span class="w"> </span>openssl<span class="k">)</span><span class="w"> </span>--with-pydebug
+
+<span class="c1"># 빌드</span>
+make<span class="w"> </span>-j2<span class="w"> </span>-s
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+<p>Build configuration 항목들은 컴파일 시에(=CPython Interpreter 생성할 때) 결정되는 값으로, 바이너리에 링크할 추가 모듈 선택에 사용됩니다. 예를 들어 디버거와 계측(instrumentation) 라이브러리, 메모리 할당자는 모두 컴파일 시 결정됩니다.</p>
+<p>세 단계의 구성(Build Configuration, PyPreConfig, PyConfig)을 모두 완료하면, CPython Interpreter는 입력된 텍스트를 코드로 실행할 수 있게 됩니다.</p>
+</section>
+<section id="id2">
+<h2>5.3 입력에서 모듈 만들기<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<p><img alt="" src="../_images/input.png" /></p>
+<p>코드를 실행하려면 먼저 입력을 모듈로 컴파일해야 합니다.</p>
+<ul class="simple">
+<li><p>입력방식</p>
+<ul>
+<li><p>로컬 파일과 패키지</p></li>
+<li><p>메모리 파이프나 stdin 같은 I/O 스트림</p></li>
+<li><p>문자열</p></li>
+</ul>
+</li>
+</ul>
+<p>이렇게 읽어 들인 입력은 파서를 거쳐 컴파일러로 전달 됩니다. 이렇게 유연한 입력 방식을 제공하기 위해 CPython은 CPython 소스 코드의 상당 분량을 파서의 입력 처리에 사용합니다.</p>
+<section id="id3">
+<h3>연관된 소스 파일 목록<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Lib &gt; <a class="reference external" href="http://runpy.py">runpy.py</a> : 파이썬 모듈을 임포트 하고 실행하는 표준 라이브러리 모듈</p></li>
+<li><p>Modules &gt; main.c : 파일이나 모듈, 입력 스트림 같은 외부 코드 실행을 감싸는 함수</p></li>
+<li><p>Programs &gt; python.c : 윈도우나, 리눅스, macOS에서 Python의 진입점. 위의 <code class="docutils literal notranslate"><span class="pre">main.c</span></code> 를 감싸는 역할만 맡음.</p></li>
+<li><p>Python &gt; pythonrun.c : 명령줄 입력을 처리하는 내부 C API를 감싸는 함수</p></li>
+</ul>
+</section>
+<section id="id4">
+<h3>입력과 파일 읽기<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>CPython은 런타임 구성과 명령줄 인자가 준비되면 실행할 코드를 불러옵니다.</p>
+<ul class="simple">
+<li><p>이 작업은 <code class="docutils literal notranslate"><span class="pre">Modules</span> <span class="pre">&gt;</span> <span class="pre">main.c</span> <span class="pre">&gt;</span> <span class="pre">pymain_main()</span></code> 에서 실행됩니다.</p></li>
+<li><p>CPython은 어떤 파이썬 코드를 실행할지 결정하고 이 코드를 메모리에 로드합니다.</p></li>
+</ul>
+</li>
+<li><p>다음으로 CPython은 불러온 코드를 새로 생성된 <code class="docutils literal notranslate"><span class="pre">PyConfig</span></code> 인스턴스에 설정된 옵션들과 함께 실행됩니다.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">PyConfig</span></code> 인스턴스는 CPython 인터프리터가 실행될 때 사용되는 설정들을 담고 있으며, 이 설정들은 파이썬 실행 환경을 조정하는데 사용됩니다.</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="id5">
+<h3>명령줄 문자열 입력<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<blockquote>
+<div><p>⭐ <strong>-c 옵션을 사용해 명령줄에서 파이썬 애플리케이션을 실행하는 경우</strong></p>
+<ul class="simple">
+<li><p>python -c “print(2 ** 2)”</p></li>
+</ul>
+</div></blockquote>
+<ul>
+<li><p>Modules &gt; main.c &gt; pymain_run_command()</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span>
+<span class="nf">pymain_run_command</span><span class="p">(</span><span class="kt">wchar_t</span><span class="w"> </span><span class="o">*</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">cf</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">unicode</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">bytes</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">unicode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_FromWideChar</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">unicode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PySys_Audit</span><span class="p">(</span><span class="s">&quot;cpython.run_command&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;O&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">unicode</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">pymain_exit_err_print</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8String</span><span class="p">(</span><span class="n">unicode</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">unicode</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytes</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyRun_SimpleStringFlags</span><span class="p">(</span><span class="n">PyBytes_AsString</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w"> </span><span class="n">cf</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">bytes</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="nl">error</span><span class="p">:</span>
+<span class="w">    </span><span class="n">PySys_WriteStderr</span><span class="p">(</span><span class="s">&quot;Unable to decode the command from the command line:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">pymain_exit_err_print</span><span class="p">();</span>
+<span class="p">}</span>
+
+</pre></div>
+</div>
+</li>
+</ul>
+<ol class="arabic simple">
+<li><p>Modules &gt; main.c에서 pymain_run_command()가 실행되며 -c로 전달된 명령은 C의 wchar_t* 타입 인자로 함수에 전달됩니다.</p>
+<ul class="simple">
+<li><p>wchar_t* 타입은 UTF-8 문자를 저장할 수 있기 때문에 CPython에서 저수준 유니코드 데이터를 저장하는 타입으로 사용됩니다.</p></li>
+</ul>
+</li>
+<li><p>PyUnicode_FromWideChar()를 이용해 wchar_t*를 파이썬 유니코드 문자열 객체로 변환할 수 있습니다.</p></li>
+<li><p>pymain_run_command()는 파이썬 바이트열 객체를 PyRun_SimpleStringFlags()로 넘겨서 실행합니다.</p></li>
+<li><p>PyRun_SimpleStringFlags()는 문자열을 <strong>파이썬 모듈</strong>로 변환하고 실행합니다.</p></li>
+<li><p>파이썬 모듈을 독립된 모듈로 실행하려면 <strong>main</strong> 진입점이 필요하기 때문에 PyRun_SimpleStringFlags()가 진입점을 자동으로 추가합니다.</p></li>
+<li><p>또한 PyRun_SimpleStringFlags()는 가짜 파일 이름을 만들고 파이썬 파서를 실행해서, 문자열에서 추상 구문 트리(abstract syntax tree, AST)를 생성해 모듈로 반환한다.</p></li>
+</ol>
+</section>
+<section id="id6">
+<h3>로컬 모듈 입력<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<blockquote>
+<div><p>⭐ <strong>-m 옵션을 사용해 모듈을 실행하는 경우</strong></p>
+<ul class="simple">
+<li><p>python -m unittest</p></li>
+</ul>
+</div></blockquote>
+<ol class="arabic">
+<li><p>-m 플래그는 모듈 패키지의 진입점(<strong>main</strong>) 을 실행합니다.</p>
+<ul>
+<li><p>임포트 라이브러리(importlib)의 검색 매커니즘 덕분에 특정 모듈의 파일 시스템 위치를 기억할 필요는 없습니다.</p></li>
+<li><p>Lib &gt; <a class="reference external" href="http://runpy.py">runpy.py</a> &gt; _get_module_details()</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_get_module_details</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="ne">ImportError</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">mod_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s2">&quot;Relative module names not supported&quot;</span><span class="p">)</span>
+    <span class="n">pkg_name</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">mod_name</span><span class="o">.</span><span class="n">rpartition</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pkg_name</span><span class="p">:</span>
+        <span class="c1"># Try importing the parent to avoid catching initialization errors</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">__import__</span><span class="p">(</span><span class="n">pkg_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># If the parent or higher ancestor package is missing, let the</span>
+            <span class="c1"># error be raised by find_spec() below and then be caught. But do</span>
+            <span class="c1"># not allow other errors to be caught.</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="n">pkg_name</span> <span class="ow">and</span>
+                    <span class="ow">not</span> <span class="n">pkg_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span><span class="p">)):</span>
+                <span class="k">raise</span>
+        <span class="c1"># Warn if the module has already been imported under its normal name</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">existing</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">existing</span><span class="p">,</span> <span class="s2">&quot;__path__&quot;</span><span class="p">):</span>
+            <span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{mod_name!r}</span><span class="s2"> found in sys.modules after import of &quot;</span> \
+                <span class="s2">&quot;package </span><span class="si">{pkg_name!r}</span><span class="s2">, but prior to execution of &quot;</span> \
+                <span class="s2">&quot;</span><span class="si">{mod_name!r}</span><span class="s2">; this may result in unpredictable &quot;</span> \
+                <span class="s2">&quot;behaviour&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mod_name</span><span class="o">=</span><span class="n">mod_name</span><span class="p">,</span> <span class="n">pkg_name</span><span class="o">=</span><span class="n">pkg_name</span><span class="p">)</span>
+            <span class="n">warn</span><span class="p">(</span><span class="ne">RuntimeWarning</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+        <span class="c1"># This hack fixes an impedance mismatch between pkgutil and</span>
+        <span class="c1"># importlib, where the latter raises other errors for cases where</span>
+        <span class="c1"># pkgutil previously raised ImportError</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;Error while finding module specification for </span><span class="si">{!r}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">)&quot;</span>
+        <span class="k">if</span> <span class="n">mod_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;. Try using &#39;</span><span class="si">{</span><span class="n">mod_name</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span><span class="si">}</span><span class="s2">&#39; instead of &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="n">mod_name</span><span class="si">}</span><span class="s2">&#39; as the module name.&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">ex</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">ex</span>
+    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s2">&quot;No module named </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">mod_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">submodule_search_locations</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">mod_name</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span> <span class="ow">or</span> <span class="n">mod_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.__main__&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s2">&quot;Cannot use package as __main__ module&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pkg_main_name</span> <span class="o">=</span> <span class="n">mod_name</span> <span class="o">+</span> <span class="s2">&quot;.__main__&quot;</span>
+            <span class="k">return</span> <span class="n">_get_module_details</span><span class="p">(</span><span class="n">pkg_main_name</span><span class="p">,</span> <span class="n">error</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mod_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
+                <span class="k">raise</span>  <span class="c1"># No module loaded; being a package is irrelevant</span>
+            <span class="k">raise</span> <span class="n">error</span><span class="p">((</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">; </span><span class="si">%r</span><span class="s2"> is a package and cannot &quot;</span> <span class="o">+</span>
+                               <span class="s2">&quot;be directly executed&quot;</span><span class="p">)</span> <span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod_name</span><span class="p">))</span>
+    <span class="n">loader</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">loader</span>
+    <span class="k">if</span> <span class="n">loader</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is a namespace package and cannot be executed&quot;</span>
+                                                                 <span class="o">%</span> <span class="n">mod_name</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_code</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="nb">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span> <span class="kn">from</span> <span class="nn">e</span>
+    <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s2">&quot;No code object available for </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">mod_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mod_name</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">code</span>
+
+</pre></div>
+</div>
+</li>
+<li><p>importlib.util.find_spec(mod_name)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">importlib.util</span>
+<span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;unittest&quot;</span><span class="p">)</span>
+
+<span class="c1"># Output</span>
+<span class="c1"># ModuleSpec(</span>
+<span class="c1">#    name=&#39;unittest&#39;, </span>
+<span class="c1">#    loader=&lt;_frozen_importlib_external.SourceFileLoader object at 0x7fe01263bd30&gt;, </span>
+<span class="c1">#    origin=&#39;/home/patrick/miniconda3/envs/py3.10/lib/python3.10/unittest/__init__.py&#39;, </span>
+<span class="c1">#    submodule_search_locations=[&#39;/home/patrick/miniconda3/envs/py3.10/lib/python3.10/unittest&#39;],</span>
+<span class="c1"># )</span>
+
+<span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;itertools&quot;</span><span class="p">)</span>
+
+<span class="c1"># Output</span>
+<span class="c1"># ModuleSpec(</span>
+<span class="c1">#    name=&#39;itertools&#39;, </span>
+<span class="c1">#    loader=&lt;class &#39;_frozen_importlib.BuiltinImporter&#39;&gt;, </span>
+<span class="c1">#    origin=&#39;built-in&#39;</span>
+<span class="c1"># )</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>runpy를 임포트하고 PyObject_Call()로 해당 모듈을 실행합니다. runpy 모듈은 Lib &gt; runpy.py에 위치한 순수한 파이썬 모듈입니다.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">&lt;module&gt;</span></code>을 실행하는 것은 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">runpy</span> <span class="pre">&lt;module&gt;</span></code>을 실행하는 것과 같습니다.</p></li>
+<li><p>Lib &gt; <a class="reference external" href="http://runpy.py">runpy.py</a></p>
+<ul class="simple">
+<li><p>sys.argv[0]은 스크립트의 이름, sys.argv[1]은 모듈 이름이 들어갑니다.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># Run the module specified as the next command line argument</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No module specified for execution&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># Make the requested module sys.argv[0]</span>
+        <span class="n">_run_module_as_main</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>runpy는 세 단계로 모듈을 실행합니다.</p>
+<ol class="arabic">
+<li><p>제공된 모듈 이름을 <strong>import</strong>()로 임포트 합니다.</p>
+<ul>
+<li><p><strong>import</strong>() 함수는 파이썬의 내장 함수 중 하나입니다. 함수는 모듈을 동적으로 로드하고, 모듈 객체를 반환합니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mod_name</span> <span class="o">=</span> <span class="s1">&#39;math&#39;</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">16</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p><strong>name</strong> (모듈 이름)을 <strong>main</strong> 이름 공간에 설정합니다.</p></li>
+<li><p><strong>main</strong> 이름 공간에서 모듈을 실행합니다.</p></li>
+</ol>
+</li>
+</ol>
+</section>
+<section id="id7">
+<h3>표준 입력 또는 스크립트 파일 입력<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
+<blockquote>
+<div><p>⭐ <strong>python <a class="reference external" href="http://test.py">test.py</a></strong></p>
+</div></blockquote>
+<ul>
+<li><p>관련 코드</p>
+<ul>
+<li><p>PyRun_SimpleFileExFlags()</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span>
+<span class="nf">PyRun_SimpleFileExFlags</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename_obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_DecodeFSDefault</span><span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">filename_obj</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyrun_simple_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">filename_obj</span><span class="p">,</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">filename_obj</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>pyrun_simple_file()</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span>
+<span class="nf">pyrun_simple_file</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">v</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">set_file_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyImport_AddModule</span><span class="p">(</span><span class="s">&quot;__main__&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">m</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Py_INCREF</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+<span class="w">    </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyModule_GetDict</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyDict_GetItemString</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;__file__&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyDict_SetItemString</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;__file__&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyDict_SetItemString</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;__cached__&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Py_None</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">set_file_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">pyc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">maybe_pyc_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">closeit</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pyc</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pyc</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">pyc_fp</span><span class="p">;</span>
+<span class="w">        </span><span class="cm">/* Try to run a pyc file. First, re-open in binary */</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">closeit</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">pyc_fp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_Py_fopen_obj</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;rb&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pyc_fp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;python: Can&#39;t reopen .pyc file</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">set_main_loader</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SourcelessFileLoader&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;python: failed to set __main__.__loader__</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">            </span><span class="n">fclose</span><span class="p">(</span><span class="n">pyc_fp</span><span class="p">);</span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run_pyc_file</span><span class="p">(</span><span class="n">pyc_fp</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* When running from stdin, leave __main__.__loader__ alone */</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyUnicode_CompareWithASCIIString</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&lt;stdin&gt;&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">set_main_loader</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;SourceFileLoader&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fprintf</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;python: failed to set __main__.__loader__</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyrun_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">Py_file_input</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">closeit</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">flush_io</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+<span class="w">        </span><span class="n">PyErr_Print</span><span class="p">();</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="nl">done</span><span class="p">:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">set_file_name</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyDict_DelItemString</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;__file__&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">PyErr_Clear</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyDict_DelItemString</span><span class="p">(</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;__cached__&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">PyErr_Clear</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">m</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+
+</pre></div>
+</div>
+</li>
+<li><p>pyrun_file()</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
+<span class="nf">pyrun_file</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">globals</span><span class="p">,</span>
+<span class="w">           </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">locals</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span><span class="w"> </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyArena</span><span class="w"> </span><span class="o">*</span><span class="n">arena</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyArena_New</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">arena</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">mod_ty</span><span class="w"> </span><span class="n">mod</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">use_peg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyInterpreterState_GET</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">config</span><span class="p">.</span><span class="n">_use_peg_parser</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">use_peg</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyPegen_ASTFromFileObject</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span>
+<span class="w">                                        </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">arena</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyParser_ASTFromFileObject</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">                                         </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">arena</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">closeit</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">fclose</span><span class="p">(</span><span class="n">fp</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">ret</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mod</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">run_mod</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">globals</span><span class="p">,</span><span class="w"> </span><span class="n">locals</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">arena</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">PyArena_Free</span><span class="p">(</span><span class="n">arena</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+<span class="p">}</span>
+
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ul>
+<ol class="arabic simple">
+<li><p>Python &gt; pythonrun.c의 PyRun_SimpleFileExFlags()를 호출합니다.</p></li>
+<li><p>PyRun_SimpleFileExFlags()</p>
+<ul class="simple">
+<li><p>.pyc 파일 경로면 run_pyc_file()을 호출합니다.</p></li>
+<li><p>스크립트 파일(.py) 경로면 PyRun_FileExFlags()를 호출합니다.</p></li>
+<li><p><command> | python처럼 파일 경로가 stdin이면 stdin을 파일 핸들로 취급하고 PyRun_FileExFlags()를 호출합니다.</p></li>
+</ul>
+</li>
+<li><p>PyRun_FileExFlags()는 파일에서 파이썬 모듈을 생성하고 run_mod()로 보내 실행합니다.</p></li>
+</ol>
+</section>
+<section id="id8">
+<h3>컴파일된 바이트 코드 입력<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p>python을 .pyc 파일 경로와 함께 실행하면 CPython은 파일을 텍스트 파일로 불러와 파싱하는 대신 .pyc 파일에서 디스크에 기록된 코드 객체를 찾습니다.</p></li>
+<li><p>Python &gt; pythonrun.c의 run_pyc_file()은 파일 핸들을 사용해 .pyc 파일에서 코드 객체를 마셜링합니다.</p>
+<ul class="simple">
+<li><p>마셜링은 파일 내용을 메모리를 복사하여 특정 데이터 구조로 변환하는 것을 의미합니다.</p></li>
+</ul>
+</li>
+<li><p>Cpython 컴파일러는 스크립트가 호출될 때마다 파싱하는 대신 디스크의 코드 객체 구조체에 컴파일한 코드를 캐시합니다.</p></li>
+<li><p>메모리로 마셜링된 코드 객체는 Python &gt; ceval.c &gt; PyEval_EvalCode()를 호출하는 run_eval_code_obj()로 전달되어 실행됩니다.</p></li>
+</ol>
+</section>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>CPython 파헤치기 내용 정리 블로그</p>
+<ul>
+<li><p><a class="reference external" href="https://velog.io/&#64;1eejuhwany/%EB%82%98%EB%8F%84-CPython-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B03">https://velog.io/&#64;1eejuhwany/나도-CPython-파헤치기3</a></p></li>
+</ul>
+</li>
+<li><p>파이썬 모듈</p>
+<ul>
+<li><p><a class="reference external" href="https://docs.python.org/3.9/tutorial/modules.html">https://docs.python.org/3.9/tutorial/modules.html</a></p></li>
+<li><p><a class="reference external" href="https://realpython.com/python-modules-packages/">https://realpython.com/python-modules-packages</a></p></li>
+</ul>
+</li>
+</ul>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -434,6 +1455,39 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cpython-interpreter-execution-overview">5.0 CPython Interpreter Execution Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-state">5.1 Configuration State (구성 상태)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preinitialization-configuration">Preinitialization Configuration</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#related-source-files">Related Source Files</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-configuration-data-structure">Runtime Configuration Data Structure</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-runtime-configuration-with-the-command-line">Setting Runtime Configuration with the Command Line</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#viewing-runtime-flags">Viewing Runtime Flags</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-configuration">5.2 Build Configuration (빌드 구성)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">5.3 입력에서 모듈 만들기</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">연관된 소스 파일 목록</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">입력과 파일 읽기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">명령줄 문자열 입력</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">로컬 모듈 입력</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">표준 입력 또는 스크립트 파일 입력</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">컴파일된 바이트 코드 입력</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
