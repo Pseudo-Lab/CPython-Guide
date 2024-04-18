@@ -426,33 +426,32 @@ document.write(`
 <li><p>활성화된 옵션 등의 구성 (<strong>A configuration</strong>, such as which options are enabled)</p></li>
 </ol>
 <p>세 가지 요소로 넘어가기 전에, 인터프리터가 실행되는 과정에 대한 이해를 높여보겠습니다. 인터프리터의 생성부터 실행까지의 과정을 코드 레벨로 정리하면 다음과 같습니다.</p>
-<ol class="arabic">
-<li><p>인터프리터 생성 (= <code class="docutils literal notranslate"><span class="pre">3.컴파일하기</span></code>)</p>
-<div class="highlight-mermaid notranslate"><div class="highlight"><pre><span></span>graph LR
-A(&quot;`CPython Source Code`&quot;) --&gt; |Build|C(&quot;`CPython Interpreter`&quot;)
-</pre></div>
-</div>
-<ul>
+<details>
+<summary>1. 인터프리터 생성 (= 3.컴파일하기) </summary>
+<p><img alt="img" src="../_images/mermaid.png" /></p>
+<ul class="simple">
 <li><p>책에서는 CPython Source Code를 compile 해서 인터프리터를 생성한다고 표현하기도 하고, build한다고도 표현합니다. <strong>Build</strong> 과정에는 <strong>Compile</strong> 과정이 포함되어 있기 때문에, 굳이 구분하지 않고 혼용해서 사용하는 것으로 보입니다.</p></li>
 <li><p>또한, 빌드 결과물인 <strong>CPython Binary</strong>와 <strong>executable interpreter</strong>(작동하는 인터프리터)를 같은 용어로 사용하고 있습니다. <strong>CPython Interpreter</strong>로 이해해도 될 듯 합니다. <strong>“CPython 소스 코드를 빌드해서 파이썬 인터프리터를 생성했구나”</strong> 라고 생각하면 되겠습니다.</p></li>
-<li><p>인터프리터 파일은 윈도우, 맥 모두 <strong>python.exe</strong> 파일로 생성됩니다. 확장자는 <strong>Makefile</strong>의 <code class="docutils literal notranslate"><span class="pre">BUILDEXE</span></code> 변수로 변경할 수 있습니다.</p>
+<li><p>인터프리터 파일은 윈도우, 맥 모두 <strong>python.exe</strong> 파일로 생성됩니다. 확장자는 <strong>Makefile</strong>의 <code class="docutils literal notranslate"><span class="pre">BUILDEXE</span></code> 변수로 변경할 수 있습니다.</p></li>
+</ul>
 <div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># Executable suffix (.exe on Windows and Mac OS X)</span>
-<span class="nv">EXE</span><span class="o">=</span><span class="w">		</span>
-<span class="nv">BUILDEXE</span><span class="o">=</span><span class="w">	</span>.exe
+<span class="nv">EXE</span><span class="o">=</span><span class="w">  </span>
+<span class="nv">BUILDEXE</span><span class="o">=</span><span class="w"> </span>.exe
 </pre></div>
 </div>
-</li>
-<li><p>인터프리터를 빌드할 때 사용되는 소스 코드는 <strong>Programs/python.c</strong> 입니다. 따라서, 인터프리터를 실행할 때 시작되는 entrypoint file은 <strong>Programs/python.c 입니다.</strong></p>
+<ul class="simple">
+<li><p>인터프리터를 빌드할 때 사용되는 소스 코드는 <strong>Programs/python.c</strong> 입니다. 따라서, 인터프리터를 실행할 때 시작되는 entrypoint file은 <strong>Programs/python.c 입니다.</strong></p></li>
+</ul>
 <div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># Default target</span>
-<span class="nf">all</span><span class="o">:</span><span class="w">		</span><span class="n">build_all</span>
+<span class="nf">all</span><span class="o">:</span><span class="w">  </span><span class="n">build_all</span>
 </pre></div>
 </div>
-<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">build_all</span><span class="o">:</span><span class="w">	</span><span class="n">check</span>-<span class="n">clean</span>-<span class="n">src</span> <span class="k">$(</span><span class="nv">BUILDPYTHON</span><span class="k">)</span> <span class="n">oldsharedmods</span> <span class="n">sharedmods</span> <span class="n">gdbhooks</span> \
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">build_all</span><span class="o">:</span><span class="w"> </span><span class="n">check</span>-<span class="n">clean</span>-<span class="n">src</span> <span class="k">$(</span><span class="nv">BUILDPYTHON</span><span class="k">)</span> <span class="n">oldsharedmods</span> <span class="n">sharedmods</span> <span class="n">gdbhooks</span> \
         <span class="n">Programs</span>/<span class="n">_testembed</span> <span class="n">python</span>-<span class="n">config</span>
 </pre></div>
 </div>
 <div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="c"># Build the interpreter</span>
-<span class="nf">$(BUILDPYTHON)</span><span class="o">:</span><span class="w">	</span><span class="n">Programs</span>/<span class="n">python</span>.<span class="n">o</span> <span class="k">$(</span><span class="nv">LIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">LDLIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">PY3LIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">EXPORTSYMS</span><span class="k">)</span>
+<span class="nf">$(BUILDPYTHON)</span><span class="o">:</span><span class="w"> </span><span class="n">Programs</span>/<span class="n">python</span>.<span class="n">o</span> <span class="k">$(</span><span class="nv">LIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">LDLIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">PY3LIBRARY</span><span class="k">)</span> <span class="k">$(</span><span class="nv">EXPORTSYMS</span><span class="k">)</span>
 <span class="w">    </span><span class="k">$(</span>LINKCC<span class="k">)</span><span class="w"> </span><span class="k">$(</span>PY_CORE_LDFLAGS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LINKFORSHARED<span class="k">)</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span><span class="w"> </span>Programs/python.o<span class="w"> </span><span class="k">$(</span>BLDLIBRARY<span class="k">)</span><span class="w"> </span><span class="k">$(</span>LIBS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>MODLIBS<span class="k">)</span><span class="w"> </span><span class="k">$(</span>SYSLIBS<span class="k">)</span>
 </pre></div>
 </div>
@@ -460,37 +459,36 @@ A(&quot;`CPython Source Code`&quot;) --&gt; |Build|C(&quot;`CPython Interpreter`
 <span class="w">    </span><span class="k">$(</span>MAINCC<span class="k">)</span><span class="w"> </span>-c<span class="w"> </span><span class="k">$(</span>PY_CORE_CFLAGS<span class="k">)</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">$@</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Programs/python.c
 </pre></div>
 </div>
-</li>
-</ul>
-</li>
-<li><p>인터프리터 시작: 운영 체제에 따른 main 선택 (<code class="docutils literal notranslate"><span class="pre">./python.exe</span></code>)</p>
+</details>
+<details>
+<summary>2. 인터프리터 시작: 운영 체제에 따른 main 선택 (./python.exe) </summary>
 <p><strong>Programs/python.c</strong></p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>```c
-/* Minimal main program -- everything is loaded from the library */
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* Minimal main program -- everything is loaded from the library */</span>
 
-#include &quot;Python.h&quot;
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Python.h&quot;</span>
 
-#ifdef MS_WINDOWS
-int
-wmain(int argc, wchar_t **argv)
-{
-    return Py_Main(argc, argv);
-}
-#else
-int
-main(int argc, char **argv)
-{
-    return Py_BytesMain(argc, argv); // macOS
-}
-#endif
+<span class="cp">#ifdef MS_WINDOWS</span>
+<span class="kt">int</span>
+<span class="nf">wmain</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">wchar_t</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Py_Main</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="cp">#else</span>
+<span class="kt">int</span>
+<span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Py_BytesMain</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span><span class="w"> </span><span class="c1">// macOS</span>
+<span class="p">}</span>
+<span class="cp">#endif</span>
 
 </pre></div>
 </div>
 <ul class="simple">
 <li><p>macOS는 <code class="docutils literal notranslate"><span class="pre">Py_BytesMain</span></code> 함수로 진입합니다.</p></li>
 </ul>
-</li>
-<li><p>Py_BytesMain: argument 포함시키기</p>
+</details>
+<details>
+<summary>3. Py_BytesMain: argument 포함시키기 </summary>
 <p><strong>Modules/main.c: L723-L732</strong></p>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span>
 <span class="nf">Py_BytesMain</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">argv</span><span class="p">)</span>
@@ -504,8 +502,9 @@ main(int argc, char **argv)
 <span class="p">}</span>
 </pre></div>
 </div>
-</li>
-<li><p>pymain_main: 인터프리터 전체 동작 흐름</p>
+</details>
+<details>
+<summary>4. pymain_main: 인터프리터 전체 동작 흐름 </summary>
 <p><strong>Modules/main.c: L695-L708</strong></p>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span>
 <span class="nf">pymain_main</span><span class="p">(</span><span class="n">_PyArgv</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
@@ -541,8 +540,9 @@ main(int argc, char **argv)
 </li>
 <li><p>타입이 <code class="docutils literal notranslate"><span class="pre">OK</span></code>인 경우에만 <code class="docutils literal notranslate"><span class="pre">Py_RunMain()</span></code> 함수가 실행됩니다.</p></li>
 </ul>
-</li>
-<li><p>pymain_init: runtime configuration 설정 (5.1 ~ 5.2)</p>
+</details>
+<details>
+<summary>5. pymain_init: runtime configuration 설정 (5.1 ~ 5.2) </summary>
 <p><strong>Modules/main.c: L33-L75</strong></p>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">PyStatus</span>
 <span class="nf">pymain_init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">_PyArgv</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
@@ -566,7 +566,7 @@ main(int argc, char **argv)
 <span class="w">    </span><span class="n">PyConfig_InitPythonConfig</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">);</span>
 
 <span class="w">    </span><span class="cm">/* pass NULL as the config: config is read from command line arguments,</span>
-<span class="cm">       environment variables, configuration files */</span>
+<span class="cm">        environment variables, configuration files */</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">args</span><span class="o">-&gt;</span><span class="n">use_bytes_argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyConfig_SetBytesArgv</span><span class="p">(</span><span class="o">&amp;</span><span class="n">config</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="o">-&gt;</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">args</span><span class="o">-&gt;</span><span class="n">bytes_argv</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
@@ -589,8 +589,9 @@ main(int argc, char **argv)
 <span class="p">}</span>
 </pre></div>
 </div>
-</li>
-<li><p>Py_RunMain: 파이썬 코드 실행 (5.3)</p>
+</details>
+<details>
+<summary>6. Py_RunMain: 파이썬 코드 실행 (5.3) </summary>
 <p><strong>Modules/main.c: L672:L692</strong></p>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span>
 <span class="nf">Py_RunMain</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
@@ -601,7 +602,7 @@ main(int argc, char **argv)
 
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Py_FinalizeEx</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="cm">/* Value unlikely to be confused with a non-error exit status or</span>
-<span class="cm">           other special meaning */</span>
+<span class="cm">            other special meaning */</span>
 <span class="w">        </span><span class="n">exitcode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">120</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 
@@ -615,8 +616,7 @@ main(int argc, char **argv)
 <span class="p">}</span>
 </pre></div>
 </div>
-</li>
-</ol>
+</details>
 </section>
 <section id="configuration-state">
 <h2>5.1 Configuration State (구성 상태)<a class="headerlink" href="#configuration-state" title="Permalink to this heading">#</a></h2>
@@ -638,7 +638,7 @@ main(int argc, char **argv)
 <div><p>⭐ <strong>로캘(Locale)이란?</strong></p>
 <ul class="simple">
 <li><p>특정 지역, 국가, 또는 문화권에서 사용하는 언어, 통화, 날짜 및 시간 형식과 같은 <strong>지역 설정</strong>을 의미함.</p></li>
-<li><p>로캘의 정보는 일반적으로 <strong>언어 코드</strong>와 <strong>국가/지역 코드의 조합</strong>으로 표현된다. (ex&gt; **<code class="docutils literal notranslate"><span class="pre">en-US</span></code>**는 미국 영어, **<code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>**은 대한민국 한국어를 나타냄)</p></li>
+<li><p>로캘의 정보는 일반적으로 <strong>언어 코드</strong>와 <strong>국가/지역 코드의 조합</strong>으로 표현된다. (ex&gt; <code class="docutils literal notranslate"><span class="pre">en-US</span></code>는 미국 영어, <code class="docutils literal notranslate"><span class="pre">ko-KR</span></code>은 대한민국 한국어를 나타냄)</p></li>
 </ul>
 </div></blockquote>
 </li>
@@ -765,8 +765,8 @@ main(int argc, char **argv)
 <p>Configuration의 두 번째 단계는 <strong>runtime configuration</strong>이다. <code class="docutils literal notranslate"><span class="pre">PyConfig</span></code>(runtime configuration 구조체)는 다음과 같은 값들을 포함합니다.</p>
 <ul>
 <li><p><strong>Runtime flags</strong> for modes like <code class="docutils literal notranslate"><span class="pre">debug</span></code> and <code class="docutils literal notranslate"><span class="pre">optimized</span></code></p></li>
-<li><p>The <strong>mode of execution</strong>, such as a <code class="docutils literal notranslate"><span class="pre">script</span> <span class="pre">file</span></code>, <code class="docutils literal notranslate"><span class="pre">stdin</span></code>, or <code class="docutils literal notranslate"><span class="pre">module</span></code></p></li>
-<li>  <details>
+<li><p>The <strong>mode of execution</strong>, such as a <code class="docutils literal notranslate"><span class="pre">script</span> <span class="pre">file</span></code>, <code class="docutils literal notranslate"><span class="pre">stdin</span></code>, or <code class="docutils literal notranslate"><span class="pre">module</span></code></p>
+  <details>
       <summary> -X option 으로 설정 가능한 확장 옵션(extended options)</summary>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span><span class="n">X</span> <span class="n">opt</span> <span class="p">:</span> <span class="nb">set</span> <span class="n">implementation</span><span class="o">-</span><span class="n">specific</span> <span class="n">option</span><span class="o">.</span> <span class="n">The</span> <span class="n">following</span> <span class="n">options</span> <span class="n">are</span> <span class="n">available</span><span class="p">:</span>
 
@@ -898,21 +898,21 @@ Python<span class="w"> </span>version:<span class="w"> </span><span class="s2">&
 Current<span class="w"> </span>installation<span class="w"> </span>scheme:<span class="w"> </span><span class="s2">&quot;posix_prefix&quot;</span>
 
 Paths:
-<span class="w">	</span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local&quot;</span>
-<span class="w">	</span><span class="nv">include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/Users/donghee/Projects/cpython-internals/cpython/Include&quot;</span>
-<span class="w">	</span><span class="nv">platinclude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/Users/donghee/Projects/cpython-internals/cpython&quot;</span>
-<span class="w">	</span><span class="nv">platlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9/site-packages&quot;</span>
-<span class="w">	</span><span class="nv">platstdlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9&quot;</span>
-<span class="w">	</span><span class="nv">purelib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9/site-packages&quot;</span>
-<span class="w">	</span><span class="nv">scripts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/bin&quot;</span>
-<span class="w">	</span><span class="nv">stdlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9&quot;</span>
+<span class="w"> </span><span class="nv">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local&quot;</span>
+<span class="w"> </span><span class="nv">include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/Users/donghee/Projects/cpython-internals/cpython/Include&quot;</span>
+<span class="w"> </span><span class="nv">platinclude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/Users/donghee/Projects/cpython-internals/cpython&quot;</span>
+<span class="w"> </span><span class="nv">platlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9/site-packages&quot;</span>
+<span class="w"> </span><span class="nv">platstdlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9&quot;</span>
+<span class="w"> </span><span class="nv">purelib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9/site-packages&quot;</span>
+<span class="w"> </span><span class="nv">scripts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/bin&quot;</span>
+<span class="w"> </span><span class="nv">stdlib</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/usr/local/lib/python3.9&quot;</span>
 
 Variables:
-<span class="w">	</span><span class="nv">ABIFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;d&quot;</span>
-<span class="w">	</span><span class="nv">AC_APPLE_UNIVERSAL_BUILD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
-<span class="w">	</span><span class="nv">AIX_BUILDDATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
-<span class="w">	</span><span class="nv">AIX_GENUINE_CPLUSPLUS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
-<span class="w">	</span>...
+<span class="w"> </span><span class="nv">ABIFLAGS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;d&quot;</span>
+<span class="w"> </span><span class="nv">AC_APPLE_UNIVERSAL_BUILD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
+<span class="w"> </span><span class="nv">AIX_BUILDDATE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
+<span class="w"> </span><span class="nv">AIX_GENUINE_CPLUSPLUS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0&quot;</span>
+<span class="w"> </span>...
 </pre></div>
 </div>
 </li>
@@ -998,42 +998,41 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 <li><p>python -c “print(2 ** 2)”</p></li>
 </ul>
 </div></blockquote>
-<ul>
-<li><p>Modules &gt; main.c &gt; pymain_run_command()</p>
+<details>
+<summary> Modules > main.c > pymain_run_command() </summary>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span>
 <span class="nf">pymain_run_command</span><span class="p">(</span><span class="kt">wchar_t</span><span class="w"> </span><span class="o">*</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">cf</span><span class="p">)</span>
 <span class="p">{</span>
-<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">unicode</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">bytes</span><span class="p">;</span>
-<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
+<span class="w">  </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">unicode</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">bytes</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">ret</span><span class="p">;</span>
 
-<span class="w">    </span><span class="n">unicode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_FromWideChar</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">unicode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="n">unicode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_FromWideChar</span><span class="p">(</span><span class="n">command</span><span class="p">,</span><span class="w"> </span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">unicode</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
 
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PySys_Audit</span><span class="p">(</span><span class="s">&quot;cpython.run_command&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;O&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">unicode</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">pymain_exit_err_print</span><span class="p">();</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PySys_Audit</span><span class="p">(</span><span class="s">&quot;cpython.run_command&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;O&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">unicode</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">pymain_exit_err_print</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
 
-<span class="w">    </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8String</span><span class="p">(</span><span class="n">unicode</span><span class="p">);</span>
-<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">unicode</span><span class="p">);</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytes</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="n">bytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8String</span><span class="p">(</span><span class="n">unicode</span><span class="p">);</span>
+<span class="w">  </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">unicode</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bytes</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
 
-<span class="w">    </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyRun_SimpleStringFlags</span><span class="p">(</span><span class="n">PyBytes_AsString</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w"> </span><span class="n">cf</span><span class="p">);</span>
-<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">bytes</span><span class="p">);</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">  </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyRun_SimpleStringFlags</span><span class="p">(</span><span class="n">PyBytes_AsString</span><span class="p">(</span><span class="n">bytes</span><span class="p">),</span><span class="w"> </span><span class="n">cf</span><span class="p">);</span>
+<span class="w">  </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">bytes</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">ret</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
 
 <span class="nl">error</span><span class="p">:</span>
-<span class="w">    </span><span class="n">PySys_WriteStderr</span><span class="p">(</span><span class="s">&quot;Unable to decode the command from the command line:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">pymain_exit_err_print</span><span class="p">();</span>
+<span class="w">  </span><span class="n">PySys_WriteStderr</span><span class="p">(</span><span class="s">&quot;Unable to decode the command from the command line:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">pymain_exit_err_print</span><span class="p">();</span>
 <span class="p">}</span>
 
 </pre></div>
 </div>
-</li>
-</ul>
+</details>
 <ol class="arabic simple">
 <li><p>Modules &gt; main.c에서 pymain_run_command()가 실행되며 -c로 전달된 명령은 C의 wchar_t* 타입 인자로 함수에 전달됩니다.</p>
 <ul class="simple">
@@ -1057,9 +1056,10 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 </div></blockquote>
 <ol class="arabic">
 <li><p>-m 플래그는 모듈 패키지의 진입점(<strong>main</strong>) 을 실행합니다.</p>
-<ul>
+<ul class="simple">
 <li><p>임포트 라이브러리(importlib)의 검색 매커니즘 덕분에 특정 모듈의 파일 시스템 위치를 기억할 필요는 없습니다.</p></li>
-<li><p>Lib &gt; <a class="reference external" href="http://runpy.py">runpy.py</a> &gt; _get_module_details()</p>
+</ul>
+ <details><summary> Lib > runpy.py > _get_module_details() </summary>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_get_module_details</span><span class="p">(</span><span class="n">mod_name</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="ne">ImportError</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">mod_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">):</span>
         <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s2">&quot;Relative module names not supported&quot;</span><span class="p">)</span>
@@ -1108,11 +1108,11 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
             <span class="k">if</span> <span class="n">mod_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
                 <span class="k">raise</span>  <span class="c1"># No module loaded; being a package is irrelevant</span>
             <span class="k">raise</span> <span class="n">error</span><span class="p">((</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">; </span><span class="si">%r</span><span class="s2"> is a package and cannot &quot;</span> <span class="o">+</span>
-                               <span class="s2">&quot;be directly executed&quot;</span><span class="p">)</span> <span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod_name</span><span class="p">))</span>
+                                <span class="s2">&quot;be directly executed&quot;</span><span class="p">)</span> <span class="o">%</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">mod_name</span><span class="p">))</span>
     <span class="n">loader</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">loader</span>
     <span class="k">if</span> <span class="n">loader</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">error</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%r</span><span class="s2"> is a namespace package and cannot be executed&quot;</span>
-                                                                 <span class="o">%</span> <span class="n">mod_name</span><span class="p">)</span>
+                                                                    <span class="o">%</span> <span class="n">mod_name</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">code</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_code</span><span class="p">(</span><span class="n">mod_name</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -1123,8 +1123,9 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 
 </pre></div>
 </div>
-</li>
-<li><p>importlib.util.find_spec(mod_name)</p>
+ </details>
+ <details>
+ <summary> importlib.util.find_spec(mod_name) </summary>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">importlib.util</span>
 <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">find_spec</span><span class="p">(</span><span class="s2">&quot;unittest&quot;</span><span class="p">)</span>
 
@@ -1146,8 +1147,7 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 <span class="c1"># )</span>
 </pre></div>
 </div>
-</li>
-</ul>
+ </details>
 </li>
 <li><p>runpy를 임포트하고 PyObject_Call()로 해당 모듈을 실행합니다. runpy 모듈은 Lib &gt; runpy.py에 위치한 순수한 파이썬 모듈입니다.</p>
 <ul>
@@ -1194,8 +1194,8 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 </div></blockquote>
 <ul>
 <li><p>관련 코드</p>
-<ul>
-<li><p>PyRun_SimpleFileExFlags()</p>
+  <details>
+  <summary> PyRun_SimpleFileExFlags() </summary>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span>
 <span class="nf">PyRun_SimpleFileExFlags</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span>
 <span class="w">                        </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
@@ -1211,11 +1211,12 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 <span class="p">}</span>
 </pre></div>
 </div>
-</li>
-<li><p>pyrun_simple_file()</p>
+  </details>
+  <details>
+  <summary> pyrun_simple_file() </summary>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span>
 <span class="nf">pyrun_simple_file</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span>
-<span class="w">                  </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
 <span class="p">{</span>
 <span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">v</span><span class="p">;</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">set_file_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">ret</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
@@ -1280,7 +1281,7 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 <span class="w">            </span><span class="k">goto</span><span class="w"> </span><span class="n">done</span><span class="p">;</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">        </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pyrun_file</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">Py_file_input</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="p">,</span>
-<span class="w">                       </span><span class="n">closeit</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">closeit</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">    </span><span class="n">flush_io</span><span class="p">();</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
@@ -1309,11 +1310,12 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 
 </pre></div>
 </div>
-</li>
-<li><p>pyrun_file()</p>
+  </details>
+  <details>
+  <summary> pyrun_file() </summary>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
 <span class="nf">pyrun_file</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">globals</span><span class="p">,</span>
-<span class="w">           </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">locals</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span><span class="w"> </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
+<span class="w">            </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">locals</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closeit</span><span class="p">,</span><span class="w"> </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
 <span class="p">{</span>
 <span class="w">    </span><span class="n">PyArena</span><span class="w"> </span><span class="o">*</span><span class="n">arena</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyArena_New</span><span class="p">();</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">arena</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
@@ -1331,7 +1333,7 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 <span class="w">    </span><span class="k">else</span>
 <span class="w">    </span><span class="p">{</span>
 <span class="w">        </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyParser_ASTFromFileObject</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">                                         </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">arena</span><span class="p">);</span>
+<span class="w">                                            </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">arena</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">closeit</span><span class="p">)</span>
@@ -1355,8 +1357,7 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 
 </pre></div>
 </div>
-</li>
-</ul>
+  </details>
 </li>
 </ul>
 <ol class="arabic simple">
@@ -1365,7 +1366,7 @@ make<span class="w"> </span>-j2<span class="w"> </span>-s
 <ul class="simple">
 <li><p>.pyc 파일 경로면 run_pyc_file()을 호출합니다.</p></li>
 <li><p>스크립트 파일(.py) 경로면 PyRun_FileExFlags()를 호출합니다.</p></li>
-<li><p><command> | python처럼 파일 경로가 stdin이면 stdin을 파일 핸들로 취급하고 PyRun_FileExFlags()를 호출합니다.</p></li>
+<li><p>python처럼 파일 경로가 stdin이면 stdin을 파일 핸들로 취급하고 PyRun_FileExFlags()를 호출합니다.</p></li>
 </ul>
 </li>
 <li><p>PyRun_FileExFlags()는 파일에서 파이썬 모듈을 생성하고 run_mod()로 보내 실행합니다.</p></li>
