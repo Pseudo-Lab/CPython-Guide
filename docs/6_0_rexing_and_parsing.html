@@ -166,6 +166,7 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="4_0_python_grammar.html">4. 언어와 문법</a></li>
 <li class="toctree-l1"><a class="reference internal" href="5_0_config_and_input.html">5. 구성과 입력</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">6. 렉싱과 파싱</a></li>
+
 <li class="toctree-l1"><a class="reference internal" href="7_0_compiler.html">7. 컴파일러</a></li>
 <li class="toctree-l1"><a class="reference internal" href="8_0_eval_loop.html">8. 평가 루프</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="9_0_memory.html">9. 메모리 관리</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
@@ -376,12 +377,35 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.0 개요</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cst">6.1 CST 생성</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">6.2 파서 &amp; 토크나이저</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">6.3 추상 구문 트리</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">6.4 정리</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">6. 렉싱과 파싱</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.0 개요</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#https-medium-com-codeinseoul-python-lexer-and-parser-d0dbe676a6e">*<em>출처: https://medium.com/@codeinseoul/python-lexer-and-parser-d0dbe676a6e</em></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">🤔 파서+토크나이저 = 렉서?</a></li>
 </ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cst">6.1 CST 생성</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">6.2 파서-토크나이저</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">6.2.1 연관된 소스 파일 목록</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">6.2.2. 파일 데이터를 파서에 입력하기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">6.2.3 파서-토크나이저 흐름</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">6.3 추상 구문 트리</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ast">6.3.1 AST 관련 소스 파일 목록</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">6.3.2 인스타비즈로 AST 시각화하기</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">6.3.3 AST 컴파일</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">6.4 정리</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">6.5 ‘거의 같음’ 비교 연산자 추가하기</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grammar-python-gram">Grammar/python.gram</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-ast-c">Python/ast.c</a></li>
+</ul>
+</li>
+</ul>
+
             </nav>
         </div>
     </div>
@@ -402,69 +426,437 @@ document.write(`
 <li><p><span class="xref myst">6.2 파서 &amp; 토크나이저</span></p></li>
 <li><p><span class="xref myst">6.3 추상 구문 트리</span></p></li>
 <li><p><span class="xref myst">6.4 정리</span></p></li>
+<li><p><span class="xref myst">6.5 ‘거의 같음’ 비교 연산자 추가하기</span></p></li>
 </ul>
 </li>
 </ul>
-<br/>
-<br/>
-<br/>
 <section id="id2">
 <h2>6.0 개요<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
-<p>파이썬은 문법을 해석하기 위해서 CST(Concrete syntax tree) 와 AST(Abstract syntax tree) 두 가지 구조를 사용합니다. CST 와 AST 2단계를 통해서 문법을 파싱하게 되는데, 이번 챕터를 통해서 CST 와 AST 를 살펴보겠습니다.
+<blockquote>
+<div><p><em>저번 시간에는 CPython 런타임 구성과 명령줄 문자열, 로컬 모듈, 스크립트 파일, 컴파일된 바이트 코드가 입력으로 들어왔을 때 CPython에서 어떻게 처리하는지 살펴보았습니다.<br/>
+이번 시간에는 입력 받은 코드를 컴파일 가능한 논리적 구조로 만들어 주는 렉싱과 파싱에 대해 알아봅니다.</em></p>
+</div></blockquote>
+<p>파이썬은 문법을 해석하기 위해서 CST(Concrete syntax tree) 와 AST(Abstract syntax tree) 두 가지 구조를 사용하며, 각각 렉서와 파서에 의해 만들어집니다.
 <br/></p>
+<p><img alt="input_to_compiler" src="../_images/04_Input_to_Compiler.png" /></p>
+<!-- <p align="center"><img src="book/images/6_rexing/04_Input_to_Compiler.png" height="100px" width="300px"></p> -->
+<section id="https-medium-com-codeinseoul-python-lexer-and-parser-d0dbe676a6e">
+<h3>*<em>출처: <a class="reference external" href="https://medium.com/&#64;codeinseoul/python-lexer-and-parser-d0dbe676a6e">https://medium.com/&#64;codeinseoul/python-lexer-and-parser-d0dbe676a6e</a></em><a class="headerlink" href="#https-medium-com-codeinseoul-python-lexer-and-parser-d0dbe676a6e" title="Permalink to this heading">#</a></h3>
+<br/>
 <p><img alt="parse_tree" src="../_images/01_parse_tree.png" /></p>
+<ul class="simple">
+<li><p>CST : 토큰과 심벌에 대한 <strong>문맥(context)이 없는</strong> 트리 집합</p></li>
+<li><p>AST : 파이썬 문법과 문장들에 대한 <strong>문맥(context)이 있는</strong> 트리 집합</p></li>
+</ul>
+<p>잠깐! 책에서 ‘렉서’와 ‘파서+토크나이저’ 두 용어를 혼용하고 있습니다. 이를테면 CST를 생성하는 건 렉서 혹은 파서+토크나이저라고 하는 식입니다. 그렇다면 두 용어는 동일한 뜻을 가진 단어일까요?</p>
+</section>
+<section id="id3">
+<h3>🤔 파서+토크나이저 = 렉서?<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>세 용어 모두 &quot;컴파일러 이론 용어&quot;입니다.
+
+•Tokenizer: 구문에서 의미있는 요소들을 토큰으로 쪼갬
+•Lexer: 토큰의 의미를 분석
+•Parser: Lexical analyze 된 후 토큰화된 데이터를 CST라는 구조로 표현
+
+*Lexical analyze?
+•Tokenizer를 거치며 의미있는 단위로 쪼개지고, Lexer를 거치며 그 결과의 의미를 분석하는 과정
+
+ex) return 명령어 분석
+- return 이라는 단어에서 r, e, t, u, r, n 은 각각 따로놓고 보면 아무 의미도 가지지 않음
+- Tokenizer 를 거치며 return 이라는 의미있는 단어가 됨 -&gt; 토큰화
+- Lexer 를 거치며 이 토큰은 무언가를 반환하라는 명령어구나! 라고 의미를 분석함
+- 해당 토큰은 {type: 명령어, value: &quot;return&quot;, child: []} 와 같은 식으로 의미가 분석되어 Parser 에게 전달됨
+</pre></div>
+</div>
+<p>[References]
+👉🏻<a class="reference external" href="https://velog.io/&#64;mu1616/%EC%BB%B4%ED%8C%8C%EC%9D%BC%EB%9F%AC-%EC%9D%B4%EB%A1%A0%EC%97%90%EC%84%9C-%ED%86%A0%ED%81%AC%EB%82%98%EC%9D%B4%EC%A0%80Tokenizer-%EB%A0%89%EC%84%9CLexer-%ED%8C%8C%EC%84%9CParse-%EC%9D%98-%EC%97%AD%ED%95%A0">용어 정의, 사진</a>
+👉🏻<a class="reference external" href="https://trumanfromkorea.tistory.com/79">return 명령어 예시</a></p>
+<ul class="simple">
+<li><p>결론: <strong>원칙적으로 파서+토크나이저가 곧 렉서는 아닙니다.</strong> 다만 <strong>렉서, 즉 토큰의 의미를 분석하는 기능의 구현은 언어마다 다르며,</strong> CPython의 렉서는 파서와 토크나이저를 합친 형태로 되어 있다고 이해하면 될 것 같습니다.</p></li>
+</ul>
 <br/>
 <br/>
 <br/>
+</section>
 </section>
 <section id="cst">
 <h2>6.1 CST 생성<a class="headerlink" href="#cst" title="Permalink to this heading">#</a></h2>
-<p>파스 트리라고도 부르는 CST 는 작성한 코드를 루트와 순서가 있는 트리구조로 바꾸는 일련의 작업을 의미합니다. 다음은 CST 구문을 사용하여 a + 1 을 산술표현식으로 표현한 예입니다.</p>
-<p><img alt="CST_EXPR" src="../_images/00_CST_EXPR.jpg" /></p>
+<p>파스 트리라고도 부르는 CST 는 작성한 코드를 루트와 순서가 있는 트리로 변환한 결과물입니다. 다음은 a + 1라는 산술식이 CST로 표현된 모습입니다.<br/>
+<img alt="CST_EXPR" src="../_images/00_CST_EXPR.jpg" />
+<br/></p>
+<p>파서는 입력 스트림으로 들어오는 토큰들이 파이썬 문법에 맞는 토큰인지 검증하는 동시에 CST를 생성합니다. 검증에는 Grammar 폴더 내 Grammar 파일에 정의돼있는 심볼들을 사용하며, 심볼은 CST 를 구성하는 노드가 됩니다.</p>
+<p>아래 사진을 통해 Grammar 파일에 정의된 arith_expr, term, factor, power 등의 심볼이 CST 노드에 대응한다는 사실을 확인할 수 있습니다.
+<img alt="Grammar_Grammar" src="../_images/05_Grammar_Grammar.png" />
+<br/></p>
+<p>또한 &lt;4. 파이썬 언어와 문법&gt;(p.48)에서 나왔던 것처럼, 토큰은 Grammar 폴더의 Tokens 에서 정의하고 있습니다. 이번 시간에는 NAME과 NUMBER 토큰을 예시로 들겠습니다.
+<br/></p>
+<ul class="simple">
+<li><p>NAME 토큰은 변수나 함수, 클래스 모듈의 이름을 표현합니다.</p></li>
+<li><p>NUMBER 토큰은 다양한 숫자 형식 값을 표현합니다. 이를테면 ‘0b10000’로 표현된 숫자를 이진수라고 이해하는데 쓰일 수 있습니다.</p></li>
+</ul>
+<p><img alt="Parsing_Name" src="../_images/03_Parsing_Name.jpg" />
+<br/></p>
+<p>이 때 python의 symbol과 token 모듈로 컴파일된 심벌과 토큰을 확인할 수 있습니다.
 <br/>
 <br/>
-<br/>
-<p>CST 를 구성하는 문법은 Grammar 폴더의 Grammar 에서 정의하며, arith_expr, term, factor, power 등 여러 심볼들이 존재합니다. 또한 흔히 말하는 토큰은 Grammar 폴더의 Tokens 에서 정의하고 있으며,NAME 토큰은 변수나 함수, 클래스 모듈의 이름을 표현합니다.</p>
-<p><img alt="Parsing_Name" src="../_images/03_Parsing_Name.jpg" /></p>
-<br/>
-<br/>
-<br/>
-</section>
-<section id="id3">
-<h2>6.2 파서 &amp; 토크나이저<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
-<p>C-Python의 파서-토크나이저를 통해서, CST 의 골격 구조를 완성할 수 있는데, 다음과 같이 파서-토크나이저를 통해 연속적인 CST 트리 구조를 완성할 수 있습니다.</p>
-<p><img alt="Parser_Tokenizer" src="../_images/02_Parser_Tokenizer.jpg" /></p>
-<br/>
-<br/>
-<br/>
-<p>파서 토크나이저는 PyParser_ASTFromFileObject() 를 통해서 파서의 진입점을 찾을 수 있습니다.PyParser_ASTFromFileObject( ) 은 다음 두 단계를 거쳐 CST -&gt; AST 파싱을 진행합니다.</p>
-<ol class="arabic simple">
-<li><p>PyParser_ParserFileObject() 를 통해 CST 로 변환.</p></li>
-<li><p>PyAST_FromNodeObject() 를 사용해 CST 를 AST 로 변환.</p></li>
-</ol>
-<p>하게 됩니다.</p>
-<p>:sparkles: 저와 같은 경우, 파이썬 3.9 에서 PyParser_ASTFromFileObject() 가 중단점이 걸리지 않아 확인해 보니, PEG 옵션을 켜두어 <em>_use_peg_parser</em> 를 꺼놓고 진행했습니다.</p>
-<br/>
-<br/>
-<br/>
+<br/></p>
 </section>
 <section id="id4">
-<h2>6.3 추상 구문 트리<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h2>
-<p><em>추상 구문 트리 단계</em>는 CST 로 변환한 트리를 좀 더 논리적인 구조로 변환하는 단계입니다. CST는 코드 파일의 텍트를 있는 그대로 표현하는 구조로 텍스트로부터 토큰을 추출하여, 토큰 종류만 구분해 둔 상태에 불과합니다.(즉 CST 로 기본적인 문법 구조를 알 수 있지만, 함수, 스코프, 루프 등등 상세한 정보를 파악하기는 힘들다고 합니다..) 따라서 코드를 컴파일하기 전에 CST 를 실제 파이썬 언어 구조와 의미 요소를 표현하는 고수준 구조인 AST 로 변환해야 합니다.</p>
-<p>다음은 AST 와 관련된 소스파일 목록입니다.</p>
+<h2>6.2 파서-토크나이저<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h2>
+<section id="id5">
+<h3>6.2.1 연관된 소스 파일 목록<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>파일</p></th>
+<th class="head"><p>설명</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Python/pythonrun.c</p></td>
+<td><p>파서와 컴파일러 실행</p></td>
+</tr>
+<tr class="row-odd"><td><p>Parser/parsetok.c</p></td>
+<td><p>파서와 토크나이저 구현</p></td>
+</tr>
+<tr class="row-even"><td><p>Parser/tokenizer.c</p></td>
+<td><p>토크나이저 구현</p></td>
+</tr>
+<tr class="row-odd"><td><p>Parser/tokenizer.h</p></td>
+<td><p>토큰 상태 등의 데이터 모델을 정의하는 토크나이저 구현 헤더 파일</p></td>
+</tr>
+<tr class="row-even"><td><p>Include/token.h</p></td>
+<td><p>Tools▶︎scripts▶︎generate_token.py에 의해 생성되는 토큰 정의</p></td>
+</tr>
+<tr class="row-odd"><td><p>Include/node.h</p></td>
+<td><p>토크나이저를 위한 CST 노드 인터페이스와 매크로</p></td>
+</tr>
+</tbody>
+</table>
+<br/>
+<br/>
+</section>
+<section id="id6">
+<h3>6.2.2. 파일 데이터를 파서에 입력하기<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<p>파서-토크나이저는 PyParser_ASTFromFileObject() 를 통해 파서의 진입점을 찾을 수 있습니다. PyParser_ASTFromFileObject() 은 다음 두 단계를 거쳐 CST -&gt; AST 파싱을 진행합니다.</p>
 <ol class="arabic simple">
-<li><p>Include -&gt; python-ast.h</p></li>
-<li><p>Parser -&gt; Python.asdl</p></li>
-<li><p>Python -&gt; ast.c</p></li>
+<li><p>PyParser_ParseFileObject() 를 통해 CST 로 변환</p></li>
+<li><p>PyAST_FromNodeObject() 를 사용해 CST 를 AST 로 변환<br></p></li>
 </ol>
-<p>ast 모듈은 문법을 다시 생성할 때, Python-ast.h 를 임포트하게 된느데, 이 파일은 Parser-&gt;Python.asdl 에서 다시 생성되게 됩니다. 즉 Include -&gt; python-ast.h의 파라미터와 이름은 Parser-&gt;python.asdl 의 정의를 따르도록 재생성 됩니다.</p>
-<p>그 후, AST 의 진입점인 PyAST_FromNodeObject( ) 는 TYPE(n) 에 대한 switch 문을 실행하고, 결과로 심벌 또는 토큰 타입을 반환하게 됩니다.</p>
+<p>PyParser_ParseFileObject() 함수는 2가지 중요한 작업을 수행합니다.<br/></p>
+<ol class="arabic simple">
+<li><p>PyTokenizer_FromFile()을 사용해 토크나이저 상태 tok_state를 초기화<br/></p></li>
+<li><p>parsetok()를 사용해 토큰들을 CST(노드 리스트)로 변환 (Parser/parsetok.c L456:463)</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="nl">done</span><span class="p">:</span>
+<span class="w">    </span><span class="n">PyTokenizer_Free</span><span class="p">(</span><span class="n">tok</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_PyNode_FinalizeEndPos</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">n</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="p">...</span>
+</pre></div>
+</div>
+<p><br/><br/></p>
+</section>
+<section id="id7">
+<h3>6.2.3 파서-토크나이저 흐름<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h3>
+<p>기본적으로 커서가 텍스트 입력 끝에 도달하거나 문법 오류가 발견될 때까지 파서와 토크나이저를 실행합니다 (Parser/parsetok.c L242:253).</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#endif</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">size_t</span><span class="w"> </span><span class="n">len</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="p">;</span>
+<span class="w">        </span><span class="n">col_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">lineno</span><span class="p">;</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">line_start</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyTokenizer_Get</span><span class="p">(</span><span class="n">tok</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">b</span><span class="p">);</span>
+<span class="w">        </span><span class="p">...</span>
+</pre></div>
+</div>
+<br/>
+<ol class="arabic simple">
+<li><p>본격적인 파서-토크나이저 실행 전, 토크나이저에서 사용하는 모든 상태를 저장하는 임시 데이터 구조인 tok_state를 초기화합니다 (Parser/parsetok.c L165:189).</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">node</span><span class="w"> </span><span class="o">*</span>
+<span class="nf">PyParser_ParseFileObject</span><span class="p">(</span><span class="kt">FILE</span><span class="w"> </span><span class="o">*</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span>
+<span class="w">                         </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">enc</span><span class="p">,</span><span class="w"> </span><span class="n">grammar</span><span class="w"> </span><span class="o">*</span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">start</span><span class="p">,</span>
+<span class="w">                         </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">ps1</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">ps2</span><span class="p">,</span>
+<span class="w">                         </span><span class="n">perrdetail</span><span class="w"> </span><span class="o">*</span><span class="n">err_ret</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">)</span>
+<span class="w">                         </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">tok_state</span><span class="w"> </span><span class="o">*</span><span class="n">tok</span><span class="p">;</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">tok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyTokenizer_FromFile</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span><span class="w"> </span><span class="n">enc</span><span class="p">,</span><span class="w"> </span><span class="n">ps1</span><span class="p">,</span><span class="w"> </span><span class="n">ps2</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">err_ret</span><span class="o">-&gt;</span><span class="n">error</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">E_NOMEM</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">PyPARSE_TYPE_COMMENTS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">tok</span><span class="o">-&gt;</span><span class="n">type_comments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">Py_INCREF</span><span class="p">(</span><span class="n">err_ret</span><span class="o">-&gt;</span><span class="n">filename</span><span class="p">);</span>
+<span class="w">        </span><span class="n">tok</span><span class="o">-&gt;</span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">err_ret</span><span class="o">-&gt;</span><span class="n">filename</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">parsetok</span><span class="p">(</span><span class="n">tok</span><span class="p">,</span><span class="w"> </span><span class="n">g</span><span class="p">,</span><span class="w"> </span><span class="n">start</span><span class="p">,</span><span class="w"> </span><span class="n">err_ret</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>코드에서 볼 수 있듯, tok_state는 커서의 현재 위치와 같은 정보를 저장합니다.<br/></p>
+<ol class="arabic simple" start="2">
+<li><p>tok_get()으로 다음 토큰을 얻고, 해당 토큰의 고유 ID를 파서로 전달합니다 (Parser/tokenizer.c L1171:1185).</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* Get next token, after space stripping etc. */</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span>
+<span class="nf">tok_get</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">tok_state</span><span class="w"> </span><span class="o">*</span><span class="n">tok</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">p_start</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">**</span><span class="n">p_end</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">blankline</span><span class="p">,</span><span class="w"> </span><span class="n">nonascii</span><span class="p">;</span>
+
+<span class="w">    </span><span class="o">*</span><span class="n">p_start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">p_end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">  </span><span class="nl">nextline</span><span class="p">:</span>
+<span class="w">    </span><span class="n">tok</span><span class="o">-&gt;</span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">blankline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Get indentation level */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tok</span><span class="o">-&gt;</span><span class="n">atbol</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyToken_OneChar</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>파서는 파서 생성기 오토마타(DFA)로 CST에 노드를 추가합니다 (Parser/parser.c L232:316).</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">PyParser_AddToken</span><span class="p">(</span><span class="n">parser_state</span><span class="w"> </span><span class="o">*</span><span class="n">ps</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="p">,</span>
+<span class="w">                  </span><span class="kt">int</span><span class="w"> </span><span class="n">lineno</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">col_offset</span><span class="p">,</span>
+<span class="w">                  </span><span class="kt">int</span><span class="w"> </span><span class="n">end_lineno</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">end_col_offset</span><span class="p">,</span>
+<span class="w">                  </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">expected_ret</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="p">...</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">dfa</span><span class="w"> </span><span class="o">*</span><span class="n">d1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyGrammar_FindDFA</span><span class="p">(</span><span class="n">ps</span><span class="o">-&gt;</span><span class="n">p_grammar</span><span class="p">,</span><span class="w"> </span><span class="n">nt</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">((</span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">push</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ps</span><span class="o">-&gt;</span><span class="n">p_stack</span><span class="p">,</span><span class="w"> </span><span class="n">nt</span><span class="p">,</span><span class="w"> </span><span class="n">d1</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">arrow</span><span class="p">,</span><span class="w"> </span><span class="n">lineno</span><span class="p">,</span><span class="w"> </span><span class="n">col_offset</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">end_lineno</span><span class="p">,</span><span class="w"> </span><span class="n">end_col_offset</span><span class="p">))</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">D</span><span class="p">(</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot; MemError: push</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">));</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="n">D</span><span class="p">(</span><span class="n">printf</span><span class="p">(</span><span class="s">&quot; Push &#39;%s&#39;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">d1</span><span class="o">-&gt;</span><span class="n">d_name</span><span class="p">));</span>
+<span class="w">                    </span><span class="k">continue</span><span class="p">;</span>
+<span class="w">  </span><span class="p">...</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">E_OK</span><span class="p">;</span>
+<span class="p">}</span>
+
+</pre></div>
+</div>
+<p>전 과정을 도식화하면 아래와 같습니다.
+<img alt="Parser_Tokenizer" src="../_images/02_Parser_Tokenizer.jpg" />
+<br/><br/><br/></p>
+</section>
+</section>
+<section id="id8">
+<h2>6.3 추상 구문 트리<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h2>
+<p><em>추상 구문 트리 단계</em>는 CST를 실행 가능한 형태이면서 좀더 논리적인 구조로 변환하는 단계입니다. CST는 코드 파일의 텍스트를 있는 그대로 표현한 구조로, 텍스트로부터 토큰을 추출하여 토큰 종류만 구분해 둔 상태에 불과합니다. 때문에 기본적인 문법 구조는 알 수 있지만 함수, 스코프, 루프 등 상세 정보는 파악이 불가능합니다.
+따라서 코드를 컴파일하기 전에 파이썬 언어 구조와 의미 요소를 표현하는 AST 로 변환해야 합니다.<br/></p>
+<p>AST는 CPython 파싱 과정 중 생성하지만 표준 라이브러리의 ast 모듈을 사용해 생성할 수도 있습니다.<br/></p>
+<p>AST의 상세 구현을 보기 전에 파이썬 코드의 기본 요소들이 AST로 어떻게 표현되는지 알아봅시다.<br/></p>
+<section id="ast">
+<h3>6.3.1 AST 관련 소스 파일 목록<a class="headerlink" href="#ast" title="Permalink to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>파일</p></th>
+<th class="head"><p>용도</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Include▶︎python-ast.h</p></td>
+<td><p>Parser▶︎asdl_c.py로 생성한 AST 노드 타입 선언</p></td>
+</tr>
+<tr class="row-odd"><td><p>Parser▶︎Python.asdl</p></td>
+<td><p>도메인 특화 언어인 ASDL(Abstract Syntax Description Language)5로 작성된 AST 노드 타입들과 프로퍼티 목록</p></td>
+</tr>
+<tr class="row-even"><td><p>Python▶︎ast.c</p></td>
+<td><p>AST 구현</p></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<div><p>python-ast.h 파일은 Parser▶︎Python.asdl 에서 재생성되며, python ast 모듈이 문법을 재생성할 때 불러와 사용합니다. 때문에 Include▶︎python-ast.h의 파라미터와 이름은 Parser▶︎Python.asdl의 정의를 따릅니다. 그 후 AST 의 진입점인 PyAST_FromNodeObject( ) 는 TYPE(n) 에 대한 switch 문을 실행하고, 결과로 심벌 또는 토큰을 반환합니다.</p>
+</div></blockquote>
 <br/>
 <br/>
 <br/>
 </section>
-<section id="id5">
-<h2>6.4 정리<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h2>
+<section id="id9">
+<h3>6.3.2 인스타비즈로 AST 시각화하기<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<p>인스타비즈는 AST와 CPython code objects를 웹 인터페이스에서 빠르게 시각화해서 볼 수 있는 파이썬 패키지입니다.</p>
+<p>pip로 인스타비즈를 설치할 수 있습니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>instaviz
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">instaviz.show()</span></code> 함수는 code object 타입의 인자 한개를 받습니다. <a class="reference external" href="https://docs.python.org/3/c-api/code.html">code object</a>에 대해서는 다음 장(7장 컴파일러)에서 알아볼 것입니다.</p>
+<p>일단 간단한 함수를 하나 정의하고 함수 이름을 인자로 넘겨보겠습니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>instaviz
+&gt;&gt;&gt;<span class="w"> </span>def<span class="w"> </span>foo<span class="o">()</span>:
+<span class="w">	</span><span class="nv">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">1</span>
+<span class="w">	</span><span class="nv">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>a<span class="w"> </span>+<span class="w"> </span><span class="m">1</span>
+<span class="w">	</span><span class="k">return</span><span class="w"> </span>b
+&gt;&gt;&gt;<span class="w"> </span>instavize.show<span class="o">(</span>foo<span class="o">)</span>
+<span class="c1"># 내부적인 구현은 foo.__code__를 통해 컴파일된 함수 바디의 code object가 입력으로 들어갑니다.</span>
+</pre></div>
+</div>
+<p>명령줄에서 웹서버가 포트 8080에서 시작되었다는 출력을 볼 수 있습니다.</p>
+<p>해당 포트를 사용 중이라면 instaviz.show(foo, <strong>port=9090</strong>)처럼 비어 있는 포트 번호를 직접 지정하고 실행하면 됩니다.</p>
+<p>웹 브라우저에서 함수에 대한 자세한 분석을 확인할 수 있습니다.</p>
+<p><img alt="Code_Objects_Properties" src="../_images/06_Code_Objects_Properties.png" /></p>
+<p>다음 그래프는 REPL에서 선언한 함수를 AST로 표현한 모습입니다.</p>
+<p>트리의 각 노드 타입은 AST 노드 클래스입니다. ast 모듈에서 찾을 수 있는 노드 클래스들은 모두 <code class="docutils literal notranslate"><span class="pre">_ast.AST</span></code>를 상속합니다. CST와 달리 AST의 노드들은 특정 프로퍼티들을 통해 자식노드와 연결됩니다. <code class="docutils literal notranslate"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">a</span> <span class="pre">+</span> <span class="pre">1</span></code>이 선언된 줄과 연결된 Assign 노드를 클릭해보세요!</p>
+<p><img alt="AST_Visualization" src="../_images/07.AST_Visualization.png" /></p>
+<p>Assign 노드는 두 개의 프로퍼티를 가집니다.</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">targets</span></code> 는 값이 할당될 이름의 list입니다.</p>
+<ul class="simple">
+<li><p><strong>a, b = 1, 2</strong> 처럼 언패킹을 통해 한 번에 여러 이름에 값을 할당하기 위해 array를 사용합니다.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">value</span></code>는 이름에 할당할 값입니다. 이 경우에는 BinOp 표현식 a + 1가 할당됩니다.</p></li>
+</ol>
+<p>BinOp 노드는 세 개의 프로퍼티를 가집니다.</p>
+<ul class="simple">
+<li><p>left: 왼쪽 항</p></li>
+<li><p>op: 연산자. 이 경우에는 더하기를 뜻하는 Add 노드(+)</p></li>
+<li><p>right: 오른쪽 항</p></li>
+</ul>
+<p><img alt="Node_Properties" src="../_images/08.Node_Properties.png" /></p>
+</section>
+</section>
+<section id="id10">
+<h2>6.3.3 AST 컴파일<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h2>
+<p>C에서 AST를 컴파일하는 것은 매우 복잡한 작업입니다. <code class="docutils literal notranslate"><span class="pre">Python/ast.c</span></code> 모듈은 5000줄이 넘는 코드로 이루어져 있습니다..</p>
+<p>AST의 공개 API는 CST와 파일 이름, 컴파일러 플래그, 메모리 저장 영역을 인자로 받습니다.</p>
+<p>반환 타입은 파이썬 모듈을 표현하는 mod_ty 타입입니다. 해당 타입은 <code class="docutils literal notranslate"><span class="pre">Include/Python-ast.h</span></code>에서 정의합니다.</p>
+<details>
+<summary> Include/Python-ast.h </summary>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">_mod</span><span class="w"> </span><span class="o">*</span><span class="n">mod_ty</span><span class="p">;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">_mod</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">enum</span><span class="w"> </span><span class="n">_mod_kind</span><span class="w"> </span><span class="n">kind</span><span class="p">;</span>
+<span class="w">    </span><span class="k">union</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">asdl_seq</span><span class="w"> </span><span class="o">*</span><span class="n">body</span><span class="p">;</span>
+<span class="w">            </span><span class="n">asdl_seq</span><span class="w"> </span><span class="o">*</span><span class="n">type_ignores</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="o">**</span><span class="n">Module</span><span class="o">**</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">asdl_seq</span><span class="w"> </span><span class="o">*</span><span class="n">body</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="o">**</span><span class="n">Interactive</span><span class="o">**</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">expr_ty</span><span class="w"> </span><span class="n">body</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="o">**</span><span class="n">Expression</span><span class="o">**</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">asdl_seq</span><span class="w"> </span><span class="o">*</span><span class="n">argtypes</span><span class="p">;</span>
+<span class="w">            </span><span class="n">expr_ty</span><span class="w"> </span><span class="n">returns</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="o">**</span><span class="n">FunctionType</span><span class="o">**</span><span class="p">;</span>
+
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">v</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</details>
+<br/>
+<p>mod_ty는 다음 모듈 타입 중 하나를 담는 컨테이너 구조체입니다.</p>
+<ol class="arabic simple">
+<li><p>Module</p></li>
+<li><p>Interactive</p></li>
+<li><p>Expression</p></li>
+<li><p>FunctionType</p></li>
+</ol>
+<p>모듈 타입들은 <code class="docutils literal notranslate"><span class="pre">Parser/Python.asdl</span> <span class="pre">(AST</span> <span class="pre">노드</span> <span class="pre">타입들과</span> <span class="pre">프로퍼티</span> <span class="pre">목록)</span></code> 에서 정의합니다. 해당 파일에서 문장, 표현식, 연산자, 컴프리헨션(comprehension) 타입들도 찾을 수 있습니다.</p>
+<p>AST가 생성하는 클래스들과 표준 라이브러리 ast 모듈의 클래스들은 <code class="docutils literal notranslate"><span class="pre">Parser/Python.asdl</span></code>에서 정의하는 타입입니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-- ASDL&#39;s 4 builtin types are:
+	-- identifier, int, string, constant
+
+module Python
+{
+    mod = Module(stmt* body, type_ignore* type_ignores)
+        | Interactive(stmt* body)
+        | Expression(expr body)
+        | FunctionType(expr* argtypes, expr returns)
+
+    ...
+
+    expr = BoolOp(boolop op, expr* values)
+         | NamedExpr(expr target, expr value)
+         | BinOp(expr left, operator op, expr right)
+</pre></div>
+</div>
+<p>ast 모듈은 문법을 다시 생성할 때 <span style="color: blue;">Include/Python-ast.h</span>를 import하는데요. 이 파일은 <span style="color: green;">Parser/Python.asdl</span>에서 자동으로 생성됩니다. 이때, <span style="color: blue;">Include/Python-ast.h</span>의 파라미터와 이름은 <span style="color: green;">Parser/Python.asdl</span>의 정의를 따릅니다. 또, <span style="color: blue;">Include/Python-ast.h</span>의 mod_ty 타입은 <span style="color: green;">Parser/Python.asdl</span>의 Module 정의로부터 생성됩니다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Python/ast.c</span></code>는 이 헤더 파일에서 제공하는 구조체들을 사용해 필요한 데이터를 가리키는 포인터를 담은 구조체들을 생성합니다.</p>
+<p>AST의 진입점인 PyAST_FromNodeObject()는 TYPE(n)에 대한 switch문을 실행합니다. **TYPE()**은 CST 노드의 타입을 결정하는 매크로입니다.</p>
+<p><strong>#define TYPE(n) ((n)-&gt;n_type)</strong></p>
+<p>결과로는 심벌 또는 토큰 타입을 반환합니다.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">mod_ty</span>
+<span class="nf">PyAST_FromNodeObject</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">*</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">PyCompilerFlags</span><span class="w"> </span><span class="o">*</span><span class="n">flags</span><span class="p">,</span>
+<span class="w">                     </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">filename</span><span class="p">,</span><span class="w"> </span><span class="n">PyArena</span><span class="w"> </span><span class="o">*</span><span class="n">arena</span><span class="p">)</span>
+<span class="p">{</span>
+
+<span class="w">	</span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">TYPE</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">              </span><span class="k">case</span><span class="w"> </span><span class="no">file_input</span><span class="p">:</span>
+<span class="w">                        </span><span class="n">stmts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_Py_asdl_seq_new</span><span class="p">(</span><span class="n">num_stmts</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">arena</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">...</span>
+<span class="w">              </span><span class="k">case</span><span class="w"> </span><span class="no">eval_input</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="p">...</span>
+</pre></div>
+</div>
+<p>루트 노드의 타입은 항상 Module, Interactive, Expression, FunctionType 중 하나입니다.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">file_input</span></code> 일 경우에는 <strong>Module</strong> 타입입니다.</p></li>
+<li><p>REPL 등으로 들어오는 <code class="docutils literal notranslate"><span class="pre">eval_input</span></code>일 경우에는 <strong>Expression</strong> 타입입니다.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">Python/ast.c</span></code>에는 각 타입에 대응되는 <strong>ast_for_xxx</strong> C 함수들이 구현되어 있습니다. 이 함수들은 CST의 노드 중에서 해당 statement에 대한 프로퍼티를 갖습니다.</p>
+<p>간단한 예시로 2의 4제곱을 뜻하는 2 ** 4 같은 제곱에 대한 expression을 살펴보겠습니다. ast_for_power()는 연산자가 Pow(제곱), 좌측은 e(2), 우측은f(4)인 BinOp를 반환합니다.</p>
+<p><strong>Python/ast.c 2716행</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">expr_ty</span>
+<span class="nf">ast_for_power</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiling</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">*</span><span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="cm">/* power: atom trailer* (&#39;**&#39; factor)*</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="n">expr_ty</span><span class="w"> </span><span class="n">e</span><span class="p">;</span>
+<span class="w">    </span><span class="n">REQ</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">power</span><span class="p">);</span>
+<span class="w">    </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ast_for_atom_expr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">CHILD</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">NCH</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">e</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">TYPE</span><span class="p">(</span><span class="n">CHILD</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">NCH</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">factor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">expr_ty</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ast_for_expr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">CHILD</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">NCH</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">f</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">BinOp</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">Pow</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">LINENO</span><span class="p">(</span><span class="n">n</span><span class="p">),</span><span class="w"> </span><span class="n">n</span><span class="o">-&gt;</span><span class="n">n_col_offset</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">n</span><span class="o">-&gt;</span><span class="n">n_end_lineno</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="o">-&gt;</span><span class="n">n_end_col_offset</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">c_arena</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">e</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>이번엔 <strong>instaviz</strong>로 제곱에 대한 AST를 확인해 보겠습니다.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">def</span><span class="w"> </span><span class="n">foo</span><span class="p">()</span><span class="o">:</span>
+<span class="w">	</span><span class="mi">2</span><span class="o">**</span><span class="mi">4</span>
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">import</span><span class="w"> </span><span class="n">instaviz</span>
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">instaviz</span><span class="p">.</span><span class="n">show</span><span class="p">(</span><span class="n">foo</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><img alt="Pow_Example_AST" src="../_images/09.Pow_Example_AST.png" /></p>
+<p>AST의 프로퍼티들도 확인해 봅시다.</p>
+<p><img alt="Pow_Example_Node_Properties" src="../_images/10.Pow_Example_Node_Properties.png" /></p>
+<p>요약하자면 모든 statement type과 expression에는 ast<em>for</em>*() 생성자 함수가 있습니다.(AST 노드로 변환하는 역할을 담당하는 함수) arguments는 <code class="docutils literal notranslate"><span class="pre">Parser/Python.asdl</span></code>에서 정의하며 표준 라이브러리의 <a class="reference external" href="https://docs.python.org/3/library/ast.html">ast 모듈</a>을 통해 외부에 제공됩니다.</p>
+<p>statement 과 expression이 자식 노드를 가지고 있으면 dfs를 통해 자식 노드에 대한 ast<em>for</em>*() 함수를 먼저 호출합니다.</p>
+</section>
+<section id="id11">
+<h2>6.4 정리<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
 <li><p>AST : 파이썬 문법과 문장들에 대한 <em>문맥</em>(context) 있는* 트리 집합.</p></li>
 <li><p>CST : 토큰과 심벌에 대한 <em>문맥(context)이 없는</em> 트리 집합</p></li>
@@ -474,7 +866,265 @@ document.write(`
 </ul>
 <br/>
 <br/>
-<br/></section>
+<br/>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="id12">
+<h1>6.5 ‘거의 같음’ 비교 연산자 추가하기<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h1>
+<p>파이썬에 새 연산자를 추가해보겠습니다.</p>
+<p>파이썬 문법 정의는 Grammar/python.gram에 정의되고 python 토큰은 Grammar/Tokens에 저장되어 있는데요. 모두 <code class="docutils literal notranslate"><span class="pre">pegen</span></code>이라 불리는 파서 생성기의 input이 됩니다. <strong>pegen</strong>은 자동적으로 파이썬 렉서와 파서를 이러한 정의로부터 생성합니다.</p>
+<p>~= 심벌을 사용하는 ‘<strong>거의 같음</strong>’ 연산자를 비교 연산자로 새로 추가 해보겠습니다. ‘거의 같음’ 연산자는 다음과 같이 동작합니다.</p>
+<ul class="simple">
+<li><p>정수와 정수를 비교할 때는 일반 동등 연산자를 사용.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="o">~=</span> <span class="mi">1</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="o">~=</span> <span class="mi">2</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>정수와 부동 소수점을 비교할 때 부동 소수점은 정수로 변환해 비교.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="o">~=</span> <span class="mf">1.000000021</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="mi">1</span> <span class="o">~=</span> <span class="mf">1.9</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+<p>새 연산자를 추가하려면 먼저 CPython 문법을 변경해야 합니다. 비교 연산자들은 Grammar/python.gram 파일에 <code class="docutils literal notranslate"><span class="pre">comp_op</span></code> 심벌로 정의되어 있습니다.</p>
+<section id="grammar-python-gram">
+<h2>Grammar/python.gram<a class="headerlink" href="#grammar-python-gram" title="Permalink to this heading">#</a></h2>
+<p>(notation이 <a class="reference external" href="https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form">EBNF</a> 과 <a class="reference external" href="https://en.wikipedia.org/wiki/Parsing_expression_grammar">PEG</a> 이 섞여 들어있습니다!)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>comparison[expr_ty]:
+    | a=bitwise_or b=compare_op_bitwise_or_pair+ {
+        _Py_Compare(a, CHECK(_PyPegen_get_cmpops(p, b)), CHECK(_PyPegen_get_exprs(p, b)), EXTRA) }
+    | bitwise_or
+compare_op_bitwise_or_pair[CmpopExprPair*]:
+    | eq_bitwise_or
+    | noteq_bitwise_or
+    | lte_bitwise_or
+    | lt_bitwise_or
+    | gte_bitwise_or
+    | gt_bitwise_or
+    | notin_bitwise_or
+    | in_bitwise_or
+    | isnot_bitwise_or
+    | is_bitwise_or
+    | ale_bitwise_or    &lt;-- 이곳에 추가
+eq_bitwise_or[CmpopExprPair*]: &#39;==&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Eq, a) }
+noteq_bitwise_or[CmpopExprPair*]:
+    | (tok=&#39;!=&#39; { _PyPegen_check_barry_as_flufl(p, tok) ? NULL : tok}) a=bitwise_or {_PyPegen_cmpop_expr_pair(p, NotEq, a) }
+lte_bitwise_or[CmpopExprPair*]: &#39;&lt;=&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, LtE, a) }
+lt_bitwise_or[CmpopExprPair*]: &#39;&lt;&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Lt, a) }
+gte_bitwise_or[CmpopExprPair*]: &#39;&gt;=&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, GtE, a) }
+gt_bitwise_or[CmpopExprPair*]: &#39;&gt;&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Gt, a) }
+notin_bitwise_or[CmpopExprPair*]: &#39;not&#39; &#39;in&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, NotIn, a) }
+in_bitwise_or[CmpopExprPair*]: &#39;in&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, In, a) }
+isnot_bitwise_or[CmpopExprPair*]: &#39;is&#39; &#39;not&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, IsNot, a) }
+is_bitwise_or[CmpopExprPair*]: &#39;is&#39; a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Is, a) }
+ale_bitwise_or[CmpopExprPair*]: &#39;~=&#39; a=bitwise_or {_PyPegen_cmpop_expr_pair(p, ALE, a) }
+</pre></div>
+</div>
+<p>compare_op_bitwise_or_pair 식에 <code class="docutils literal notranslate"><span class="pre">ale_bitwise_or</span></code> 를 허용하겠습니다.</p>
+<p>이제 ‘~=’ 단말 기호를 포함하는 <code class="docutils literal notranslate"><span class="pre">ale_bitwise_or</span></code> 식을 정의했습니다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">_PyPegen_cmpop_expr_pair(p,</span> <span class="pre">ALE,</span> <span class="pre">a)</span></code> 함수 호출은 AST에서 ‘거의 같음’ 연산자를 뜻하는 AlE(Almost Equal) 타입 cmpop 노드를 가져옵니다.</p>
+<p>다음으로 Grammar/Tokens에 토큰을 추가하겠습니다.</p>
+<div class="highlight-ABAP notranslate"><div class="highlight"><pre><span></span>ATEQUAL                 &#39;@=&#39;
+RARROW                  &#39;-&gt;&#39;
+ELLIPSIS                &#39;...&#39;
+COLONEQUAL              &#39;:=&#39;
+ALMOSTEQUAL             &#39;~=&#39; # 이곳에 추가
+</pre></div>
+</div>
+<p>변경한 문법과 토큰을 c 코드에 반영하려면 헤더를 다시 생성해야 합니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># mac os / lunux</span>
+make<span class="w"> </span>regen-token<span class="w"> </span>regen-pegen
+
+<span class="c1"># window (at root dir)</span>
+./PCbuild/build.bat<span class="w"> </span>--regen
+
+<span class="c1"># makefile이 루트 디렉토리에 없다면 ./configure 후 진행할 것</span>
+</pre></div>
+</div>
+<details>
+<summary>각각의 타겟은 어떤 작업을 할까?</summary>
+<p><strong>regen-pegen</strong></p>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">regen-pegen</span><span class="o">:</span>
+<span class="w">	</span>@<span class="k">$(</span>MKDIR_P<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Parser/pegen
+<span class="w">	</span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="k">$(</span>srcdir<span class="k">)</span>/Tools/peg_generator<span class="w"> </span><span class="k">$(</span>PYTHON_FOR_REGEN<span class="k">)</span><span class="w"> </span>-m<span class="w"> </span>pegen<span class="w"> </span>-q<span class="w"> </span>c<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Grammar/python.gram<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Grammar/Tokens<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span>-o<span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Parser/pegen/parse.new.c
+<span class="w">	</span><span class="k">$(</span>UPDATE_FILE<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Parser/pegen/parse.c<span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Parser/pegen/parse.new.c
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>문법 파일 변경 후 파서를 재생성</p></li>
+<li><p>Grammar/Tokens, Grammar/python.gram 을 <code class="docutils literal notranslate"><span class="pre">Tools/peg_generator</span></code> 입력으로 줘서 <code class="docutils literal notranslate"><span class="pre">Parser/parser.c</span></code> 를 생성합니다.
+<strong>regen-token</strong></p></li>
+</ul>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nf">regen-token</span><span class="o">:</span>
+<span class="c">	# Regenerate Doc/library/token-list.inc from Grammar/Tokens</span>
+<span class="c">	# using Tools/scripts/generate_token.py</span>
+<span class="w">	</span><span class="k">$(</span>PYTHON_FOR_REGEN<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Tools/scripts/generate_token.py<span class="w"> </span>rst<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Grammar/Tokens<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Doc/library/token-list.inc
+<span class="c">	# Regenerate Include/token.h from Grammar/Tokens</span>
+<span class="c">	# using Tools/scripts/generate_token.py</span>
+<span class="w">	</span><span class="k">$(</span>PYTHON_FOR_REGEN<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Tools/scripts/generate_token.py<span class="w"> </span>h<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Grammar/Tokens<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Include/token.h
+<span class="c">	# Regenerate Parser/token.c from Grammar/Tokens</span>
+<span class="c">	# using Tools/scripts/generate_token.py</span>
+<span class="w">	</span><span class="k">$(</span>PYTHON_FOR_REGEN<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Tools/scripts/generate_token.py<span class="w"> </span>c<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Grammar/Tokens<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Parser/token.c
+<span class="c">	# Regenerate Lib/token.py from Grammar/Tokens</span>
+<span class="c">	# using Tools/scripts/generate_token.py</span>
+<span class="w">	</span><span class="k">$(</span>PYTHON_FOR_REGEN<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Tools/scripts/generate_token.py<span class="w"> </span>py<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Grammar/Tokens<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Lib/token.py
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>토큰 추가 후 토큰 관련 파일 재생성</p></li>
+<li><p>(참고) 보통의 PEG 파서들은 파서가 parsing 과 tokenization 을 모두 하지만 Pegen의 경우는 대화형 모드 지원등의 이유로 커스텀 토크나이저를 사용합니다.</p></li>
+</ul>
+</details>
+<br/>
+<p>헤드를 다시 생성하면 토크나이저도 자동으로 변경됩니다. <code class="docutils literal notranslate"><span class="pre">Parser/token.c</span></code> 에 <strong>PyToken_TwoChars()</strong> 함수의 case가 변경된 것을 확인할 수 있습니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">int</span>
+<span class="n">PyToken_TwoChars</span><span class="p">(</span><span class="nb">int</span> <span class="n">c1</span><span class="p">,</span> <span class="nb">int</span> <span class="n">c2</span><span class="p">)</span>
+<span class="p">{</span>
+
+<span class="o">...</span>
+
+<span class="k">case</span> <span class="s1">&#39;~&#39;</span><span class="p">:</span>
+        <span class="n">switch</span> <span class="p">(</span><span class="n">c2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="s1">&#39;=&#39;</span><span class="p">:</span> <span class="k">return</span> <span class="n">ALMOSTEQUAL</span><span class="p">;</span>  <span class="o">&lt;-</span> <span class="n">추가됨</span>
+        <span class="p">}</span>
+        <span class="k">break</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="o">...</span>
+
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>이제 토크나이저가 새 토큰을 처리할 수 있게 되었습니다. 하지만 아직 AST는 처리하지 못합니다.</p>
+<p>현 상태에서 CPython 컴파일을 하려 하면 다음과 같은 메시지와 함께 실패 합니다.</p>
+<details>
+<summary>문제발생</summary>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">CmpopExprPair</span><span class="w"> </span><span class="o">*</span>
+<span class="nf">_PyPegen_cmpop_expr_pair</span><span class="p">(</span><span class="n">Parser</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">cmpop_ty</span><span class="w"> </span><span class="n">cmpop</span><span class="p">,</span><span class="w"> </span><span class="n">expr_ty</span><span class="w"> </span><span class="n">expr</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">expr</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="n">CmpopExprPair</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyArena_Malloc</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">arena</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">CmpopExprPair</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">cmpop</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cmpop</span><span class="p">;</span>
+<span class="w">    </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">expr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">expr</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</details>
+<br/>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>make<span class="w"> </span>-j2<span class="w"> </span>-s
+
+Parser/pegen/**parse.c**:9313:51:<span class="w"> </span>error:<span class="w"> </span>use<span class="w"> </span>of<span class="w"> </span>undeclared<span class="w"> </span>identifier<span class="w"> </span><span class="s1">&#39;AlE&#39;</span>
+<span class="w">            </span><span class="nv">_res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>_PyPegen_cmpop_expr_pair<span class="w"> </span><span class="o">(</span><span class="w"> </span>p<span class="w"> </span>,<span class="w"> </span>AlE,<span class="w"> </span>a<span class="w"> </span><span class="o">)</span><span class="p">;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>이는 <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">j2</span> <span class="pre">-s</span></code> 커맨드가 타이핑될 때, <code class="docutils literal notranslate"><span class="pre">Parser/parse.c</span></code> 가 컴파일 되는데 이때, ‘AlE’를 인식하지 못해 발생합니다.</p></li>
+<li><p>parse.c는 이전에 <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">regen-pegen</span></code> 때 업데이트 되었습니다.</p></li>
+</ul>
+<p>또, 아직 <code class="docutils literal notranslate"><span class="pre">Python/ast.c</span></code>의 **ast_for_comp_op()**는 <strong>ALMOSTEQUAL</strong>을 올바른 비교 연산자로 인식할 수 없습니다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Parser/Python.asdl</span></code>에서 정의하는 Compare 표현식은 좌측 표현식 left, 연산자 목록인 ops, 비교할 표현식 목록인 comparators로 이루어져있습니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">|</span> <span class="n">Compare</span><span class="p">(</span><span class="n">expr</span> <span class="n">left</span><span class="p">,</span> <span class="n">cmpop</span><span class="o">*</span> <span class="n">ops</span><span class="p">,</span> <span class="n">expr</span><span class="o">*</span> <span class="n">comparators</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Compare 정의는 cmpop 열거형을 참조합니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cmpop</span> <span class="o">=</span> <span class="n">Eq</span> <span class="o">|</span> <span class="n">NotEq</span> <span class="o">|</span> <span class="n">Lt</span> <span class="o">|</span> <span class="n">LtE</span> <span class="o">|</span> <span class="n">Gt</span> <span class="o">|</span> <span class="n">GtE</span> <span class="o">|</span> <span class="n">Is</span> <span class="o">|</span> <span class="n">IsNot</span> <span class="o">|</span> <span class="n">In</span> <span class="o">|</span> <span class="n">NotIn</span>
+</pre></div>
+</div>
+<p>이 열거형은 비교 연산자로 사용할 수 있는 AST 리프 노드의 목록입니다. ‘거의 같음’ 연산자를 비교 연산자로 사용하기 위해 AlE를 추가하겠습니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cmpop</span> <span class="o">=</span> <span class="n">Eq</span> <span class="o">|</span> <span class="n">NotEq</span> <span class="o">|</span> <span class="n">Lt</span> <span class="o">|</span> <span class="n">LtE</span> <span class="o">|</span> <span class="n">Gt</span> <span class="o">|</span> <span class="n">GtE</span> <span class="o">|</span> <span class="n">Is</span> <span class="o">|</span> <span class="n">IsNot</span> <span class="o">|</span> <span class="n">In</span> <span class="o">|</span> <span class="n">NotIn</span> <span class="o">|</span> <span class="n">AlE</span>
+</pre></div>
+</div>
+<p>이제 AST를 다시 생성해서 AST 헤더 파일에 변경된 AST를 반영하겠습니다.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>regen-ast
+</pre></div>
+</div>
+<details>
+<summary>regen-ast</summary>
+<div class="highlight-makefile notranslate"><div class="highlight"><pre><span></span><span class="nv">.PHONY</span><span class="o">=</span>regen-ast
+<span class="nf">regen-ast</span><span class="o">:</span>
+<span class="c">	# Regenerate Include/Python-ast.h and Python/Python-ast.c using Parser/asdl_c.py</span>
+<span class="w">	</span><span class="k">$(</span>MKDIR_P<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Include
+<span class="w">	</span><span class="k">$(</span>MKDIR_P<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Python
+<span class="w">	</span><span class="k">$(</span>PYTHON_FOR_REGEN<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Parser/asdl_c.py<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span><span class="k">$(</span>srcdir<span class="k">)</span>/Parser/Python.asdl<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span>-H<span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Include/Python-ast.h.new<span class="w"> </span><span class="se">\</span>
+<span class="w">		</span>-C<span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Python/Python-ast.c.new
+
+<span class="w">	</span><span class="k">$(</span>UPDATE_FILE<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Include/Python-ast.h<span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Include/Python-ast.h.new
+<span class="w">	</span><span class="k">$(</span>UPDATE_FILE<span class="k">)</span><span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Python/Python-ast.c<span class="w"> </span><span class="k">$(</span>srcdir<span class="k">)</span>/Python/Python-ast.c.new
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Python-ast.h , Python-ast.c 재생성</p></li>
+<li><p>(참고)</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>UPDATE_FILE=python3.9 $(srcdir)/Tools/scripts/update_file.py
+</pre></div>
+</div>
+</details>
+</br>
+<p><code class="docutils literal notranslate"><span class="pre">Include/Python-ast.h</span></code>에서 비교 연산자를 정의하는 열거형인 <strong>_cmpop</strong>에 AlE가 추가된 것을 확인할 수 있습니다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">typedef</span> <span class="n">enum</span> <span class="n">_cmpop</span> <span class="p">{</span> <span class="n">Eq</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">NotEq</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Lt</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">LtE</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">Gt</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">GtE</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">Is</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">IsNot</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                      <span class="n">In</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">NotIn</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">AlE</span><span class="o">=</span><span class="mi">11</span> <span class="p">}</span> <span class="n">cmpop_ty</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>AST는 <code class="docutils literal notranslate"><span class="pre">ALMOSTEQAUL</span></code> 토큰이 비교 연산자 <strong>AlE</strong>라는 것을 아직은 알 수 없습니다. 토큰을 연산자로 인식할 수 있게 AST C 코드를 수정하겠습니다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Python/ast.c</span></code> 의 **ast_for_comp_op()**로 이동해서 연산자 토큰에 대한 switch 문을 찾아보겠습니다.</p>
+<p>해당 switch문은 _cmpop 열거형 값 중 하나를 반환하는데요. 여기에 ALMOSTEQUAL 토큰일 경우 AlE 비교 연산자를 반환하는 case를 추가합니다.</p>
+</section>
+<section id="python-ast-c">
+<h2>Python/ast.c<a class="headerlink" href="#python-ast-c" title="Permalink to this heading">#</a></h2>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">cmpop_ty</span>
+<span class="nf">ast_for_comp_op</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiling</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">*</span><span class="n">n</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="cm">/* comp_op: &#39;&lt;&#39;|&#39;&gt;&#39;|&#39;==&#39;|&#39;&gt;=&#39;|&#39;&lt;=&#39;|&#39;!=&#39;|&#39;in&#39;|&#39;not&#39; &#39;in&#39;|&#39;is&#39;</span>
+<span class="cm">               |&#39;is&#39; &#39;not&#39;</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="n">REQ</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">comp_op</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">NCH</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CHILD</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">TYPE</span><span class="p">(</span><span class="n">n</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">LESS</span><span class="p">:</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">Lt</span><span class="p">;</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">GREATER</span><span class="p">:</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">Gt</span><span class="p">;</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">ALMOSTEQUAL</span><span class="p">:</span><span class="w"> </span><span class="c1">// ALMOSTEQUAL 토큰을 인식</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">AlE</span><span class="p">;</span><span class="w"> </span><span class="c1">// AST 노드 AlE를 반환</span>
+<span class="w">                </span><span class="p">...</span>
+</pre></div>
+</div>
+<p>이제 토크나이저와 AST 모두 코드를 파싱할 수 있지만 아직 저희는 연산자에 대한 동작을 구현하지 않았기 때문에 컴파일러는 이 연산자를 실행하는 방법을 모르는 상태입니다.</p>
+<p>AST로 나타낸 ‘거의 같음’ 연산자를 확인해 보려면 <code class="docutils literal notranslate"><span class="pre">ast.parse()</span></code>가 반환한 값에서 첫 번째 연산자를 출력해봅시다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">ast</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s1">&#39;1 ~= 2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">body</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">ops</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">&lt;_ast.AlE object at ~~~&gt;</span>
+</pre></div>
+</div>
+<p>AST가 코드를 올바르게 파싱했다면 비교 연산자 AlE타입의 객체가 출력될 것입니다.</p>
+<p>다음 장에서는 Cpython 컴파일러가 동작하는 방식을 알아보고 ‘거의 같음’ 연산자의 동작을 구현할 예정입니다.</p>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -538,12 +1188,35 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.0 개요</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cst">6.1 CST 생성</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">6.2 파서 &amp; 토크나이저</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">6.3 추상 구문 트리</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">6.4 정리</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">6. 렉싱과 파싱</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">6.0 개요</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#https-medium-com-codeinseoul-python-lexer-and-parser-d0dbe676a6e">*<em>출처: https://medium.com/@codeinseoul/python-lexer-and-parser-d0dbe676a6e</em></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">🤔 파서+토크나이저 = 렉서?</a></li>
 </ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cst">6.1 CST 생성</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">6.2 파서-토크나이저</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">6.2.1 연관된 소스 파일 목록</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">6.2.2. 파일 데이터를 파서에 입력하기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">6.2.3 파서-토크나이저 흐름</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">6.3 추상 구문 트리</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ast">6.3.1 AST 관련 소스 파일 목록</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">6.3.2 인스타비즈로 AST 시각화하기</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">6.3.3 AST 컴파일</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">6.4 정리</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">6.5 ‘거의 같음’ 비교 연산자 추가하기</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#grammar-python-gram">Grammar/python.gram</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-ast-c">Python/ast.c</a></li>
+</ul>
+</li>
+</ul>
+
   </nav></div>
 
 </div></div>
