@@ -3,13 +3,16 @@
 ## 참조 카운팅(레퍼런스 카운팅)
 
 ### 용어 설명
+
 - PyMem API : PyMem API는 CPython에서 메모리 할당 및 해제를 위해 사용되는 C 함수들의 모음입니다. 이 API는 Python 객체의 생성, 크기 조정 및 해제를 담당합니다.
 - PyObject: Python 객체를 나타내는 C 구조체입니다. 모든 Python 객체는 PyObject 구조체로 표현됩니다. PyObject는 객체의 타입과 참조 카운트 등의 정보를 포함하고 있습니다.
 
-CPython은 C의 동적 메모리 할당 시스템을 기반으로 구축되어 있습니다. 메모리 요구 사항은 런타임에 결정되며, PyMem API를 사용하여 시스템에 메모리가 할당됩니다. CPython은 메모리 관리를 위해 참조 카운팅[^1]과 가비지 컬렉션[^2]이라는 두 가지 전략을 사용합니다. 
+CPython은 C의 동적 메모리 할당 시스템을 기반으로 구축되어 있습니다. 메모리 요구 사항은 런타임에 결정되며, PyMem API를 사용하여 시스템에 메모리가 할당됩니다. CPython은 메모리 관리를 위해 참조 카운팅[^1]과 가비지 컬렉션[^2]이라는 두 가지 전략을 사용합니다.
 
 ### 참조 카운팅
+
 #### 파이썬에서 변수 생성 과정
+
 참조 카운팅은 객체에 대한 참조 수를 추적하는 메모리 관리 기법입니다. 객체를 참조하는 변수나 다른 객체가 있는 한 해당 객체는 메모리에서 해제되지 않습니다. 참조 수가 0이 되면 더 이상 필요하지 않은 것으로 간주되어 자동으로 메모리에서 해제됩니다.
 
 ```python
@@ -21,6 +24,7 @@ my_variable = ['a', 'b', 'c']
 Python은 변수가 생성될 때, 해당 변수 이름이 현재 스코프의 로컬 변수(`locals()`) 또는 전역 변수(`globals()`) 딕셔너리에 존재하는지 확인합니다. 만약 존재하지 않는다면, 새로운 객체가 생성되고 해당 객체의 참조(포인터)가 로컬 변수 딕셔너리에 저장됩니다.
 
 이를 확인하는 방법은 다음과 같습니다.
+
 ```python
 def test_function():
     my_variable = ['a', 'b', 'c']
@@ -29,15 +33,19 @@ def test_function():
 ```
 
 위 코드를 실행하면 다음과 같은 결과가 출력됩니다.
+
 ```python
 >>> test_function()
 my_variable in locals(): True
 my_variable in globals(): False
 ```
+
 이는 `my_variable`이 `test_function()`의 로컬 변수 딕셔너리에 존재하지만, 전역 변수 딕셔너리에는 존재하지 않음을 보여줍니다.
 
 #### 참조 카운트 증가시키기
+
 CPython의 소스 코드에는 `Py_INCREF()`와 `Py_DECREF()` 매크로가 Python 객체에 대한 참조를 증가시키고 감소시키는 API입니다.
+
 - 참조 증가(`Py_INCREF`): 객체가 변수에 할당되거나, 함수/메서드의 인수로 전달되거나, 함수에서 반환될 때 호출됩니다.
 - 참조 감소(`Py_DECREF`): 변수가 선언된 범위를 벗어나면 호출됩니다. 참조 수가 0이 되면 객체의 메모리가 해제됩니다.
 
@@ -56,15 +64,16 @@ static inline void _Py_INCREF(PyObject *op)
 - `PyObject`는 파이썬 객체를 나타내는 C 구조체입니다.
 - `op`는 `PyObject` 포인터 변수로, 파이썬 객체의 메모리 주소를 저장합니다.
 - `#ifdef Py_REF_DEBUG` ~ `#endif`
-    - 이는 C 전처리기 지시자로, 조건부 컴파일을 위해 사용됩니다.
-    - `#ifdef`는 "if defined"의 줄임말로, `Py_REF_DEBUG`라는 매크로가 정의되어 있는지 확인합니다.
-    - 만약 `Py_REF_DEBUG`가 정의되어 있다면, `#ifdef`와 `#endif` 사이의 코드가 컴파일됩니다. 그렇지 않으면 해당 코드는 무시됩니다.
-    - `Py_REF_DEBUG`는 디버깅 용도로 사용되는 매크로로, 참조 카운팅 관련 디버깅 정보를 추적하는 데 사용됩니다.
--  `_Py_RefTotal++;`, `op->ob_refcnt++;`
-    - `_Py_RefTotal`은 참조 카운팅 디버깅을 위해 사용됩니다. 이 변수는 `Py_REF_DEBUG`가 정의되어 있을 때만 증가합니다.
-    - `op->ob_refcnt`는 `PyObject` 구조체의 `ob_refcnt` 필드에 접근하는 코드입니다. 이 필드는 해당 객체의 참조 카운트를 저장합니다.
+  - 이는 C 전처리기 지시자로, 조건부 컴파일을 위해 사용됩니다.
+  - `#ifdef`는 "if defined"의 줄임말로, `Py_REF_DEBUG`라는 매크로가 정의되어 있는지 확인합니다.
+  - 만약 `Py_REF_DEBUG`가 정의되어 있다면, `#ifdef`와 `#endif` 사이의 코드가 컴파일됩니다. 그렇지 않으면 해당 코드는 무시됩니다.
+  - `Py_REF_DEBUG`는 디버깅 용도로 사용되는 매크로로, 참조 카운팅 관련 디버깅 정보를 추적하는 데 사용됩니다.
+- `_Py_RefTotal++;`, `op->ob_refcnt++;`
+  - `_Py_RefTotal`은 참조 카운팅 디버깅을 위해 사용됩니다. 이 변수는 `Py_REF_DEBUG`가 정의되어 있을 때만 증가합니다.
+  - `op->ob_refcnt`는 `PyObject` 구조체의 `ob_refcnt` 필드에 접근하는 코드입니다. 이 필드는 해당 객체의 참조 카운트를 저장합니다.
 
 Python 코드로 참조 카운팅을 조회하려면 `sys.getrefcount()`[^3]를 사용할 수 있습니다.
+
 ```python
 def test_function():
     my_variable = ['a', 'b', 'c']
@@ -95,6 +104,7 @@ def test_function():
 #### 참조 카운트 감소시키기
 
 `Py_DECREF` 는 객체의 참조 카운트를 감소시키는 역할을 합니다. 참조 카운트가 0이 되면 객체의 메모리를 해제합니다.
+
 ```c
 static inline void _Py_DECREF(
 #ifdef Py_REF_DEBUG
@@ -118,12 +128,12 @@ static inline void _Py_DECREF(
 }
 ```
 
--  `#ifdef Py_REF_DEBUG`와 `#endif` 사이의 코드는 디버그 모드에서만 컴파일됩니다.
+- `#ifdef Py_REF_DEBUG`와 `#endif` 사이의 코드는 디버그 모드에서만 컴파일됩니다.
 - `_Py_RefTotal`은 전역 참조 카운트를 감소시킵니다.
--  `op->ob_refcnt`를 감소시킨 후, 그 값이 0이 아닌지 확인합니다.
-    - 0이 아니라면, 아직 참조가 남아 있는 것이므로 메모리를 해제하지 않습니다.
-    - 디버그 모드에서는 참조 카운트가 음수인지 확인하고, 음수라면 `_Py_NegativeRefcount`를 호출하여 오류를 보고합니다.
--  참조 카운트가 0이 되면 `_Py_Dealloc`을 호출하여 객체의 메모리를 해제합니다.
+- `op->ob_refcnt`를 감소시킨 후, 그 값이 0이 아닌지 확인합니다.
+  - 0이 아니라면, 아직 참조가 남아 있는 것이므로 메모리를 해제하지 않습니다.
+  - 디버그 모드에서는 참조 카운트가 음수인지 확인하고, 음수라면 `_Py_NegativeRefcount`를 호출하여 오류를 보고합니다.
+- 참조 카운트가 0이 되면 `_Py_Dealloc`을 호출하여 객체의 메모리를 해제합니다.
 
 #### 바이트코드 연산에서의 참조 카운팅
 
@@ -153,7 +163,7 @@ print(sys.getrefcount(y))
 - 5. `greet(*messages)`: `greet` 함수를 호출할 때 `y`가 인자로 전달됩니다. 이 때 `CALL_FUNCTION` 연산이 사용되며, 참조 카운트가 1 증가합니다.
 - 6. `print(sys.getrefcount(y))`: `sys.getrefcount(y)`를 호출할 때 `y`가 인자로 전달됩니다. 이 때 `LOAD_GLOBAL` 연산이 사용되며, 참조 카운트가 1 증가합니다.
 
-연산을 예제로 살펴봅시다. 
+연산을 예제로 살펴봅시다.
 
 ```python
 a = 10
@@ -162,6 +172,7 @@ c = a * b
 ```
 
 a, b를 선언하고 a, b를 곱한 값을 c에 할당한 식을 살펴봅시다. 세 번째 연산인 `c = a * b`는 세 가지 연산으로 나눌 수 있습니다.
+
 - `LOAD_FAST`: a 변수를 확인하고 값 스택에 추가한 후 변수의 참조를 1 증가시킨다.
 - `LOAD_FAST`: b 변수를 확인하고 값 스택에 추가한 후 변수의 참조를 1 증가시킨다.
 - `BINARY_MULTIPLY`: 왼쪽 값에 오른 쪽 값을 곱하고 값 스택에 추가합니다.
@@ -249,14 +260,14 @@ After gc.collect():
 
 - `gc.set_debug(gc.DEBUG_SAVEALL)`: 이 구문은 가비지 컬렉터 설정을 변경하여, 가비지 컬렉터가 회수한 모든 객체를 `gc.garbage` 리스트에 저장하도록 합니다. 이렇게 하면 순환 참조로 인해 회수된 객체들을 분석할 수 있습니다.
 - `x = []`: 빈 리스트를 생성합니다.
--  `x.append(x)`: 리스트 `x`가 자신을 포함하도록 합니다. 이는 `x` 내부에 `x` 자신에 대한 참조를 만들어 순환 참조를 생성합니다.
--  `del x`: 변수 `x`에 대한 참조를 삭제합니다. 이 시점에서 `x`는 메모리에 남아 있지만, 직접적인 참조는 존재하지 않습니다. 순환 참조로 인해, 가비지 컬렉터만이 이를 처리할 수 있습니다.
+- `x.append(x)`: 리스트 `x`가 자신을 포함하도록 합니다. 이는 `x` 내부에 `x` 자신에 대한 참조를 만들어 순환 참조를 생성합니다.
+- `del x`: 변수 `x`에 대한 참조를 삭제합니다. 이 시점에서 `x`는 메모리에 남아 있지만, 직접적인 참조는 존재하지 않습니다. 순환 참조로 인해, 가비지 컬렉터만이 이를 처리할 수 있습니다.
 - `gc.collect()`: 가비지 컬렉터를 강제로 실행하여 순환 참조를 포함한 미수거 객체들을 찾아내고 처리합니다. `gc.set_debug(gc.DEBUG_SAVEALL)` 설정으로 인해, 처리된 객체들은 `gc.garbage`에 저장됩니다.
--  `for obj in gc.garbage`: `gc.garbage`에 저장된 객체들을 순회하며 출력합니다. 이 경우, 자기 자신을 참조하는 리스트 `x`가 출력됩니다. 출력된 `[[...]]`는 리스트가 자기 자신을 참조하고 있음을 나타냅니다.
+- `for obj in gc.garbage`: `gc.garbage`에 저장된 객체들을 순회하며 출력합니다. 이 경우, 자기 자신을 참조하는 리스트 `x`가 출력됩니다. 출력된 `[[...]]`는 리스트가 자기 자신을 참조하고 있음을 나타냅니다.
 
 위 예제에서는 가비지 컬렉터를 실행하기 전에는 `gc.garbage`가 비어 있지만, 가비지 컬렉터 실행 후에는 순환 참조 객체가 `gc.garbage`에 수집되는 것을 보여줍니다.
 
-### 요약
+### 참조 카운팅 정리
 
 CPython의 메모리 관리 방식인 참조 카운팅에 대해 알아보았습니다. 참조 카운팅은 객체에 대한 참조 수를 추적하여 더 이상 사용되지 않는 객체를 자동으로 메모리에서 해제합니다.
 
@@ -269,7 +280,316 @@ CPython의 메모리 관리 방식인 참조 카운팅에 대해 알아보았습
 
 CPython의 메모리 관리는 참조 카운팅과 가비지 컬렉션이라는 두 가지 전략을 통해 이루어집니다. 이를 통해 개발자는 메모리 관리에 대해 크게 신경 쓰지 않고도 Python을 사용할 수 있습니다. 하지만 메모리 누수나 순환 참조 등의 문제를 완전히 방지하기 위해서는 메모리 관리 방식에 대한 이해가 필요합니다.
 
+## 가비지 컬렉션 (cyclic garbage collection)
+
+- 참조 카운터와 특수한 가비지 컬렉션 알고리즘을 사용하여 결국 순환 참조를 찾는 것
+- 그럼 어떻게 Garbage 객체를 찾을까요?
+  - “**모든**" 객체에 대해서 reference를 graph로 그리며, 접근 불가능한 cycle을 찾는 방법 밖에 없다.
+  - 모든 객체에 대해서 전수 조사를 하기에는 너무 느리기 때문에 **“Generation”** 이라는 최적화 기법을 사용한다.
+  - Young generation 객체는 자주, Old generation 객체는 상대적으로 가끔씩 scan을 수행하는 것이다.
+- 가비지 컬렉터(GC)는 내부적으로 `generation`(세대)과 `threshold`(임계값)로 가비지 컬렉션 주기와 객체를 관리한다.
+  - NUM_GENERATIONS
+    - `#define NUM_GENERATIONS 3`
+    - 세대는 0세대, 1세대, 2세대로 구분되는데 최근에 생성된 객체는 0세대(young)에 들어가고 오래된 객체일수록 2세대(old)에 존재한다.
+    - 한 객체는 단 하나의 세대에만 속한다.
+    - 한 번도 GC가 불리지 않은 객체는 0세대, 한 번 불렸지만 생존한 객체는 1세대, 두 번 이상 GC가 불렸지만 생존한 객체는 2세대에 속하게 된다.
+
+### 파이썬에서 가비지 컬렉터가 동작하는 원리
+
+```c
+>>> import gc
+>>> gc.get_threshold()
+(700, 10, 10)
+
+>>> gc.get_count() // 현재 임계값 수치
+(199, 3, 0)
+
+>>> gc.collect(0) // 특정 세대 (0 세대)의 쓰레기를 수동으로 수거
+388
+```
+
+- `threshold0` 이 의미하는 바와 `threshold1, threshold2` 가 의미하는 바가 다르다.
+  - `threshold0` 의 값은  “(number of allocations) - (number of deallocations)이 threshold를 넘으면 0세대 GC가 호출된다”를 의미한다.
+  - “객체 생성 수 - 객체 해제 수” 가 700을 넘으면 0세대 GC가 호출된다.
+  - `threshold1` 는 1세대에 대한 기준인데, 이는 “0세대 GC가 몇 번 호출되면, 1세대 GC를 호출할 것인지”를 의미한다.
+  - `threshold2` 는 “1세대 GC가 몇 번 호출되면, 2세대 GC를 호출할 것인지”를 의미한다. 다만, 2세대 GC는 매우 오랜 시간이 소요되기 때문에 아래 조건이 동시에 만족했을 때 진행된다.
+    - `long_lived_pending / long_lived_total` 이 25%를 넘을 경우
+    - `long_lived_pending` :  가비지 컬렉션을 거치지 않은 객체의 수
+    - `long_lived_total` : 존재하는 모든 객체의 수
+    - <https://devguide.python.org/internals/garbage-collector/#collecting-the-oldest-generation>
+- 가비지 컬렉터는 0세대일수록 더 자주 가비지 컬렉션을 하도록 설계되었는데 이는 [**generational hypothesis**](http://www.memorymanagement.org/glossary/g.html#term-generational-hypothesis)에 근거한다.
+  - generational hypothesis의 두 가지 가설
+    - 대부분의 객체는 금방 도달할 수 없는 상태(unreachable)가 된다.
+    - 오래된 객체(old)에서 젊은 객체(young)로의 참조는 아주 적게 존재한다.
+- 수거할 때는 이전 세대를 현재 세대로 병합해서 진행한다.
+  - 1세대에서 collect()를 실행하면 0세대도 수거된다.
+  - 마찬가지로 2세대에서 collect()를 실행하면 0세대와 1세대도 수거된다.
+    - 그래서 2세대 GC는 오래 걸린다.
+
+### 추적에서 제외할 수 있는 객체들
+
+- 불변인 일부 컨테이너 인스턴스들은 추적 대상에서 빠질 수 있다.
+  - 튜플은 불변(immutable) 객체로 생성된 이후에 변경할 수 없음.
+    - 하지만 튜플의 항목들 중에 리스트나 딕셔너리 같은 가변(mutable) 객체가 있을 수도 있기 때문에 이를 체크한다.
+    - **tuple_object.c**
+
+        ```c
+        void
+        _PyTuple_MaybeUntrack(PyObject *op)
+        {
+            PyTupleObject *t;
+            Py_ssize_t i, n;
+        
+            if (!PyTuple_CheckExact(op) || !_PyObject_GC_IS_TRACKED(op))
+                return;
+            t = (PyTupleObject *) op;
+            n = Py_SIZE(t);
+            for (i = 0; i < n; i++) {
+                PyObject *elt = **PyTuple_GET_ITEM**(t, i); // 각각 요소들 확인
+                /* Tuple with NULL elements aren't
+                    fully constructed, don't untrack
+                    them yet. */
+                if (!elt ||
+                    _PyObject_GC_MAY_BE_TRACKED(elt)) // 추적 대상인지 타입 확인
+                    return;
+            }
+            _PyObject_GC_UNTRACK(op); // 정수 타입 같은 불변 타입만 포함하고 있으면 추적 대상에서 제외한다.
+        }
+        
+        ```
+
+  - 딕셔너리도 비어 있거나 불변 객체가 들어있을 경우 추적에서 제외할 수 있다.
+  - 추적하는 객체가 적을수록 빠르고 효과적인 가비지 컬렉션이 이루어진다.
+
+## 가비지 컬렉션 알고리즘
+
+1. 가비지 컬렉션 상태 GCState를 인터프리터로부터 얻는다.
+2. 가비지 컬렉터 활성화 여부를 확인한다.
+3. 가비지 컬렉터가 이미 실행 중인지 확인한다.
+4. 실행 중이지 않으면 수거 함수 collect()를 수거 상태 콜백과 함께 실행한다.
+5. 가비지 컬렉션이 완료됐다고 표시한다.
+
+```c
+/* API to invoke gc.collect() from C */
+Py_ssize_t
+PyGC_Collect(void)
+{
+    PyThreadState *tstate = _PyThreadState_GET();
+    GCState *gcstate = &tstate->interp->gc; // 1번 
+
+    if (!gcstate->enabled) { // 2번
+        return 0;
+    }
+
+    Py_ssize_t n;
+    if (gcstate->collecting) { // 3번
+        /* already collecting, don't do anything */
+        n = 0;
+    }
+    else {
+        PyObject *exc, *value, *tb;
+        gcstate->collecting = 1;
+        _PyErr_Fetch(tstate, &exc, &value, &tb);
+        n = collect_with_callback(tstate, NUM_GENERATIONS - 1); // 4번
+        _PyErr_Restore(tstate, exc, value, tb);
+        gcstate->collecting = 0; // 5번
+    }
+
+    return n;  
+}
+```
+
+### 수거 단계
+
+- 가비지 컬렉터는 수거 시마다 `PyGC_HEAD` 타입을 연결한 이중 연결 리스트를 이용한다.
+
+    ```c
+    /* GC information is stored BEFORE the object structure. */
+    typedef struct {
+        // Pointer to next object in the list.
+        // 0 means the object is not tracked
+        uintptr_t _gc_next;
+    
+        // Pointer to previous object in the list.
+        // Lowest two bits are used for flags documented later.
+        uintptr_t _gc_prev;
+    } PyGC_Head;
+    ```
+
+> 셀 객체가 삭제될 때
+
+```c
+static void
+cell_dealloc(PyCellObject *op)
+{
+    _PyObject_GC_UNTRACK(op);
+    Py_XDECREF(op->ob_ref);
+    PyObject_GC_Del(op);
+}
+```
+
+1. `_PyObject_GC_UNTRACK` : 추적 대상에서 제외하라고 가비지 컬렉터에 요청한다.
+2. `Py_XDECREF` : 참조 카운터 감소를 위해 사용하는 표준 호출 (내부적으로 `Py_DECREF` 사용)
+3. `PyObject_GC_Del` : `gc_list_remove()` 를 호출해 가비지 컬렉션 대상 리스트에서 객체를 제거, 메모리 해제
+    - gc_list_remove()
+
+        ![image](https://github.com/Pseudo-Lab/CPython-Guide/assets/54731898/979f2684-e981-44c1-991c-b260152f6aa7)
+
+        ```c
+        static inline void
+        gc_list_remove(PyGC_Head *node)
+        {
+            PyGC_Head *prev = GC_PREV(node);
+            PyGC_Head *next = GC_NEXT(node);
+        
+            _PyGCHead_SET_NEXT(prev, next);
+            _PyGCHead_SET_PREV(next, prev);
+        
+            node->_gc_next = 0; /* object is not currently tracked */
+        }
+        
+        ```
+
+### 순환 참조를 찾는 과정
+
+- 특정 세대에서 도달할 수 있는 객체(reachable)와 도달할 수 없는 객체(unreachable)를 구분하고 도달할 수 없는 객체 집합을 찾는다.
+
+1. 해당 세대의 모든 객체에 대해 참조 카운트 값 `ob→ob_refcnt`를 `ob→gc_refs`로 복사한다.
+2. 각각의 객체에서 참조하고 있는 다른 컨테이너 객체의 `gc_refs`를 감소시킨다.
+    - `subtract_refs()` 로 각 컨테이너 객체의 순회 함수를 호출 (`visit_decref()`)
+3. `gc_refs`가 0이면 그 객체는 컨테이너 집합 내부에서 자기들끼리 참조하고 있다는 뜻이다. (순환 참조)
+4. 도달할 수 없는 객체 리스트(unreachable)을 만들고 3번에 해당하는 객체들을 추가한다. 그리고 해당 객체들을 수거 대상 세대 리스트에서 모두 제거한다.
+5. unreachable 리스트로 이동되지 않은 객체들은 다음 세대로 이동한다. (생존)
+
+### 예시)
+
+```python
+a = [1]
+b = ["a"]
+c = [a, b]
+d = c
+x = [1, 2]
+x.append(x)
+e = Foo(0)
+f = Foo(1)
+e.x = f
+f.x = e
+del e
+del f
+```
+
+각 컨테이너 객체의 레퍼런스 카운트는 아래와 같다.
+
+```python
+# ref count
+[1]     <- a, c      = 2
+["a"]   <- b, c       = 2
+[a, b]  <- c, d       = 2
+Foo(0)  <- Foo(1).x  = 1
+Foo(1)  <- Foo(0).x  = 1
+```
+
+1번 과정에서 각 컨테이너 객체의 `gc_refs`가 설정된다.
+
+2번 과정에서 컨테이너 집합을 순회하며 `gc_refs`을 감소시킨다.
+
+```python
+[1]     = 2 - 1 = 1  # [a, b]에 의해 참조당하므로 1 감소
+["a"]   = 2 - 1 = 1  # [a, b]에 의해 참조당하므로 1 감소
+[a, b]  = 2  # 참조당하지 않으므로 그대로
+Foo(0)  = 1 - 1 = 0  # Foo(1)에 의해 참조당하므로 1 감소
+Foo(1)  = 1 - 1 = 0  # Foo(0)에 의해 참조당하므로 1 감소
+```
+
+3번 과정을 통해 `gc_refs`가 0인 순환 참조 객체를 찾았다. 이 객체를 unreachable 리스트에 추가한다.
+
+```python
+ unreachable |  reachable
+             |    [1] = 1
+ Foo(0) = 0  |  ["a"] = 1
+ Foo(1) = 0  | [a, b] = 2
+```
+
+이제 `Foo(0)`와 `Foo(1)`을 메모리에서 해제하면 가비지 컬렉션 과정이 끝난다.
+
+unreachable 리스트로 이동되지 않은 객체들은 다음 세대로 이동한다.
+
+- **deduce_unreachable 함수**
+
+    ```c
+    static inline void
+    deduce_unreachable(PyGC_Head *base, PyGC_Head *unreachable)
+    {
+        validate_list(base, collecting_clear_unreachable_clear);
+        /* Using ob_refcnt and gc_refs, calculate which objects in the
+         * container set are reachable from outside the set (i.e., have a
+         * refcount greater than 0 when all the references within the
+         * set are taken into account).
+         */
+        update_refs(base); // gc_prev is used for gc_refs
+        subtract_refs(base);
+    
+        gc_list_init(unreachable);
+        move_unreachable(base, unreachable); // gc_prev is pointer again
+        validate_list(base, collecting_clear_unreachable_clear);
+        validate_list(unreachable, collecting_set_unreachable_set);
+    }
+    ```
+
+### 파이썬에서 가비지 컬렉터 API 사용하기
+
+- 디버그 모드에서 gc 모듈 활용
+
+    ```python
+    import gc
+    gc.set_debug(gc.DEBUG_STATS)
+    
+    # gc: collecting generation 0...
+    # gc: objects in each generation: 2075 1755 70280
+    # gc: objects in permanent generation: 0
+    # gc: done, 926 unreachable, 0 uncollectable, 0.0004s elapsed
+    ```
+
+- `gc.DEBUG_COLLECTABLE` 을 사용하면 가비지 컬렉션 시점을 확인할 수 있다.
+
+    ```python
+    import gc
+    gc.set_debug(gc.DEBUG_COLLECTABLE)
+    
+    # gc: collectable <cell 0x10293c490>
+    # gc: collectable <dict 0x10294c340>
+    # gc: collectable <tuple 0x102a95180>
+    # gc: collectable <function 0x102a76670>
+    # gc: collectable <cell 0x102782e20>
+    ```
+
+- `gc.DEBUG_SAVEALL` 을 사용하면 수거된 객체들이 gc.garbage 리스트로 이동된다.
+
+## 미션
+
+- 원하는 라이브러리 import 해보고, 참조 카운트가 어떻게 바뀌는지 출력해보기
+
+    ```python
+    import sys
+    
+    print(sys.getrefcount(1)) # 138
+    print(sys.getrefcount(2)) # 108
+    print(sys.getrefcount(3)) # 44
+    
+    import matplotlib
+    print(sys.getrefcount(1)) # 1720
+    print(sys.getrefcount(2)) # 882
+    print(sys.getrefcount(3)) # 377
+    ```
+
 ## References
-- [^1]: https://docs.python.org/3/c-api/refcounting.html
-- [^2]: https://devguide.python.org/garbage_collector/#garbage-collection
-- [^3]: https://docs.python.org/3/library/sys.html#sys.getrefcount
+
+- <https://groverlab.org/hnbfpr/2017-06-22-fun-with-sys-getrefcount.html>
+- <https://stackoverflow.com/questions/44096794/why-does-sys-getrefcount-give-huge-values?source=post_page-----a11b3c5989e8-------------------------------->
+- <https://www.quora.com/How-does-garbage-collection-in-Python-work-What-are-the-pros-and-cons>
+- [http://www.arctrix.com/nas/python/gc](http://www.arctrix.com/nas/python/gc/)
+- [https://www.winterjung.dev/python-gc](https://www.winterjung.dev/python-gc/)
+
+[^1]: <https://docs.python.org/3/c-api/refcounting.html>
+[^2]: <https://devguide.python.org/garbage_collector/#garbage-collection>
+[^3]: <https://docs.python.org/3/library/sys.html#sys.getrefcount>
