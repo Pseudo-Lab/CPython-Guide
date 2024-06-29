@@ -354,7 +354,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -370,6 +372,15 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">12.1 파이썬 모듈</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#c">12.2 파이썬과 C가 혼용된 모듈</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -381,6 +392,117 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
 <h1>12. 표준 라이브러리<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<p>CPython 표준 라이브러리 모듈은 두 가지 종류로 나뉜다.</p>
+<ol class="arabic simple">
+<li><p>유틸리티를 제공하는 순수한 파이썬 모듈</p></li>
+<li><p>C로 작성됐고 파이썬 래퍼를 제공하는 모듈</p></li>
+</ol>
+<section id="id2">
+<h2>12.1 파이썬 모듈<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<p>순수한 파이썬 모듈들은 <code class="docutils literal notranslate"><span class="pre">Lib</span></code> 디렉토리에 위치한다.</p>
+<p>아래의 email 모듈과 같은 큰 모듈 중 일부는 하위 모듈이 있는 경우도 있다.</p>
+<p><img alt="library_directory" src="../_images/00_library_directory.png" /></p>
+<p>파이썬 배포판을 설치하면 표준 라이브러리 모듈은 배포판 폴더로 복사된다. 해당 폴더는 파이썬을 시작할 때 항상 경로에 포함되어 모듈을 임포트할 때 모듈 위치를 신경 쓰지 않아도 된다.</p>
+<p>→ <code class="docutils literal notranslate"><span class="pre">sys.path</span></code>에 포함된다.</p>
+<p>아래는 파이썬 모듈 중 하나인 <code class="docutils literal notranslate"><span class="pre">colorsys</span></code>의 함수이다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">rgb_to_hls</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">maxc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">minc</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="c1"># XXX Can optimize (maxc+minc) and (maxc-minc)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="p">(</span><span class="n">minc</span><span class="o">+</span><span class="n">maxc</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+    <span class="k">if</span> <span class="n">minc</span> <span class="o">==</span> <span class="n">maxc</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="n">l</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">minc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">maxc</span><span class="o">+</span><span class="n">minc</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">minc</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">-</span><span class="n">maxc</span><span class="o">-</span><span class="n">minc</span><span class="p">)</span>
+    <span class="n">rc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">r</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">minc</span><span class="p">)</span>
+    <span class="n">gc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">minc</span><span class="p">)</span>
+    <span class="n">bc</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">maxc</span><span class="o">-</span><span class="n">minc</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">r</span> <span class="o">==</span> <span class="n">maxc</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">bc</span><span class="o">-</span><span class="n">gc</span>
+    <span class="k">elif</span> <span class="n">g</span> <span class="o">==</span> <span class="n">maxc</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">+</span><span class="n">rc</span><span class="o">-</span><span class="n">bc</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="mf">4.0</span><span class="o">+</span><span class="n">gc</span><span class="o">-</span><span class="n">rc</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span><span class="o">/</span><span class="mf">6.0</span><span class="p">)</span> <span class="o">%</span> <span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">h</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">s</span>
+</pre></div>
+</div>
+<p>위 함수를 사용하는 방법은 아래와 같다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">colorsys</span>
+
+<span class="n">colorsys</span><span class="o">.</span><span class="n">rgb_to_hls</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>모듈의 위치를 신경 쓰지 않고 바로 임포트할 수 있다.</p>
+<p>모든 파이썬 모듈은 위 함수와 같이 단순한 파이썬 코드로 이루어져 있으며 이해하기 어렵지 않다. 따라서 표준 라이브러리 코드에서 버그나 개선 사항을 찾아 파이썬 배포판에 기여할 수도 있다.</p>
+</section>
+<section id="c">
+<h2>12.2 파이썬과 C가 혼용된 모듈<a class="headerlink" href="#c" title="Permalink to this heading">#</a></h2>
+<p>순수한 파이썬 모듈을 제외한 나머지 모듈은 모두 C로 작성됐거나 C와 파이썬이 혼용되어 있다.</p>
+<p>C로 작성된 부분은 <code class="docutils literal notranslate"><span class="pre">Modules</span></code> 디렉토리에 위치하며 파이썬으로 작성된 부분은 <code class="docutils literal notranslate"><span class="pre">Lib</span></code> 디렉토리에 위치한다.</p>
+<p>아래 사항은 예외이다.</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sys</span></code> 모듈은 <code class="docutils literal notranslate"><span class="pre">Python/sysmodule.c</span></code>에 위치한다.</p>
+<ul class="simple">
+<li><p>CPython의 내부와 강하게 연관되어 있기 때문에 <code class="docutils literal notranslate"><span class="pre">Python</span></code> 디렉토리에 존재한다.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__builtins__</span></code> 모듈은 <code class="docutils literal notranslate"><span class="pre">Python/bltinmodule.c</span></code>에 위치한다.</p>
+<ul class="simple">
+<li><p>인터프리터를 인스턴스화할 때 내장 함수들을 __builtins__로부터 임포트하므로 <code class="docutils literal notranslate"><span class="pre">Python</span></code> 디렉토리에 존재한다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">print()</span></code>, <code class="docutils literal notranslate"><span class="pre">chr()</span></code>, <code class="docutils literal notranslate"><span class="pre">format()</span></code>과 같은 모든 내장 함수를 해당 파일에서 찾을 수 있다.</p></li>
+</ul>
+</li>
+</ol>
+<p>C로 작성된 일부 모듈의 내용은 운영 체제 기능을 외부에 노출한다. 따라서 운영 체제에 따라 모듈이 다르게 동작하는 특수한 케이스가 존재한다.</p>
+<p>예를 들어 <code class="docutils literal notranslate"><span class="pre">time</span></code> 모듈은 윈도우가 시간을 유지하고 저장하는 방법이 리눅스, macOS와 전혀 다르기 때문에 운영 체제별로 시간 함수의 정확도가 다르다.</p>
+<p>스레딩 모듈, 파일 시스템 모듈, 네트워킹 모듈도 동일한 API를 운영 체제별로 여러 번 구현한다.</p>
+<p>운영 체제별로 동작이 다르기 때문에 CPython 소스 코드는 최대한 같은 방식으로 동작을 구현한 다음 일관성 있고 추상화된 API만 제공한다.</p>
+<p>이러한 구현 방식을 <code class="docutils literal notranslate"><span class="pre">time</span></code> 모듈에서도 확인할 수 있다.</p>
+<p>아래는 <code class="docutils literal notranslate"><span class="pre">time</span></code> 모듈의 함수로 프로세스의 CPU 사용 시간을 나노초 단위로 반환하는 함수이다.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
+<span class="nf">time_process_time_ns</span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">unused</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_PyTime_t</span><span class="w"> </span><span class="n">t</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyTime_GetProcessTimeWithInfo</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_PyTime_AsNanosecondsObject</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>아래 함수는 <code class="docutils literal notranslate"><span class="pre">time_process_time_ns()</span></code>에서 호출하는 함수로 운영 체제에 따라 다른 방식으로 시스템 프로세스 시간을 가져오는 기능을 수행한다.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span>
+<span class="nf">_PyTime_GetProcessTimeWithInfo</span><span class="p">(</span><span class="n">_PyTime_t</span><span class="w"> </span><span class="o">*</span><span class="n">tp</span><span class="p">,</span><span class="w"> </span><span class="n">_Py_clock_info_t</span><span class="w"> </span><span class="o">*</span><span class="n">info</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="cp">#if defined(MS_WINDOWS)</span>
+<span class="w">    </span><span class="n">HANDLE</span><span class="w"> </span><span class="n">process</span><span class="p">;</span>
+<span class="w">    </span><span class="n">FILETIME</span><span class="w"> </span><span class="n">creation_time</span><span class="p">,</span><span class="w"> </span><span class="n">exit_time</span><span class="p">,</span><span class="w"> </span><span class="n">kernel_time</span><span class="p">,</span><span class="w"> </span><span class="n">user_time</span><span class="p">;</span>
+
+<span class="p">...</span>
+
+<span class="w">    </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyTime_FromNanoseconds</span><span class="p">((</span><span class="n">ktime</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">utime</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+<span class="w">    </span><span class="o">*</span><span class="n">tp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="cp">#else</span>
+
+<span class="w">    </span><span class="cm">/* clock_gettime */</span>
+<span class="cp">#if defined(HAVE_CLOCK_GETTIME) \</span>
+<span class="cp">    &amp;&amp; (defined(CLOCK_PROCESS_CPUTIME_ID) || defined(CLOCK_PROF))</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">timespec</span><span class="w"> </span><span class="n">ts</span><span class="p">;</span>
+
+<span class="p">...</span>
+
+<span class="w">    </span><span class="cm">/* clock */</span>
+<span class="w">    </span><span class="cm">/* Currently, Python 3 requires clock() to build: see issue #22624 */</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_PyTime_GetClockWithInfo</span><span class="p">(</span><span class="n">tp</span><span class="p">,</span><span class="w"> </span><span class="n">info</span><span class="p">);</span>
+<span class="cp">#endif</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -435,6 +557,21 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">12.1 파이썬 모듈</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#c">12.2 파이썬과 C가 혼용된 모듈</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

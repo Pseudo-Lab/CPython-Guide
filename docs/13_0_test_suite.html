@@ -354,7 +354,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -370,6 +372,29 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">용어</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">테스트 하네스</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">테스트 스위트, 테스트 케이스</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">확인 테스트, 회귀 테스트</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">일반적인 테스트 코드 구조</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mock">Mock</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#hook">Hook</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#macos"><strong>리눅스와 macOS에서 테스트 스위트 실행하기</strong></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">테스트 플래그</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">특정 테스트만 실행하기</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">테스트 모듈</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">테스트 유틸리티</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -381,6 +406,316 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
 <h1>13. 테스트 스위트<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<p>CPython은 코어 인터프리터, 표준 라이브러리, 툴링을 비롯해
+리눅스, macOS용 배포까지 포함하는 강력한 테스트 스위트를 가지고 있다.</p>
+<p>테스트 스위트는 <code class="docutils literal notranslate"><span class="pre">Lib/tests</span></code>에 위치해 있고 대부분 파이썬으로 작성되어있다.</p>
+<p>전체 테스트 스위트가 파이썬 패키지이기 때문에
+컴파일한 파이썬 인터프리터로 테스트를 실행해 볼 수 있다.</p>
+<hr class="docutils" />
+<section id="id2">
+<h2>용어<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<p>테스트를 처음 접하는 경우 아래의 용어를 알고 있다면 이해하는데 도움이 될 것 같다.</p>
+<section id="id3">
+<h3>테스트 하네스<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h3>
+<p>테스트 수행 도구를 의미한다.
+Postman, unittest, Pytest, JUnit5, Robot Framework 등이 여기에 해당한다.</p>
+<p><img alt="test_harness" src="../_images/00_test_harness.png" /></p>
+</section>
+<section id="id4">
+<h3>테스트 스위트, 테스트 케이스<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<p>테스트 케이스의 모음을 테스트 스위트라고 부른다.</p>
+</section>
+<section id="id5">
+<h3>확인 테스트, 회귀 테스트<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<p><strong>확인 테스트</strong>는 발생한 이슈에 대한 수정 검증 테스트를 의미한다.
+만약 확인 테스트가 이후 릴리즈 할 버전에도 영향을 미칠 것 같다고 판단된다면
+수행한 확인 테스트 케이스를 회귀 테스트 스위트에 포함시킨다.</p>
+<p><strong>회귀 테스트</strong>는 테스트 버전에 대해
+릴리즈 버전에서 수행한 테스트 케이스들을 다시 수행하는 것을 의미한다.</p>
+</section>
+</section>
+<section id="id6">
+<h2>일반적인 테스트 코드 구조<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h2>
+<p>일반적으로는 테스트 코드는 다음과 같이 구성되어 있다. (프로젝트 별로 관리 방식이 상이할 수 있다)</p>
+<p>pytest를 사용할 경우의 디렉토리 구조이다</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Project</span>
+	<span class="o">|-</span> <span class="n">src</span>
+		<span class="o">|-</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span> 
+		<span class="o">|-</span> <span class="n">main</span><span class="o">.</span><span class="n">py</span>
+		<span class="o">|-</span> <span class="n">data_loader</span>
+			<span class="o">|-</span> <span class="o">...</span>
+		<span class="o">|-</span> <span class="n">models</span> 
+			<span class="o">|-</span> <span class="o">...</span>
+	<span class="o">|-</span> <span class="n">tests</span>
+		<span class="o">|-</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span> 
+		<span class="o">|-</span> <span class="n">test_</span><span class="p">{</span><span class="n">suites1</span><span class="p">}</span>
+			<span class="o">|-</span> <span class="o">...</span>
+		<span class="o">|-</span> <span class="n">test_</span><span class="p">{</span><span class="n">suites2</span><span class="p">}</span>
+			<span class="o">|-</span> <span class="fm">__init__</span><span class="o">.</span><span class="n">py</span>
+			<span class="o">|-</span> <span class="n">conftest</span><span class="o">.</span><span class="n">py</span>
+			<span class="o">|-</span> <span class="n">test_</span><span class="p">{</span><span class="n">suite1</span><span class="p">}</span><span class="o">.</span><span class="n">py</span>
+			<span class="o">|-</span> <span class="n">test_</span><span class="p">{</span><span class="n">suite2</span><span class="p">}</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<section id="mock">
+<h3>Mock<a class="headerlink" href="#mock" title="Permalink to this heading">#</a></h3>
+<p>Mock은 ‘가짜 데이터’를 의미한다.
+예를 들어 테스트 코드를 작성할 때, 실제 모듈과 유사하게 동작하는 가짜 데이터를 만들어 사용할 수 있다.</p>
+<p>mock를 사용하면 함수의 실제 실행 없이, 미리 정해진 값을 반환하도록 할 수 있다.</p>
+<p>성능 저하, 비용 등 불필요한 리소스 발생이 예상될 때, 일반적으로 mock 사용을 권장한다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># src/example.py</span>
+
+<span class="k">def</span> <span class="nf">func</span><span class="p">():</span>
+	<span class="k">return</span> <span class="s2">&quot;fail&quot;</span>
+</pre></div>
+</div>
+<p>위와 같은 함수가 있다고 해보자.
+원래라면 “fail”만 리턴하는 함수이다.</p>
+<p>그리고 테스트를 위한 <code class="docutils literal notranslate"><span class="pre">test_example.py</span></code>를 만들어보자.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/test_example.py</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">src</span> <span class="kn">import</span> <span class="n">example</span>
+
+<span class="k">class</span> <span class="nc">TestExample</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+    <span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;src.example.func&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="s2">&quot;success&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mock_func</span><span class="p">):</span>
+        <span class="n">actual</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">func</span><span class="p">()</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s2">&quot;success&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>mock를 사용하기 위해서는 test 함수 위에 다음과 같은 데코레이터를 추가해야 한다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;src.example.func&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="s2">&quot;success&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">patch</span></code>메소드의 첫 번째 인자는 target 함수의 경로이다.
+<code class="docutils literal notranslate"><span class="pre">return_value</span></code> 인자에는 target 함수의 return 값을 지정할 수 있다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">return_value</span></code>를 통해 함수의 return 값을 강제할 수 있다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">func()</span></code> 는 “fail”을 return 하지만,
+<code class="docutils literal notranslate"><span class="pre">return_value</span></code> 파라미터를 통해 “success”로 강제할 수 있다.</p>
+</section>
+<section id="hook">
+<h3>Hook<a class="headerlink" href="#hook" title="Permalink to this heading">#</a></h3>
+<p>각 테스트 케이스마다 반복되는 작업이 있을 경우 Hook을 수행할 수 있다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">unittest</span></code>에서는 테스트 케이스의 설정 및 정리를 위해
+<code class="docutils literal notranslate"><span class="pre">setUp</span></code>, <code class="docutils literal notranslate"><span class="pre">tearDown</span></code>, <code class="docutils literal notranslate"><span class="pre">setUpClass</span></code>, <code class="docutils literal notranslate"><span class="pre">tearDownClass</span></code> 메소드를 사용한다.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">setUp</span></code>: 각 테스트 케이스가 호출되기 전 먼저 호출되는 메소드</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">setUpClass</span></code>: 테스트 스위트가 실행된 직후 가장 먼저 호출되는 메소드</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tearDown</span></code>: 각 테스트 케이스의 종료 후 호출되는 메소드</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tearDownClass</span></code>: 테스트 스위트의 종료 후 호출되는 메소드</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># tests/test_example.py</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">mock</span>
+<span class="kn">from</span> <span class="nn">src</span> <span class="kn">import</span> <span class="n">example</span>
+
+<span class="k">class</span> <span class="nc">TestExample</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mock_func</span> <span class="o">=</span> <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="p">(</span><span class="s2">&quot;src.example.func&quot;</span><span class="p">,</span> <span class="n">return_value</span><span class="o">=</span><span class="s2">&quot;success&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mock</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">stopall</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">test_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">actual</span> <span class="o">=</span> <span class="n">example</span><span class="o">.</span><span class="n">func</span><span class="p">()</span>
+        <span class="n">expected</span> <span class="o">=</span> <span class="s2">&quot;success&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">actual</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="macos">
+<h2><strong>리눅스와 macOS에서 테스트 스위트 실행하기</strong><a class="headerlink" href="#macos" title="Permalink to this heading">#</a></h2>
+<p>리눅스와 macOS에서 <code class="docutils literal notranslate"><span class="pre">make</span></code>로 <code class="docutils literal notranslate"><span class="pre">test</span></code> 타겟을 실행하면 컴파일 후 테스트가 실행된다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ make test
+== CPython 3.9
+== macOS-14.4.1-arm64-arm-64bit little-endian
+== cwd: /Users/wooy0ng/Desktop/cpython/build/test_python_3006æ
+== CPU count: 8
+== encodings: locale=UTF-8, FS=utf-8
+0:00:00 load avg: 5.40 [&amp;nbsp; 1/425] test_wave passed
+0:00:00 load avg: 5.40 [&amp;nbsp; 2/425] test_richcmp passed
+0:00:00 load avg: 7.93 [&amp;nbsp; 3/425] test_future5 passed
+</pre></div>
+</div>
+<p>또는 컴파일된 바이너리인 <code class="docutils literal notranslate"><span class="pre">python</span></code>이나 <code class="docutils literal notranslate"><span class="pre">python.exe</span></code>로 <code class="docutils literal notranslate"><span class="pre">test</span></code> 패키지를 실행할 수도 있다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ ./python -m test
+== CPython 3.9
+== macOS-14.4.1-arm64-arm-64bit little-endian
+== cwd: /Users/wooy0ng/Desktop/cpython/build/test_python_3006æ
+== CPU count: 8
+== encodings: locale=UTF-8, FS=utf-8
+0:00:00 load avg: 5.20 [&amp;nbsp; 1/425] test_wave passed
+0:00:00 load avg: 5.20 [&amp;nbsp; 2/425] test_richcmp passed
+0:00:00 load avg: 7.68 [&amp;nbsp; 3/425] test_future5 passed
+</pre></div>
+</div>
+<p>다음은 cpython에서 테스트를 위한 <code class="docutils literal notranslate"><span class="pre">make</span></code> 타겟 목록이다.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>타깃</p></th>
+<th class="head"><p>용도</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>test</p></td>
+<td><p>기본적인 회귀 테스트를 실행한다.</p></td>
+</tr>
+<tr class="row-odd"><td><p>quicktest</p></td>
+<td><p>오래 걸리는 테스트를 제외하고 빠른 회귀 테스트만 실행한다.</p></td>
+</tr>
+<tr class="row-even"><td><p>testall</p></td>
+<td><p>.pyc 파일이 없는 상태로 한 번, 있는 상태로 한 번 전체 테스트 스위트를 실행한다.</p></td>
+</tr>
+<tr class="row-odd"><td><p>testuniversal</p></td>
+<td><p>macOS 유니버셜 빌드에서 여러 아키텍처에 대한 테스트 스위트를 실행한다.</p></td>
+</tr>
+<tr class="row-even"><td><p>coverage</p></td>
+<td><p>컴파일 후 gcov로 테스트를 실행한다.</p></td>
+</tr>
+<tr class="row-odd"><td><p>coverage-lcov</p></td>
+<td><p>HTML 커버리지 보고를 생성한다.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="id7">
+<h2>테스트 플래그<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h2>
+<p>GUI가 필요한 IDLE에 대한 테스트처럼
+일부 테스트는 특정한 플래그가 없으면 자동으로 건너뛴다.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-list-tests</span></code> 플래그로 구성에서 테스트 스위트 목록을 볼 수 있다.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ ./python -m test --list-tests
+
+test_grammer
+test_opcodes
+test_dict
+test_builtin
+test_exceptions
+...
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="id8">
+<h2>특정 테스트만 실행하기<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h2>
+<p>테스트를 실행할 때 첫 번째 인자에 실행할 테스트 스위트를 명시해서 특정 테스트만 실행할 수 있다.</p>
+<p>아래는 리눅스와 macOS에서 실행할 테스트 스위트를 명시하는 방법이다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ ./python -m test test_webbrowser
+Raised RLIMIT_NOFILE: 256 -&gt; 1024
+
+0:00:00 load avg: 1.70 Run tests sequentially
+0:00:00 load avg: 1.70 [1/1] test_webbrowser
+
+== Tests result: SUCCESS ==
+1 test OK.
+
+Total duration: 37 ms
+Tests result: SUCCESS
+</pre></div>
+</div>
+<p>CPython을 변경하려면 테스트 스위트를 사용하는 방법과
+직접 컴파일한 바이너리 상태를 확인하는 방법을 이해하는 것이 매우 중요하다.</p>
+<p>소스 코드를 변경하기 전에 전체 테스트 세트를 실행하고 모두 통과되는지 확인해야 한다.</p>
+</section>
+<hr class="docutils" />
+<section id="id9">
+<h2>테스트 모듈<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h2>
+<p>C 확장과 파이썬 모듈은 <code class="docutils literal notranslate"><span class="pre">unittest</span></code> 모듈로 임포트하고 테스트한다.
+테스트는 모듈이나 패키지 단위로 구성된다.</p>
+<p>예를 들어 파이썬 유니코드 문자열 타입의 테스트는 <code class="docutils literal notranslate"><span class="pre">Lib/test/test_unicode.py</span></code>에서,
+<code class="docutils literal notranslate"><span class="pre">asyncio</span></code> 패키지의 테스트 패키지는 <code class="docutils literal notranslate"><span class="pre">Lib/test/test_asyncio</span></code>에서 찾을 수 있다.</p>
+<p>아래는 UnicodeTest 클래스 중 일부이다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="k">class</span> <span class="nc">UnicodeTest</span><span class="p">(</span><span class="n">string_tests</span><span class="o">.</span><span class="n">CommonTest</span><span class="p">,</span>
+			<span class="n">string_tests</span><span class="o">.</span><span class="n">MixinStrUnicodeUserStringTest</span><span class="p">,</span>
+			<span class="n">string_tets</span><span class="o">.</span><span class="n">MixinStrUnicodeTest</span><span class="p">,</span>
+			<span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span>
+<span class="p">):</span>
+<span class="o">...</span>
+	<span class="k">def</span> <span class="nf">test_casefold</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span><span class="o">.</span><span class="n">casefold</span><span class="p">(),</span> <span class="s1">&#39;hello&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;hELlo&#39;</span><span class="o">.</span><span class="n">casefold</span><span class="p">(),</span> <span class="s1">&#39;hello&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;ß&#39;</span><span class="o">.</span><span class="n">casefold</span><span class="p">(),</span> <span class="s1">&#39;ss&#39;</span><span class="p">)</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="s1">&#39;ﬁ&#39;</span><span class="o">.</span><span class="n">casefold</span><span class="p">(),</span> <span class="s1">&#39;fi&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>이전 장에서 유니코드 문자열에 대해 구현한 ‘거의 같음’ 연산자에 대한 테스트를
+UnicodeTest 클래스의 새 메소드로 추가해보자.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_almost_equals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+	<span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s1">&#39;hello&#39;</span> <span class="o">~=</span> <span class="s1">&#39;hello&#39;</span><span class="p">)</span>
+	<span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s1">&#39;heLlo&#39;</span> <span class="o">~=</span> <span class="s1">&#39;hello)</span>
+	<span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="s1">&#39;hELlo!&#39;</span> <span class="o">~=</span> <span class="s1">&#39;hello&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>새로 추가한 테스트를 아래의 커멘드로 실행해보자</p>
+<ul>
+<li><p>Windows</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">rc</span><span class="o">.</span><span class="n">bat</span> <span class="o">-</span><span class="n">q</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">x64</span> <span class="n">test_unicode</span>
+</pre></div>
+</div>
+</li>
+<li><p>MacOS, 리눅스</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>$ ./python -m test test_unicode -v
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id10">
+<h2>테스트 유틸리티<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">test.support.script_helper</span></code> 모듈은
+파이썬 런타임 테스트를 사용할 수 있는 helper 함수를 제공한다.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">assert_python_ok(*args,</span> <span class="pre">**env_vars)</span></code></p>
+<blockquote>
+<div><p>지정된 인수와 함께 파이썬 프로세스를 실행하고 반환 코드와
+stdout, stderr를 담은 튜플을 반환한다.</p>
+</div></blockquote>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">assert_python_failure(*args,</span> <span class="pre">**env_vars)</span></code></p>
+<blockquote>
+<div><p>assert_python_ok()와 비슷하지만 실패를 가정하는 경우에 사용한다.</p>
+</div></blockquote>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make_script(script_dir,</span> <span class="pre">script_basename,</span> <span class="pre">source)</span></code></p>
+<blockquote>
+<div><p>script_basename과 source를 사용해 script_dir에 스크립트를 생성하고
+스크립트에 대한 경로를 반환한다.</p>
+</div></blockquote>
+</li>
+</ul>
+<p>모듈이 빌드되지 않았을 경우 테스트도 건너뛰게 하고 싶다면
+유틸리티 함수 <code class="docutils literal notranslate"><span class="pre">test.support.import_module()</span></code>을 사용할 수 있다.</p>
+<p>이 유틸리티는 테스트할 모듈이 빌드되지 않았다면 <code class="docutils literal notranslate"><span class="pre">SkipTest</span></code>를 발생시켜
+이 테스트 패키지를 건너뛰라는 신호를 Test Runner에 보낸다.</p>
+<p><code class="docutils literal notranslate"><span class="pre">import_module()</span></code>을 사용하는 방법은 아래와 같다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">test.support</span>
+
+<span class="n">_multiprocessing</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">support</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s1">&#39;_multiprocessing&#39;</span><span class="p">)</span>
+
+<span class="c1"># test 작성</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -435,6 +770,35 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">용어</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">테스트 하네스</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">테스트 스위트, 테스트 케이스</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">확인 테스트, 회귀 테스트</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">일반적인 테스트 코드 구조</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mock">Mock</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#hook">Hook</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#macos"><strong>리눅스와 macOS에서 테스트 스위트 실행하기</strong></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">테스트 플래그</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">특정 테스트만 실행하기</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">테스트 모듈</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">테스트 유틸리티</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
