@@ -66,7 +66,7 @@ const thebe_selector_output = ".output, .cell_output"
     <link rel="shortcut icon" href="../_static/PseudoLab_logo.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="프로세스" href="10_1_process.html" />
+    <link rel="next" title="10.1 멀티 프로세스" href="10_1_process.html" />
     <link rel="prev" title="레퍼런스 카운팅과 가비지 컬렉션" href="9_2_garbage_collection.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -175,7 +175,7 @@ const thebe_selector_output = ".output, .cell_output"
 </ul>
 </li>
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">10. 병렬성과 동시성</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="10_1_process.html">프로세스</a></li>
+<li class="toctree-l2"><a class="reference internal" href="10_1_process.html">10.1 멀티 프로세스</a></li>
 <li class="toctree-l2"><a class="reference internal" href="10_2_thread.html">스레드</a></li>
 <li class="toctree-l2"><a class="reference internal" href="10_3_async.html">비동기 프로그래밍</a></li>
 </ul>
@@ -354,7 +354,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -370,6 +372,15 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">개요</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">병렬성과 동시성 모델</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -381,6 +392,61 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
 <h1>10. 병렬성과 동시성<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<section id="id2">
+<h2>개요<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<p>모든 운영체제의 핵심 기능은 실행 중인 프로세스를 관리하는 것이다.
+모든 프로세스는 메모리와 CPU 같은 자원을 요청할 수 있다.</p>
+<p><strong>프로세스는 작업 단위로 실행</strong>되기 때문에 CPU에 자신이 사용할 시간을 요청한다.
+이 요쳥을 받은 운영체제는 시간을 프로세스에 할당해주고 우선순위에 따라 스케줄링하며
+어떤 프로세스가 CPU를 사용할지를 컨트롤한다.</p>
+<p><img alt="concurrent" src="../_images/concurrency.png" /></p>
+<p>동시성은 멀티태스킹 구현에 알맞은 해결책이긴 하지만
+CPU를 나눠쓰기 때문에 한계가 있다.</p>
+<p><img alt="parallel" src="../_images/parallel.png" /></p>
+<p>때문에 여러 개의 코어 또는 CPU를 사용해 작업을 분산하는 방식으로
+멀티태스킹을 수행하는 방법도 OS가 제공해준다.</p>
+<p>즉, 컴퓨터는 병렬성과 동시성을 활용해 멀티태스킹을 처리한다.</p>
+<ul class="simple">
+<li><p>병렬성 → CPU와 같은 연산 유닛들이 여러 개 필요</p></li>
+<li><p>동시성 → 유휴 상태의 프로세스가 하나의 자원을 계속해서 차지하지 않도록 스케줄링 필요</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>병렬성과 동시성 모델<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
+<p>CPython은 병렬성과 동시성에 대해 다양한 접근 방식을 제공한다.
+기본적으로 아래의 4가지 모델을 제공한다.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>접근 방식</p></th>
+<th class="head"><p>모델명</p></th>
+<th class="head"><p>동시 실행</p></th>
+<th class="head"><p>병렬 실행</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>쓰레딩</p></td>
+<td><p>threading</p></td>
+<td><p>O</p></td>
+<td><p>X</p></td>
+</tr>
+<tr class="row-odd"><td><p>멀티프로세싱</p></td>
+<td><p>multiprocessing</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+</tr>
+<tr class="row-even"><td><p>비동기</p></td>
+<td><p>asyncio</p></td>
+<td><p>O</p></td>
+<td><p>X</p></td>
+</tr>
+<tr class="row-odd"><td><p>서브인터프리터</p></td>
+<td><p>subinterpreters</p></td>
+<td><p>O</p></td>
+<td><p>O</p></td>
+</tr>
+</tbody>
+</table>
+</section>
 <div class="toctree-wrapper compound">
 </div>
 </section>
@@ -427,7 +493,7 @@ document.write(`
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">프로세스</p>
+        <p class="prev-next-title">10.1 멀티 프로세스</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -437,6 +503,21 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">개요</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">병렬성과 동시성 모델</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
