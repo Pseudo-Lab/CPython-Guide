@@ -387,9 +387,22 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">순환 참조와 가비지 컬렉션</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">요약</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">참조 카운팅 정리</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cyclic-garbage-collection">가비지 컬렉션 (cyclic garbage collection)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">파이썬에서 가비지 컬렉터가 동작하는 원리</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">추적에서 제외할 수 있는 객체들</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">가비지 컬렉션 알고리즘</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">수거 단계</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">순환 참조를 찾는 과정</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">예시)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">파이썬에서 가비지 컬렉터 API 사용하기</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">미션</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
 </ul>
             </nav>
@@ -412,7 +425,7 @@ document.write(`
 <li><p>PyMem API : PyMem API는 CPython에서 메모리 할당 및 해제를 위해 사용되는 C 함수들의 모음입니다. 이 API는 Python 객체의 생성, 크기 조정 및 해제를 담당합니다.</p></li>
 <li><p>PyObject: Python 객체를 나타내는 C 구조체입니다. 모든 Python 객체는 PyObject 구조체로 표현됩니다. PyObject는 객체의 타입과 참조 카운트 등의 정보를 포함하고 있습니다.</p></li>
 </ul>
-<p>CPython은 C의 동적 메모리 할당 시스템을 기반으로 구축되어 있습니다. 메모리 요구 사항은 런타임에 결정되며, PyMem API를 사용하여 시스템에 메모리가 할당됩니다. CPython은 메모리 관리를 위해 참조 카운팅<a class="footnote-reference brackets" href="#id14" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>과 가비지 컬렉션<a class="footnote-reference brackets" href="#id15" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>이라는 두 가지 전략을 사용합니다.</p>
+<p>CPython은 C의 동적 메모리 할당 시스템을 기반으로 구축되어 있습니다. 메모리 요구 사항은 런타임에 결정되며, PyMem API를 사용하여 시스템에 메모리가 할당됩니다. CPython은 메모리 관리를 위해 참조 카운팅<a class="footnote-reference brackets" href="#id21" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>과 가비지 컬렉션<a class="footnote-reference brackets" href="#id22" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>이라는 두 가지 전략을 사용합니다.</p>
 </section>
 <section id="id6">
 <h3>참조 카운팅<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
@@ -474,7 +487,7 @@ document.write(`
 </ul>
 </li>
 </ul>
-<p>Python 코드로 참조 카운팅을 조회하려면 <code class="docutils literal notranslate"><span class="pre">sys.getrefcount()</span></code><a class="footnote-reference brackets" href="#id16" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>를 사용할 수 있습니다.</p>
+<p>Python 코드로 참조 카운팅을 조회하려면 <code class="docutils literal notranslate"><span class="pre">sys.getrefcount()</span></code><a class="footnote-reference brackets" href="#id23" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a>를 사용할 수 있습니다.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">test_function</span><span class="p">():</span>
     <span class="n">my_variable</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">]</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;my_variable in locals():&quot;</span><span class="p">,</span> <span class="s1">&#39;my_variable&#39;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">())</span>
@@ -669,7 +682,7 @@ After<span class="w"> </span>gc.collect<span class="o">()</span>:
 </section>
 </section>
 <section id="id13">
-<h3>요약<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
+<h3>참조 카운팅 정리<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
 <p>CPython의 메모리 관리 방식인 참조 카운팅에 대해 알아보았습니다. 참조 카운팅은 객체에 대한 참조 수를 추적하여 더 이상 사용되지 않는 객체를 자동으로 메모리에서 해제합니다.</p>
 <ul class="simple">
 <li><p>CPython은 C의 동적 메모리 할당 시스템을 기반으로 구축되어 있으며, 메모리 요구 사항은 런타임에 결정됩니다.</p></li>
@@ -682,23 +695,370 @@ After<span class="w"> </span>gc.collect<span class="o">()</span>:
 <p>CPython의 메모리 관리는 참조 카운팅과 가비지 컬렉션이라는 두 가지 전략을 통해 이루어집니다. 이를 통해 개발자는 메모리 관리에 대해 크게 신경 쓰지 않고도 Python을 사용할 수 있습니다. 하지만 메모리 누수나 순환 참조 등의 문제를 완전히 방지하기 위해서는 메모리 관리 방식에 대한 이해가 필요합니다.</p>
 </section>
 </section>
+<section id="cyclic-garbage-collection">
+<h2>가비지 컬렉션 (cyclic garbage collection)<a class="headerlink" href="#cyclic-garbage-collection" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>참조 카운터와 특수한 가비지 컬렉션 알고리즘을 사용하여 결국 순환 참조를 찾는 것</p></li>
+<li><p>그럼 어떻게 Garbage 객체를 찾을까요?</p>
+<ul>
+<li><p>“<strong>모든</strong>” 객체에 대해서 reference를 graph로 그리며, 접근 불가능한 cycle을 찾는 방법 밖에 없다.</p></li>
+<li><p>모든 객체에 대해서 전수 조사를 하기에는 너무 느리기 때문에 <strong>“Generation”</strong> 이라는 최적화 기법을 사용한다.</p></li>
+<li><p>Young generation 객체는 자주, Old generation 객체는 상대적으로 가끔씩 scan을 수행하는 것이다.</p></li>
+</ul>
+</li>
+<li><p>가비지 컬렉터(GC)는 내부적으로 <code class="docutils literal notranslate"><span class="pre">generation</span></code>(세대)과 <code class="docutils literal notranslate"><span class="pre">threshold</span></code>(임계값)로 가비지 컬렉션 주기와 객체를 관리한다.</p>
+<ul>
+<li><p>NUM_GENERATIONS</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">#define</span> <span class="pre">NUM_GENERATIONS</span> <span class="pre">3</span></code></p></li>
+<li><p>세대는 0세대, 1세대, 2세대로 구분되는데 최근에 생성된 객체는 0세대(young)에 들어가고 오래된 객체일수록 2세대(old)에 존재한다.</p></li>
+<li><p>한 객체는 단 하나의 세대에만 속한다.</p></li>
+<li><p>한 번도 GC가 불리지 않은 객체는 0세대, 한 번 불렸지만 생존한 객체는 1세대, 두 번 이상 GC가 불렸지만 생존한 객체는 2세대에 속하게 된다.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<section id="id14">
+<h3>파이썬에서 가비지 컬렉터가 동작하는 원리<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">import</span><span class="w"> </span><span class="n">gc</span>
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">gc</span><span class="p">.</span><span class="n">get_threshold</span><span class="p">()</span>
+<span class="p">(</span><span class="mi">700</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="mi">10</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">gc</span><span class="p">.</span><span class="n">get_count</span><span class="p">()</span><span class="w"> </span><span class="c1">// 현재 임계값 수치</span>
+<span class="p">(</span><span class="mi">199</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="w"> </span><span class="n">gc</span><span class="p">.</span><span class="n">collect</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="c1">// 특정 세대 (0 세대)의 쓰레기를 수동으로 수거</span>
+<span class="mi">388</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold0</span></code> 이 의미하는 바와 <code class="docutils literal notranslate"><span class="pre">threshold1,</span> <span class="pre">threshold2</span></code> 가 의미하는 바가 다르다.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold0</span></code> 의 값은  “(number of allocations) - (number of deallocations)이 threshold를 넘으면 0세대 GC가 호출된다”를 의미한다.</p></li>
+<li><p>“객체 생성 수 - 객체 해제 수” 가 700을 넘으면 0세대 GC가 호출된다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold1</span></code> 는 1세대에 대한 기준인데, 이는 “0세대 GC가 몇 번 호출되면, 1세대 GC를 호출할 것인지”를 의미한다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold2</span></code> 는 “1세대 GC가 몇 번 호출되면, 2세대 GC를 호출할 것인지”를 의미한다. 다만, 2세대 GC는 매우 오랜 시간이 소요되기 때문에 아래 조건이 동시에 만족했을 때 진행된다.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">long_lived_pending</span> <span class="pre">/</span> <span class="pre">long_lived_total</span></code> 이 25%를 넘을 경우</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">long_lived_pending</span></code> :  가비지 컬렉션을 거치지 않은 객체의 수</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">long_lived_total</span></code> : 존재하는 모든 객체의 수</p></li>
+<li><p><a class="reference external" href="https://devguide.python.org/internals/garbage-collector/#collecting-the-oldest-generation">https://devguide.python.org/internals/garbage-collector/#collecting-the-oldest-generation</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>가비지 컬렉터는 0세대일수록 더 자주 가비지 컬렉션을 하도록 설계되었는데 이는 <a class="reference external" href="http://www.memorymanagement.org/glossary/g.html#term-generational-hypothesis"><strong>generational hypothesis</strong></a>에 근거한다.</p>
+<ul>
+<li><p>generational hypothesis의 두 가지 가설</p>
+<ul>
+<li><p>대부분의 객체는 금방 도달할 수 없는 상태(unreachable)가 된다.</p></li>
+<li><p>오래된 객체(old)에서 젊은 객체(young)로의 참조는 아주 적게 존재한다.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>수거할 때는 이전 세대를 현재 세대로 병합해서 진행한다.</p>
+<ul>
+<li><p>1세대에서 collect()를 실행하면 0세대도 수거된다.</p></li>
+<li><p>마찬가지로 2세대에서 collect()를 실행하면 0세대와 1세대도 수거된다.</p>
+<ul>
+<li><p>그래서 2세대 GC는 오래 걸린다.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id15">
+<h3>추적에서 제외할 수 있는 객체들<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>불변인 일부 컨테이너 인스턴스들은 추적 대상에서 빠질 수 있다.</p>
+<ul>
+<li><p>튜플은 불변(immutable) 객체로 생성된 이후에 변경할 수 없음.</p>
+<ul>
+<li><p>하지만 튜플의 항목들 중에 리스트나 딕셔너리 같은 가변(mutable) 객체가 있을 수도 있기 때문에 이를 체크한다.</p></li>
+<li><p><strong>tuple_object.c</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span>
+<span class="nf">_PyTuple_MaybeUntrack</span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">op</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyTupleObject</span><span class="w"> </span><span class="o">*</span><span class="n">t</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Py_ssize_t</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PyTuple_CheckExact</span><span class="p">(</span><span class="n">op</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">_PyObject_GC_IS_TRACKED</span><span class="p">(</span><span class="n">op</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">PyTupleObject</span><span class="w"> </span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="n">op</span><span class="p">;</span>
+<span class="w">    </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Py_SIZE</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">elt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">**</span><span class="n">PyTuple_GET_ITEM</span><span class="o">**</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span><span class="w"> </span><span class="c1">// 각각 요소들 확인</span>
+<span class="w">        </span><span class="cm">/* Tuple with NULL elements aren&#39;t</span>
+<span class="cm">            fully constructed, don&#39;t untrack</span>
+<span class="cm">            them yet. */</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">elt</span><span class="w"> </span><span class="o">||</span>
+<span class="w">            </span><span class="n">_PyObject_GC_MAY_BE_TRACKED</span><span class="p">(</span><span class="n">elt</span><span class="p">))</span><span class="w"> </span><span class="c1">// 추적 대상인지 타입 확인</span>
+<span class="w">            </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">_PyObject_GC_UNTRACK</span><span class="p">(</span><span class="n">op</span><span class="p">);</span><span class="w"> </span><span class="c1">// 정수 타입 같은 불변 타입만 포함하고 있으면 추적 대상에서 제외한다.</span>
+<span class="p">}</span>
+
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p>딕셔너리도 비어 있거나 불변 객체가 들어있을 경우 추적에서 제외할 수 있다.</p></li>
+<li><p>추적하는 객체가 적을수록 빠르고 효과적인 가비지 컬렉션이 이루어진다.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="id16">
+<h2>가비지 컬렉션 알고리즘<a class="headerlink" href="#id16" title="Permalink to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p>가비지 컬렉션 상태 GCState를 인터프리터로부터 얻는다.</p></li>
+<li><p>가비지 컬렉터 활성화 여부를 확인한다.</p></li>
+<li><p>가비지 컬렉터가 이미 실행 중인지 확인한다.</p></li>
+<li><p>실행 중이지 않으면 수거 함수 collect()를 수거 상태 콜백과 함께 실행한다.</p></li>
+<li><p>가비지 컬렉션이 완료됐다고 표시한다.</p></li>
+</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* API to invoke gc.collect() from C */</span>
+<span class="n">Py_ssize_t</span>
+<span class="nf">PyGC_Collect</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyThreadState</span><span class="w"> </span><span class="o">*</span><span class="n">tstate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyThreadState_GET</span><span class="p">();</span>
+<span class="w">    </span><span class="n">GCState</span><span class="w"> </span><span class="o">*</span><span class="n">gcstate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">interp</span><span class="o">-&gt;</span><span class="n">gc</span><span class="p">;</span><span class="w"> </span><span class="c1">// 1번 </span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">gcstate</span><span class="o">-&gt;</span><span class="n">enabled</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// 2번</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">Py_ssize_t</span><span class="w"> </span><span class="n">n</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gcstate</span><span class="o">-&gt;</span><span class="n">collecting</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// 3번</span>
+<span class="w">        </span><span class="cm">/* already collecting, don&#39;t do anything */</span>
+<span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">exc</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">tb</span><span class="p">;</span>
+<span class="w">        </span><span class="n">gcstate</span><span class="o">-&gt;</span><span class="n">collecting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_PyErr_Fetch</span><span class="p">(</span><span class="n">tstate</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">exc</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tb</span><span class="p">);</span>
+<span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">collect_with_callback</span><span class="p">(</span><span class="n">tstate</span><span class="p">,</span><span class="w"> </span><span class="n">NUM_GENERATIONS</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span><span class="w"> </span><span class="c1">// 4번</span>
+<span class="w">        </span><span class="n">_PyErr_Restore</span><span class="p">(</span><span class="n">tstate</span><span class="p">,</span><span class="w"> </span><span class="n">exc</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">tb</span><span class="p">);</span>
+<span class="w">        </span><span class="n">gcstate</span><span class="o">-&gt;</span><span class="n">collecting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// 5번</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w">  </span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="id17">
+<h3>수거 단계<a class="headerlink" href="#id17" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>가비지 컬렉터는 수거 시마다 <code class="docutils literal notranslate"><span class="pre">PyGC_HEAD</span></code> 타입을 연결한 이중 연결 리스트를 이용한다.</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* GC information is stored BEFORE the object structure. */</span>
+<span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Pointer to next object in the list.</span>
+<span class="w">    </span><span class="c1">// 0 means the object is not tracked</span>
+<span class="w">    </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">_gc_next</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Pointer to previous object in the list.</span>
+<span class="w">    </span><span class="c1">// Lowest two bits are used for flags documented later.</span>
+<span class="w">    </span><span class="kt">uintptr_t</span><span class="w"> </span><span class="n">_gc_prev</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">PyGC_Head</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<blockquote>
+<div><p>셀 객체가 삭제될 때</p>
+</div></blockquote>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">void</span>
+<span class="nf">cell_dealloc</span><span class="p">(</span><span class="n">PyCellObject</span><span class="w"> </span><span class="o">*</span><span class="n">op</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_PyObject_GC_UNTRACK</span><span class="p">(</span><span class="n">op</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">op</span><span class="o">-&gt;</span><span class="n">ob_ref</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyObject_GC_Del</span><span class="p">(</span><span class="n">op</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic">
+<li><p><code class="docutils literal notranslate"><span class="pre">_PyObject_GC_UNTRACK</span></code> : 추적 대상에서 제외하라고 가비지 컬렉터에 요청한다.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Py_XDECREF</span></code> : 참조 카운터 감소를 위해 사용하는 표준 호출 (내부적으로 <code class="docutils literal notranslate"><span class="pre">Py_DECREF</span></code> 사용)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PyObject_GC_Del</span></code> : <code class="docutils literal notranslate"><span class="pre">gc_list_remove()</span></code> 를 호출해 가비지 컬렉션 대상 리스트에서 객체를 제거, 메모리 해제</p>
+<ul>
+<li><p>gc_list_remove()</p>
+<p><img alt="image" src="https://github.com/Pseudo-Lab/CPython-Guide/assets/54731898/979f2684-e981-44c1-991c-b260152f6aa7" /></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span>
+<span class="nf">gc_list_remove</span><span class="p">(</span><span class="n">PyGC_Head</span><span class="w"> </span><span class="o">*</span><span class="n">node</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyGC_Head</span><span class="w"> </span><span class="o">*</span><span class="n">prev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GC_PREV</span><span class="p">(</span><span class="n">node</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PyGC_Head</span><span class="w"> </span><span class="o">*</span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GC_NEXT</span><span class="p">(</span><span class="n">node</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">_PyGCHead_SET_NEXT</span><span class="p">(</span><span class="n">prev</span><span class="p">,</span><span class="w"> </span><span class="n">next</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_PyGCHead_SET_PREV</span><span class="p">(</span><span class="n">next</span><span class="p">,</span><span class="w"> </span><span class="n">prev</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">node</span><span class="o">-&gt;</span><span class="n">_gc_next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="cm">/* object is not currently tracked */</span>
+<span class="p">}</span>
+
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="id18">
+<h3>순환 참조를 찾는 과정<a class="headerlink" href="#id18" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>특정 세대에서 도달할 수 있는 객체(reachable)와 도달할 수 없는 객체(unreachable)를 구분하고 도달할 수 없는 객체 집합을 찾는다.</p></li>
+</ul>
+<ol class="arabic simple">
+<li><p>해당 세대의 모든 객체에 대해 참조 카운트 값 <code class="docutils literal notranslate"><span class="pre">ob→ob_refcnt</span></code>를 <code class="docutils literal notranslate"><span class="pre">ob→gc_refs</span></code>로 복사한다.</p></li>
+<li><p>각각의 객체에서 참조하고 있는 다른 컨테이너 객체의 <code class="docutils literal notranslate"><span class="pre">gc_refs</span></code>를 감소시킨다.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">subtract_refs()</span></code> 로 각 컨테이너 객체의 순회 함수를 호출 (<code class="docutils literal notranslate"><span class="pre">visit_decref()</span></code>)</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gc_refs</span></code>가 0이면 그 객체는 컨테이너 집합 내부에서 자기들끼리 참조하고 있다는 뜻이다. (순환 참조)</p></li>
+<li><p>도달할 수 없는 객체 리스트(unreachable)을 만들고 3번에 해당하는 객체들을 추가한다. 그리고 해당 객체들을 수거 대상 세대 리스트에서 모두 제거한다.</p></li>
+<li><p>unreachable 리스트로 이동되지 않은 객체들은 다음 세대로 이동한다. (생존)</p></li>
+</ol>
+</section>
+<section id="id19">
+<h3>예시)<a class="headerlink" href="#id19" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span>
+<span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">c</span>
+<span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">e</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">e</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">f</span>
+<span class="n">f</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">e</span>
+<span class="k">del</span> <span class="n">e</span>
+<span class="k">del</span> <span class="n">f</span>
+</pre></div>
+</div>
+<p>각 컨테이너 객체의 레퍼런스 카운트는 아래와 같다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ref count</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">]</span>     <span class="o">&lt;-</span> <span class="n">a</span><span class="p">,</span> <span class="n">c</span>      <span class="o">=</span> <span class="mi">2</span>
+<span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span>   <span class="o">&lt;-</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span>       <span class="o">=</span> <span class="mi">2</span>
+<span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span>  <span class="o">&lt;-</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span>       <span class="o">=</span> <span class="mi">2</span>
+<span class="n">Foo</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="o">&lt;-</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">x</span>  <span class="o">=</span> <span class="mi">1</span>
+<span class="n">Foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="o">&lt;-</span> <span class="n">Foo</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">x</span>  <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>1번 과정에서 각 컨테이너 객체의 <code class="docutils literal notranslate"><span class="pre">gc_refs</span></code>가 설정된다.</p>
+<p>2번 과정에서 컨테이너 집합을 순회하며 <code class="docutils literal notranslate"><span class="pre">gc_refs</span></code>을 감소시킨다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>     <span class="o">=</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># [a, b]에 의해 참조당하므로 1 감소</span>
+<span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span>   <span class="o">=</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># [a, b]에 의해 참조당하므로 1 감소</span>
+<span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span>  <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># 참조당하지 않으므로 그대로</span>
+<span class="n">Foo</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Foo(1)에 의해 참조당하므로 1 감소</span>
+<span class="n">Foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Foo(0)에 의해 참조당하므로 1 감소</span>
+</pre></div>
+</div>
+<p>3번 과정을 통해 <code class="docutils literal notranslate"><span class="pre">gc_refs</span></code>가 0인 순환 참조 객체를 찾았다. 이 객체를 unreachable 리스트에 추가한다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="n">unreachable</span> <span class="o">|</span>  <span class="n">reachable</span>
+             <span class="o">|</span>    <span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+ <span class="n">Foo</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>  <span class="o">|</span>  <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+ <span class="n">Foo</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span>  <span class="o">|</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>이제 <code class="docutils literal notranslate"><span class="pre">Foo(0)</span></code>와 <code class="docutils literal notranslate"><span class="pre">Foo(1)</span></code>을 메모리에서 해제하면 가비지 컬렉션 과정이 끝난다.</p>
+<p>unreachable 리스트로 이동되지 않은 객체들은 다음 세대로 이동한다.</p>
+<ul>
+<li><p><strong>deduce_unreachable 함수</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span>
+<span class="nf">deduce_unreachable</span><span class="p">(</span><span class="n">PyGC_Head</span><span class="w"> </span><span class="o">*</span><span class="n">base</span><span class="p">,</span><span class="w"> </span><span class="n">PyGC_Head</span><span class="w"> </span><span class="o">*</span><span class="n">unreachable</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">validate_list</span><span class="p">(</span><span class="n">base</span><span class="p">,</span><span class="w"> </span><span class="n">collecting_clear_unreachable_clear</span><span class="p">);</span>
+<span class="w">    </span><span class="cm">/* Using ob_refcnt and gc_refs, calculate which objects in the</span>
+<span class="cm">     * container set are reachable from outside the set (i.e., have a</span>
+<span class="cm">     * refcount greater than 0 when all the references within the</span>
+<span class="cm">     * set are taken into account).</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="n">update_refs</span><span class="p">(</span><span class="n">base</span><span class="p">);</span><span class="w"> </span><span class="c1">// gc_prev is used for gc_refs</span>
+<span class="w">    </span><span class="n">subtract_refs</span><span class="p">(</span><span class="n">base</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">gc_list_init</span><span class="p">(</span><span class="n">unreachable</span><span class="p">);</span>
+<span class="w">    </span><span class="n">move_unreachable</span><span class="p">(</span><span class="n">base</span><span class="p">,</span><span class="w"> </span><span class="n">unreachable</span><span class="p">);</span><span class="w"> </span><span class="c1">// gc_prev is pointer again</span>
+<span class="w">    </span><span class="n">validate_list</span><span class="p">(</span><span class="n">base</span><span class="p">,</span><span class="w"> </span><span class="n">collecting_clear_unreachable_clear</span><span class="p">);</span>
+<span class="w">    </span><span class="n">validate_list</span><span class="p">(</span><span class="n">unreachable</span><span class="p">,</span><span class="w"> </span><span class="n">collecting_set_unreachable_set</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="api">
+<h3>파이썬에서 가비지 컬렉터 API 사용하기<a class="headerlink" href="#api" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>디버그 모드에서 gc 모듈 활용</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gc</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">set_debug</span><span class="p">(</span><span class="n">gc</span><span class="o">.</span><span class="n">DEBUG_STATS</span><span class="p">)</span>
+
+<span class="c1"># gc: collecting generation 0...</span>
+<span class="c1"># gc: objects in each generation: 2075 1755 70280</span>
+<span class="c1"># gc: objects in permanent generation: 0</span>
+<span class="c1"># gc: done, 926 unreachable, 0 uncollectable, 0.0004s elapsed</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gc.DEBUG_COLLECTABLE</span></code> 을 사용하면 가비지 컬렉션 시점을 확인할 수 있다.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">gc</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">set_debug</span><span class="p">(</span><span class="n">gc</span><span class="o">.</span><span class="n">DEBUG_COLLECTABLE</span><span class="p">)</span>
+
+<span class="c1"># gc: collectable &lt;cell 0x10293c490&gt;</span>
+<span class="c1"># gc: collectable &lt;dict 0x10294c340&gt;</span>
+<span class="c1"># gc: collectable &lt;tuple 0x102a95180&gt;</span>
+<span class="c1"># gc: collectable &lt;function 0x102a76670&gt;</span>
+<span class="c1"># gc: collectable &lt;cell 0x102782e20&gt;</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gc.DEBUG_SAVEALL</span></code> 을 사용하면 수거된 객체들이 gc.garbage 리스트로 이동된다.</p></li>
+</ul>
+</section>
+</section>
+<section id="id20">
+<h2>미션<a class="headerlink" href="#id20" title="Permalink to this heading">#</a></h2>
+<ul>
+<li><p>원하는 라이브러리 import 해보고, 참조 카운트가 어떻게 바뀌는지 출력해보기</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getrefcount</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="c1"># 138</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getrefcount</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="c1"># 108</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getrefcount</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># 44</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getrefcount</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="c1"># 1720</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getrefcount</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="c1"># 882</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getrefcount</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span> <span class="c1"># 377</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
 <section id="references">
 <h2>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h2>
 <ul class="simple">
-<li></li>
-<li></li>
-<li></li>
+<li><p><a class="reference external" href="https://groverlab.org/hnbfpr/2017-06-22-fun-with-sys-getrefcount.html">https://groverlab.org/hnbfpr/2017-06-22-fun-with-sys-getrefcount.html</a></p></li>
+<li><p><a class="reference external" href="https://stackoverflow.com/questions/44096794/why-does-sys-getrefcount-give-huge-values?source=post_page-----a11b3c5989e8--------------------------------">https://stackoverflow.com/questions/44096794/why-does-sys-getrefcount-give-huge-values?source=post_page—–a11b3c5989e8——————————–</a></p></li>
+<li><p><a class="reference external" href="https://www.quora.com/How-does-garbage-collection-in-Python-work-What-are-the-pros-and-cons">https://www.quora.com/How-does-garbage-collection-in-Python-work-What-are-the-pros-and-cons</a></p></li>
+<li><p><a class="reference external" href="http://www.arctrix.com/nas/python/gc/">http://www.arctrix.com/nas/python/gc</a></p></li>
+<li><p><a class="reference external" href="https://www.winterjung.dev/python-gc/">https://www.winterjung.dev/python-gc</a></p></li>
 </ul>
 <hr class="footnotes docutils" />
-<aside class="footnote brackets" id="id14" role="note">
+<aside class="footnote brackets" id="id21" role="note">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">1</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://docs.python.org/3/c-api/refcounting.html">https://docs.python.org/3/c-api/refcounting.html</a></p>
 </aside>
-<aside class="footnote brackets" id="id15" role="note">
+<aside class="footnote brackets" id="id22" role="note">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">2</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://devguide.python.org/garbage_collector/#garbage-collection">https://devguide.python.org/garbage_collector/#garbage-collection</a></p>
 </aside>
-<aside class="footnote brackets" id="id16" role="note">
+<aside class="footnote brackets" id="id23" role="note">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id9">3</a><span class="fn-bracket">]</span></span>
 <p><a class="reference external" href="https://docs.python.org/3/library/sys.html#sys.getrefcount">https://docs.python.org/3/library/sys.html#sys.getrefcount</a></p>
 </aside>
@@ -776,9 +1136,22 @@ After<span class="w"> </span>gc.collect<span class="o">()</span>:
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">순환 참조와 가비지 컬렉션</a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">요약</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">참조 카운팅 정리</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cyclic-garbage-collection">가비지 컬렉션 (cyclic garbage collection)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">파이썬에서 가비지 컬렉터가 동작하는 원리</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">추적에서 제외할 수 있는 객체들</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">가비지 컬렉션 알고리즘</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">수거 단계</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">순환 참조를 찾는 과정</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">예시)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#api">파이썬에서 가비지 컬렉터 API 사용하기</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">미션</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
 </ul>
   </nav></div>
