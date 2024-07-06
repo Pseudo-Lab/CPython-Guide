@@ -354,7 +354,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<label class="sidebar-toggle secondary-toggle btn btn-sm" for="__secondary"title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</label>
 </div></div>
       
     </div>
@@ -370,6 +372,35 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1. 비동기 프로그래밍</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2. 제너레이터</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.1 제너레이터의 구조</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.2 제너레이터 생성하기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3 제너레이터 실행하기</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">3. 코루틴</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">3.1 제너레이터 기반 코루틴</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">3.2 네이티브 코루틴</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">3.3 이벤트 루프</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">4. 비동기 제너레이터</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">5. 서브인터프리터</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#port-scanner-asyncio-async-generator-subinterpreter">6. Port Scanner: <code class="docutils literal notranslate"><span class="pre">asyncio</span></code>, Async Generator, Subinterpreter</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">6.1 멀티 스레딩</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#asyncio">6.2 <code class="docutils literal notranslate"><span class="pre">asyncio</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">6.3 비동기 제너레이터</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">6.4 서브 인터프리터</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -381,6 +412,1040 @@ document.write(`
                   
   <section class="tex2jax_ignore mathjax_ignore" id="id1">
 <h1>비동기 프로그래밍<a class="headerlink" href="#id1" title="Permalink to this heading">#</a></h1>
+<section id="id2">
+<h2>1. 비동기 프로그래밍<a class="headerlink" href="#id2" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>파이썬은 스레드와 멀티프로세싱을 사용하지 않는 동시성 프로그래밍 방법 또한 제공함</p></li>
+<li><p>발전하며 버전에 따라 추가, 개선, 폐지된 사항들이 존재</p>
+<ul>
+<li><p>Python 3.9</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;coroutine</span></code> 폐지</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">async</span></code> 키워드로 퓨처 생성 가능</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code> 키워드로 코루틴 실행 가능</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>제너레이터</p></li>
+<li><p>코루틴</p></li>
+<li><p>비동기 제너레이터</p></li>
+<li><p>서브 인터프리터</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>2. 제너레이터<a class="headerlink" href="#id3" title="Permalink to this heading">#</a></h2>
+<ul>
+<li><p>제너레이터</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span></code> 문으로 값을 반환하고 재개되어 값을 추가로 반환할 수 있는 함수</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span></code> 문을 통해 값을 하나씩 생성하여 반환하고, 호출될 때마다 이전 상태를 유지하며 실행을 재개하는 함수</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span></code> : 현재 값 반환 + 함수 실행 중단</p></li>
+</ul>
+</li>
+<li><p>예시</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">letters</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">97</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="mi">97</span> <span class="o">+</span> <span class="mi">26</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">letters</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">letter</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>파일, DB, 네트워크 같은 큰 데이터 블록의 값을 순회할 때 메모리 효율 측면에서 유리함</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">return</span></code> 문의 경우 반환된 값이 그때그때 메모리에 올라감</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span></code> 문의 경우 우선 제너레이터 객체가 생성되어 반환되고 제너레이터 객체를 통해 실제로 반환 값에 접근할 때, 즉 반환 값이 실제로 필요한 순간에 해당 값이 메모리에 올라감
+→ 지연 평가 + 순차적 접근</p></li>
+</ul>
+</li>
+<li><p>함수 실행이 중단될 때 함수의 상태가 저장되고 함수 실행이 재개될 때 앞의 상태로부터 실행이 시작됨</p>
+<ul class="simple">
+<li><p>제너레이터 객체 구조체가 마지막으로 실행한 <code class="docutils literal notranslate"><span class="pre">yield</span></code> 문의 프레임 객체를 유지</p></li>
+</ul>
+</li>
+<li><p>제너레이터에는 파이썬의 컨테이너 타입(리스트, 튜플 등)과 같이 이터레이터 프로토콜이 구현되어 있음</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">__next__()</span></code>가 실행되면 실제로 함수가 실행되고 <code class="docutils literal notranslate"><span class="pre">yield</span></code> 키워드를 만나면 실행 중단</p></li>
+</ul>
+</li>
+</ul>
+<section id="id4">
+<h3>2.1 제너레이터의 구조<a class="headerlink" href="#id4" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>제너레이터 객체는 템플릿 매크로 <code class="docutils literal notranslate"><span class="pre">_PyGenObjec_HEAD(prefix)</span></code>에 의해 생성됨</p>
+<ul class="simple">
+<li><p>아래 접두사를 가진 타입들에서 이 매크로가 사용됨</p>
+<ul>
+<li><p>제너레이터 객체 : <code class="docutils literal notranslate"><span class="pre">PyGenObject(gi_)</span></code></p></li>
+<li><p>코루틴 객체 : <code class="docutils literal notranslate"><span class="pre">PyCoroObject(cr_)</span></code></p></li>
+<li><p>비동기 제너레이터 객체 : <code class="docutils literal notranslate"><span class="pre">PyAsyncGenObject(ag_)</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Include/genobject.h</span></code> &gt; <code class="docutils literal notranslate"><span class="pre">_PyGenObject_HEAD(prefix)</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>/* _PyGenObject_HEAD defines the initial segment of generator
+   and coroutine objects. */
+#define _PyGenObject_HEAD(prefix)                                           
+    PyObject_HEAD                                                           
+    /* Note: gi_frame can be NULL if the generator is &quot;finished&quot; */         
+    PyFrameObject *prefix##_frame;                                          
+    /* True if generator is being executed. */                              
+    char prefix##_running;                                                  
+    /* The code object backing the generator */                             
+    PyObject *prefix##_code;                                                
+    /* List of weak reference. */                                           
+    PyObject *prefix##_weakreflist;                                         
+    /* Name of the generator. */                                            
+    PyObject *prefix##_name;                                                
+    /* Qualified name of the generator. */                                  
+    PyObject *prefix##_qualname;                                            
+    _PyErr_StackItem prefix##_exc_state;
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>필드명</p></th>
+<th class="head"><p>용도</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>[x]_code</p></td>
+<td><p>제너레이터를 제공하는 컴파일된 함수</p></td>
+</tr>
+<tr class="row-odd"><td><p>[x]_exc_state</p></td>
+<td><p>제너레이터 호출에서 예외가 발생했을 때 예외 데이터</p></td>
+</tr>
+<tr class="row-even"><td><p>[x]_frame</p></td>
+<td><p>제너레이터의 현재 프레임 객체</p></td>
+</tr>
+<tr class="row-odd"><td><p>[x]_name</p></td>
+<td><p>제너레이터의 이름</p></td>
+</tr>
+<tr class="row-even"><td><p>[x]_qualnmae</p></td>
+<td><p>제너레이터의 정규화된 이름</p></td>
+</tr>
+<tr class="row-odd"><td><p>[x]_running</p></td>
+<td><p>제너레이터가 실행중인지 여부 (0/1)</p></td>
+</tr>
+<tr class="row-even"><td><p>[x]_weakreflist</p></td>
+<td><p>제너레이터 함수 안의 객체들에 대한 약한 참조 리스트</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Include/genobject.h</span></code> &gt; <code class="docutils literal notranslate"><span class="pre">PyGenObject</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* The gi_ prefix is intended to remind of generator-iterator. */</span>
+<span class="w">    </span><span class="n">_PyGenObject_HEAD</span><span class="p">(</span><span class="n">gi</span><span class="p">)</span>
+<span class="p">}</span><span class="w"> </span><span class="n">PyGenObject</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Include/genobject.h</span></code> &gt; <code class="docutils literal notranslate"><span class="pre">PyCoroObject</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_PyGenObject_HEAD</span><span class="p">(</span><span class="n">cr</span><span class="p">)</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">cr_origin</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">PyCoroObject</span><span class="p">;</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>필드명</p></th>
+<th class="head"><p>용도</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>cr_origin</p></td>
+<td><p>코루틴을 호출한 프레임과 함수를 담는 튜플</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Include/genobject.h</span></code> &gt; <code class="docutils literal notranslate"><span class="pre">PyAsyncGenObject</span></code></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">_PyGenObject_HEAD</span><span class="p">(</span><span class="n">ag</span><span class="p">)</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">ag_finalizer</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Flag is set to 1 when hooks set up by sys.set_asyncgen_hooks</span>
+<span class="cm">       were called on the generator, to avoid calling them more</span>
+<span class="cm">       than once. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ag_hooks_inited</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Flag is set to 1 when aclose() is called for the first time, or</span>
+<span class="cm">       when a StopAsyncIteration exception is raised. */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ag_closed</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">ag_running_async</span><span class="p">;</span>
+<span class="p">}</span><span class="w"> </span><span class="n">PyAsyncGenObject</span><span class="p">;</span>
+</pre></div>
+</div>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>필드명</p></th>
+<th class="head"><p>용도</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ag_closed</p></td>
+<td><p>제너레이터가 종료됐음을 표시하는 플래그</p></td>
+</tr>
+<tr class="row-odd"><td><p>ag_finalizer</p></td>
+<td><p>파이널라이저 메서드로의 연결</p></td>
+</tr>
+<tr class="row-even"><td><p>ag_hooks_initied</p></td>
+<td><p>훅이 초기화됐음을 표시하는 플래그</p></td>
+</tr>
+<tr class="row-odd"><td><p>ag_running_async</p></td>
+<td><p>제너레이터가 실행 중임을 표시하는 플래그</p></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li><p>연관된 소스 파일 목록</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Include/genobject.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Objects/genobject.c</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id5">
+<h3>2.2 제너레이터 생성하기<a class="headerlink" href="#id5" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span></code> 문이 포함된 함수는 컴파일되면 컴파일된 코드 객체에 추가 플래그 <code class="docutils literal notranslate"><span class="pre">CO_GENERATOR</span></code>가 설정됨</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dis</span> 
+
+<span class="k">def</span> <span class="nf">letters</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">97</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="mi">97</span> <span class="o">+</span> <span class="mi">26</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">code</span> <span class="o">=</span> <span class="n">letters</span><span class="o">.</span><span class="vm">__code__</span>
+<span class="n">flags</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">co_flags</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">flags</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dis</span><span class="o">.</span><span class="n">COMPILER_FLAG_NAMES</span><span class="p">[</span><span class="mi">32</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="mi">32</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">99</span>
+<span class="sd">GENERATOR</span>
+<span class="sd">True</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</li>
+<li><p>제너레이터, 코루틴, 비동기 제너레이터는 컴파일된 코드 객체를 프레임 객체로 변환할 때 특별하게 처리됨</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">_PyEval_EvalCode()</span></code>는 코드 객체에서 위 플래그를 확인함</p></li>
+<li><p>플래그가 설정되어 있다면 평가 함수는 코드 객체를 바로 평가하는 대신 프레임을 만든 후 각각 아래 함수를 사용하여 변환함</p>
+<ul>
+<li><p>코드</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* Handle generator/coroutine/asynchronous generator */</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">co</span><span class="o">-&gt;</span><span class="n">co_flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">CO_GENERATOR</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">CO_COROUTINE</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">CO_ASYNC_GENERATOR</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">gen</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">is_coro</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">co</span><span class="o">-&gt;</span><span class="n">co_flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">CO_COROUTINE</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Don&#39;t need to keep the reference to f_back, it will be set</span>
+<span class="cm">     * when the generator is resumed. */</span>
+<span class="w">    </span><span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_back</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/* Create a new generator that owns the ready to run frame</span>
+<span class="cm">     * and return that as the value. */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_coro</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">gen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyCoro_New</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">qualname</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">co</span><span class="o">-&gt;</span><span class="n">co_flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">CO_ASYNC_GENERATOR</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">gen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyAsyncGen_New</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">qualname</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">gen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyGen_NewWithQualName</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">qualname</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gen</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">_PyObject_GC_TRACK</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">gen</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PyGen_NewWithQualName()</span></code> → 제너레이터로 변환</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PyCoro_New()</span></code> → 코루틴으로 변환</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PyAsyncGen_New()</span></code> → 비동기 제너레이터로 변환</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PyGen_NewWithQualName()</span></code>이 프레임을 통해 제너레이터 객체 필드를 채움</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gi_code</span></code> 프로퍼티에 컴파일된 코드 객체 설정</p></li>
+<li><p>제너레이터가 실행 중이 아님을 표시 (<code class="docutils literal notranslate"><span class="pre">gi_running</span> <span class="pre">=</span> <span class="pre">0</span></code>)</p></li>
+<li><p>예외와 약한 참조 리스트를 NULL로 설정</p></li>
+</ul>
+</li>
+<li><p>역어셈블로 <code class="docutils literal notranslate"><span class="pre">gi_code</span></code>가 컴파일된 코드 객체임을 확인</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dis</span> 
+
+<span class="k">def</span> <span class="nf">letters</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">97</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="mi">97</span> <span class="o">+</span> <span class="mi">26</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="n">generator</span> <span class="o">=</span> <span class="n">letters</span><span class="p">()</span>
+<span class="n">dis</span><span class="o">.</span><span class="n">disco</span><span class="p">(</span><span class="n">generator</span><span class="o">.</span><span class="n">gi_code</span><span class="p">)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  5           0 LOAD_CONST               1 (97)</span>
+<span class="sd">              2 STORE_FAST               0 (i)</span>
+
+<span class="sd">  6           4 LOAD_CONST               2 (123)</span>
+<span class="sd">  ...</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="id6">
+<h3>2.3 제너레이터 실행하기<a class="headerlink" href="#id6" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>제너레이터 객체의 <code class="docutils literal notranslate"><span class="pre">__next__()</span></code> 호출</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gen_iternext()</span></code>가 제너레이터 인스턴스와 함께 호출됨</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Objects/genobject.c</span></code>의 <code class="docutils literal notranslate"><span class="pre">gen_send_ex()</span></code> 호출</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">gen_send_ex()</span></code> : 제너레이터 객체를 다음 <code class="docutils literal notranslate"><span class="pre">yield</span></code> 값으로 바꾸는 함수</p>
+<ul>
+<li><p>코드 객체로부터 프레임을 구성하는 로직과 상당히 비슷함</p></li>
+<li><p>제너레이터, 코루틴, 비동기 제너레이터 모두 해당 함수 사용</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gen_send_ex()</span></code> 실행 순서</p>
+<ul>
+<li><p>전체 코드</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">gen_send_ex</span><span class="p">(</span><span class="n">PyGenObject</span><span class="w"> </span><span class="o">*</span><span class="n">gen</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">arg</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">exc</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">closing</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyThreadState</span><span class="w"> </span><span class="o">*</span><span class="n">tstate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyThreadState_GET</span><span class="p">();</span>
+<span class="w">    </span><span class="n">PyFrameObject</span><span class="w"> </span><span class="o">*</span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_frame</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">result</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_running</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;generator already executing&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;coroutine already executing&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;async generator already executing&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_ValueError</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">closing</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="cm">/* `gen` is an exhausted coroutine: raise an error,</span>
+<span class="cm">               except when called from gen_close(), which should</span>
+<span class="cm">               always be a silent method. */</span>
+<span class="w">            </span><span class="n">PyErr_SetString</span><span class="p">(</span>
+<span class="w">                </span><span class="n">PyExc_RuntimeError</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;cannot reuse already awaited coroutine&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">arg</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">exc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="cm">/* `gen` is an exhausted generator:</span>
+<span class="cm">               only set exception if called from send(). */</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopAsyncIteration</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopIteration</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_lasti</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">arg</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">arg</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Py_None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;can&#39;t send non-None value to a &quot;</span>
+<span class="w">                              </span><span class="s">&quot;just-started generator&quot;</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NON_INIT_CORO_MSG</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;can&#39;t send non-None value to a &quot;</span>
+<span class="w">                      </span><span class="s">&quot;just-started async generator&quot;</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_TypeError</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* Push arg onto the frame&#39;s value stack */</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">arg</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">arg</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Py_None</span><span class="p">;</span>
+<span class="w">        </span><span class="n">Py_INCREF</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">        </span><span class="o">*</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* Generators always return to their most recent caller, not</span>
+<span class="cm">     * necessarily their creator. */</span>
+<span class="w">    </span><span class="n">Py_XINCREF</span><span class="p">(</span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">frame</span><span class="p">);</span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_back</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">frame</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">.</span><span class="n">previous_item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">exc_info</span><span class="p">;</span>
+<span class="w">    </span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">exc_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">assert</span><span class="p">(</span><span class="n">_PyErr_Occurred</span><span class="p">(</span><span class="n">tstate</span><span class="p">));</span>
+<span class="w">        </span><span class="n">_PyErr_ChainStackItem</span><span class="p">(</span><span class="nb">NULL</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyEval_EvalFrame</span><span class="p">(</span><span class="n">tstate</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">exc</span><span class="p">);</span>
+<span class="w">    </span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">exc_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">.</span><span class="n">previous_item</span><span class="p">;</span>
+<span class="w">    </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">.</span><span class="n">previous_item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Don&#39;t keep the reference to f_back any longer than necessary.  It</span>
+<span class="cm">     * may keep a chain of frames alive or it could create a reference</span>
+<span class="cm">     * cycle. */</span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_back</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">frame</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_back</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/* If the generator just returned (as opposed to yielding), signal</span>
+<span class="cm">     * that the generator is exhausted. */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Py_None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="cm">/* Delay exception instantiation if we can */</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopAsyncIteration</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopIteration</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="cm">/* Async generators cannot return anything but None */</span>
+<span class="w">            </span><span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">));</span>
+<span class="w">            </span><span class="n">_PyGen_SetStopIterationValue</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">PyErr_ExceptionMatches</span><span class="p">(</span><span class="n">PyExc_StopIteration</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;generator raised StopIteration&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;coroutine raised StopIteration&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;async generator raised StopIteration&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">_PyErr_FormatFromCause</span><span class="p">(</span><span class="n">PyExc_RuntimeError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">             </span><span class="n">PyErr_ExceptionMatches</span><span class="p">(</span><span class="n">PyExc_StopAsyncIteration</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* code in `gen` raised a StopAsyncIteration error:</span>
+<span class="cm">           raise a RuntimeError.</span>
+<span class="cm">        */</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;async generator raised StopAsyncIteration&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_PyErr_FormatFromCause</span><span class="p">(</span><span class="n">PyExc_RuntimeError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* generator can&#39;t be rerun, so release the frame */</span>
+<span class="w">        </span><span class="cm">/* first clean reference cycle through stored exception traceback */</span>
+<span class="w">        </span><span class="n">_PyErr_ClearExcState</span><span class="p">(</span><span class="o">&amp;</span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">);</span>
+<span class="w">        </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_frame</span><span class="o">-&gt;</span><span class="n">f_gen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">        </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<ol class="arabic">
+<li><p>현재 스레드 상태를 가져옴</p></li>
+<li><p>제너레이터 객체로부터 프레임 객체를 가져옴</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">PyThreadState</span><span class="w"> </span><span class="o">*</span><span class="n">tstate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyThreadState_GET</span><span class="p">();</span>
+<span class="n">PyFrameObject</span><span class="w"> </span><span class="o">*</span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_frame</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p>제너레이터가 실행 중이면 <code class="docutils literal notranslate"><span class="pre">ValueError</span></code>를 발생시킴</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_running</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;generator already executing&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;coroutine already executing&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;async generator already executing&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_ValueError</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>제너레이터 안의 프레임이 스택의 최상위에 위치해 있을 경우 처리</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">closing</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* `gen` is an exhausted coroutine: raise an error,</span>
+<span class="cm">           except when called from gen_close(), which should</span>
+<span class="cm">           always be a silent method. */</span>
+<span class="w">        </span><span class="n">PyErr_SetString</span><span class="p">(</span>
+<span class="w">            </span><span class="n">PyExc_RuntimeError</span><span class="p">,</span>
+<span class="w">            </span><span class="s">&quot;cannot reuse already awaited coroutine&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">arg</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">exc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* `gen` is an exhausted generator:</span>
+<span class="cm">           only set exception if called from send(). */</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopAsyncIteration</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopIteration</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>프레임이 막 실행되기 시작해서 마지막 명령이 아직 -1이고 프레임이 코루틴이나 비동기 제너레이터인 경우 None 이외의 값을 인자로 넘기면 예외 발생</p></li>
+<li><p>인자를 프레임의 값 스택에 추가</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_lasti</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">arg</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">arg</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">Py_None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;can&#39;t send non-None value to a &quot;</span>
+<span class="w">                          </span><span class="s">&quot;just-started generator&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NON_INIT_CORO_MSG</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;can&#39;t send non-None value to a &quot;</span>
+<span class="w">                  </span><span class="s">&quot;just-started async generator&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">PyErr_SetString</span><span class="p">(</span><span class="n">PyExc_TypeError</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* Push arg onto the frame&#39;s value stack */</span>
+<span class="w">    </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">arg</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">arg</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">Py_None</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Py_INCREF</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>프레임의 <code class="docutils literal notranslate"><span class="pre">f_back</span></code> 필드는 반환값을 전송할 호출자이기 때문에 이 필드에는 스레드의 현재 프레임이 설정됨 → 제너레이터를 생성한 곳이 아닌 제너레이터를 호출한 곳에 값이 반환됨</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* Generators always return to their most recent caller, not</span>
+<span class="cm"> * necessarily their creator. */</span>
+<span class="n">Py_XINCREF</span><span class="p">(</span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">frame</span><span class="p">);</span>
+<span class="n">assert</span><span class="p">(</span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_back</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
+<span class="n">f</span><span class="o">-&gt;</span><span class="n">f_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">frame</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p>제너레이터가 실행 중임을 표시</p></li>
+<li><p>제너레이터의 마지막 예외가 스레드 상태의 마지막 예외로 복사됨</p></li>
+<li><p>스레드 상태의 예외 정보가 제너레이터의 예외 정보를 가리키도록 설정됨 → 호출자가 제너레이터 실행부 주변에 중단점을 추가할 때 스택트레이스가 제너레이터를 통과해 문제가 되는 코드가 명확해짐</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">.</span><span class="n">previous_item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tstate</span><span class="o">-&gt;</span><span class="n">exc_info</span><span class="p">;</span>
+<span class="n">tstate</span><span class="o">-&gt;</span><span class="n">exc_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Python/ceval.c</span></code>의 평가 루프에서 제너레이터 안의 프레임을 실행하고 값을 반환</p></li>
+<li><p>스레드 상태의 마지막 예외 정보가 프레임 호출 전의 값으로 복구됨</p></li>
+<li><p>제너레이터가 실행 중이 아니라고 표시됨</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyEval_EvalFrame</span><span class="p">(</span><span class="n">tstate</span><span class="p">,</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">exc</span><span class="p">);</span>
+<span class="n">tstate</span><span class="o">-&gt;</span><span class="n">exc_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">.</span><span class="n">previous_item</span><span class="p">;</span>
+<span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">.</span><span class="n">previous_item</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p>반환값에 따라 예외를 발생시킴</p></li>
+<li><p>결과가 <code class="docutils literal notranslate"><span class="pre">__next__()</span></code> 호출자에 반환됨</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cm">/* If the generator just returned (as opposed to yielding), signal</span>
+<span class="cm"> * that the generator is exhausted. */</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Py_None</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* Delay exception instantiation if we can */</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopAsyncIteration</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">PyErr_SetNone</span><span class="p">(</span><span class="n">PyExc_StopIteration</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="cm">/* Async generators cannot return anything but None */</span>
+<span class="w">        </span><span class="n">assert</span><span class="p">(</span><span class="o">!</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">));</span>
+<span class="w">        </span><span class="n">_PyGen_SetStopIterationValue</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">Py_CLEAR</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">PyErr_ExceptionMatches</span><span class="p">(</span><span class="n">PyExc_StopIteration</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;generator raised StopIteration&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyCoro_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;coroutine raised StopIteration&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;async generator raised StopIteration&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">_PyErr_FormatFromCause</span><span class="p">(</span><span class="n">PyExc_RuntimeError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+
+<span class="p">}</span>
+<span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">PyAsyncGen_CheckExact</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">         </span><span class="n">PyErr_ExceptionMatches</span><span class="p">(</span><span class="n">PyExc_StopAsyncIteration</span><span class="p">))</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="cm">/* code in `gen` raised a StopAsyncIteration error:</span>
+<span class="cm">       raise a RuntimeError.</span>
+<span class="cm">    */</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">msg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;async generator raised StopAsyncIteration&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_PyErr_FormatFromCause</span><span class="p">(</span><span class="n">PyExc_RuntimeError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;%s&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">msg</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">f</span><span class="o">-&gt;</span><span class="n">f_stacktop</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="cm">/* generator can&#39;t be rerun, so release the frame */</span>
+<span class="w">    </span><span class="cm">/* first clean reference cycle through stored exception traceback */</span>
+<span class="w">    </span><span class="n">_PyErr_ClearExcState</span><span class="p">(</span><span class="o">&amp;</span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_exc_state</span><span class="p">);</span>
+<span class="w">    </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_frame</span><span class="o">-&gt;</span><span class="n">f_gen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">gen</span><span class="o">-&gt;</span><span class="n">gi_frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</li>
+</ul>
+</section>
+</section>
+<section id="id7">
+<h2>3. 코루틴<a class="headerlink" href="#id7" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>코루틴</p>
+<ul>
+<li><p>실행을 중단하고 재개할 수 있는 함수, 특정 시점에서 작업을 중단하고 다른 작업을 수행할 수 있음</p></li>
+<li><p>호출자와 호출된 함수 사이의 제어 흐름이 상호작용</p></li>
+<li><p>비동기 프로그래밍에서 사용</p></li>
+</ul>
+</li>
+</ul>
+<section id="id8">
+<h3>3.1 제너레이터 기반 코루틴<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>제너레이터는 함수 실행을 중지하고 재개할 수 있음 → 이러한 동작에 기반을 두고 제너레이터 기반 코루틴이 만들어짐</p></li>
+<li><p>값을 생성하여 호출자에게 전달하기만 하는 제너레이터와 달리 코루틴은 호출자와 양방향 통신 가능 (<code class="docutils literal notranslate"><span class="pre">send()</span></code> 메서드 사용)</p></li>
+<li><p>제너레이터의 한계는 직접적인 호출자에게만 값을 제공할 수 있다는 것 → <code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code>을 통해 극복</p>
+<ul>
+<li><p>제너레이터 함수를 유틸리티 함수로 리팩토링 가능</p></li>
+<li><p>다른 제너레이터로부터 값을 받아온 뒤 현재 제너레이터의 호출자에게 반환</p></li>
+<li><p>예시</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">gen_letters</span><span class="p">():</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">97</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="mi">97</span> <span class="o">+</span> <span class="mi">26</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">end</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="k">def</span> <span class="nf">letters</span><span class="p">(</span><span class="n">upper</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">upper</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">gen_letters</span><span class="p">(</span><span class="mi">65</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">yield from</span> <span class="n">gen_letters</span><span class="p">(</span><span class="mi">97</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">letters</span><span class="p">(</span><span class="kc">True</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">letter</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">letters</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">letter</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span> <span class="pre">from</span></code>을 통해 다른 코루틴에 값을 전달할 수 있으므로 복잡한 비동기 코드 관리에 유용</p></li>
+<li><p>데코레이터를 사용하여 구현 → 네이티브 코루틴이 선호되어 더이상 쓰지 않음</p></li>
+</ul>
+</section>
+<section id="id9">
+<h3>3.2 네이티브 코루틴<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>함수 앞에 <code class="docutils literal notranslate"><span class="pre">async</span></code> 키워드를 명시하여 코루틴을 반환함을 표시</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">asyncio.run()</span></code>을 통해 코루틴 객체 실행</p>
+<ul>
+<li><p>코드 (<code class="docutils literal notranslate"><span class="pre">Lib/asyncio/runners.py</span></code>)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">main</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute the coroutine and return the result.</span>
+
+<span class="sd">    This function runs the passed coroutine, taking care of</span>
+<span class="sd">    managing the asyncio event loop and finalizing asynchronous</span>
+<span class="sd">    generators.</span>
+
+<span class="sd">    This function cannot be called when another asyncio event loop is</span>
+<span class="sd">    running in the same thread.</span>
+
+<span class="sd">    If debug is True, the event loop will be run in debug mode.</span>
+
+<span class="sd">    This function always creates a new event loop and closes it at the end.</span>
+<span class="sd">    It should be used as a main entry point for asyncio programs, and should</span>
+<span class="sd">    ideally only be called once.</span>
+
+<span class="sd">    Example:</span>
+
+<span class="sd">        async def main():</span>
+<span class="sd">            await asyncio.sleep(1)</span>
+<span class="sd">            print(&#39;hello&#39;)</span>
+
+<span class="sd">        asyncio.run(main())</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">events</span><span class="o">.</span><span class="n">_get_running_loop</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;asyncio.run() cannot be called from a running event loop&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">coroutines</span><span class="o">.</span><span class="n">iscoroutine</span><span class="p">(</span><span class="n">main</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;a coroutine was expected, got </span><span class="si">{!r}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">main</span><span class="p">))</span>
+
+    <span class="n">loop</span> <span class="o">=</span> <span class="n">events</span><span class="o">.</span><span class="n">new_event_loop</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">events</span><span class="o">.</span><span class="n">set_event_loop</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">debug</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">loop</span><span class="o">.</span><span class="n">set_debug</span><span class="p">(</span><span class="n">debug</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_cancel_all_tasks</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
+            <span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">shutdown_asyncgens</span><span class="p">())</span>
+            <span class="n">loop</span><span class="o">.</span><span class="n">run_until_complete</span><span class="p">(</span><span class="n">loop</span><span class="o">.</span><span class="n">shutdown_default_executor</span><span class="p">())</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">events</span><span class="o">.</span><span class="n">set_event_loop</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">loop</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p>실행 순서</p>
+<ol class="arabic simple">
+<li><p>새 이벤트 루프를 시작</p></li>
+<li><p>코루틴 객체를 태스크로 감싸기</p></li>
+<li><p>태스크가 완료될 때 실행할 콜백을 설정</p></li>
+<li><p>태스크가 완료될 때까지 루프를 반복</p></li>
+<li><p>결과 반환</p></li>
+</ol>
+</li>
+</ul>
+</li>
+<li><p>예시</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">sleepy_alarm</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;wake up!&quot;</span>
+
+<span class="n">alarm</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">sleepy_alarm</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">alarm</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>장점</p>
+<ul class="simple">
+<li><p>여러 코루틴 동시 실행 가능</p></li>
+<li><p>코루틴 객체를 다른 함수의 인자로 사용 가능 → 코루틴 객체를 서로 연결하여 연쇄적으로 처리하거나 순차적으로 생성 가능</p></li>
+</ul>
+</li>
+<li><p>연관된 소스 파일 목록</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Lib/asyncio</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id10">
+<h3>3.3 이벤트 루프<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h3>
+<ul>
+<li><p>비동기 코드를 연결하는 접착제 역할</p></li>
+<li><p>순수한 파이썬으로 작성된 이벤트 루프는 태스크를 보관하는 객체</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">asyncio.Task</span></code> 타입으로 표현되는 일련의 태스크로 이루어짐</p></li>
+<li><p>태스크를 루프에 예약 → 루프가 한 번 실행되면 모든 태스크가 완료될 때까지 태스크 순회</p></li>
+<li><p>태스크에 콜백을 등록하여 작업이 완료되거나 실패하면 이벤트 루프가 등록된 콜백을 실행시킴</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">yield</span></code> 키워드가 같은 프레임에서 여러 값을 반환할 수 있는 것처럼 <code class="docutils literal notranslate"><span class="pre">await</span></code> 키워드도 여러 상태 반환 가능</p></li>
+<li><p>예시</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">sleepy_alarm</span><span class="p">(</span><span class="n">person</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">person</span><span class="si">}</span><span class="s2"> -- wake up!&quot;</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">wake_up_gang</span><span class="p">():</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">sleepy_alarm</span><span class="p">(</span><span class="s2">&quot;Bob&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;wake up Bob&quot;</span><span class="p">),</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">sleepy_alarm</span><span class="p">(</span><span class="s2">&quot;Andy&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;wake up Andy&quot;</span><span class="p">),</span>
+        <span class="n">asyncio</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">sleepy_alarm</span><span class="p">(</span><span class="s2">&quot;Sam&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;wake up Sam&quot;</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">wake_up_gang</span><span class="p">())</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Sam -- wake up!</span>
+<span class="sd">Bob -- wake up!</span>
+<span class="sd">Andy -- wake up!</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+</section>
+<section id="id11">
+<h2>4. 비동기 제너레이터<a class="headerlink" href="#id11" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>제너레이터와 네이티브 코루틴의 개념을 하나로 합친 것</p></li>
+<li><p>함수가 <code class="docutils literal notranslate"><span class="pre">async</span></code> 키워드를 사용하여 선언되었고 <code class="docutils literal notranslate"><span class="pre">yield</span></code> 문을 포함한다면 호출 시 비동기 제너레이터로 변환</p></li>
+<li><p>제너레이터처럼 이터레이터 프로토콜을 사용하여 실행됨</p>
+<ul>
+<li><p>제너레이터 : <code class="docutils literal notranslate"><span class="pre">for</span></code> / <code class="docutils literal notranslate"><span class="pre">__next__()</span></code></p></li>
+<li><p>비동기 제너레이터 : <code class="docutils literal notranslate"><span class="pre">async</span> <span class="pre">for</span></code> / <code class="docutils literal notranslate"><span class="pre">__anext__()</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id12">
+<h2>5. 서브인터프리터<a class="headerlink" href="#id12" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>멀티프로세싱을 활용한 병렬 실행</p>
+<ul>
+<li><p>파이프와 큐를 사용하여 공유 메모리 대비 느린 프로세스 간 통신 방식 사용</p></li>
+<li><p>새 프로세스 시작 시 오버헤드</p></li>
+</ul>
+</li>
+<li><p>스레드와 비동기를 활용한 동시 실행</p>
+<ul>
+<li><p>오버헤드가 적지만 스레드 안전성을 제공하는 GIL로 인해 진정한 병렬 실행이 아님</p></li>
+</ul>
+</li>
+<li><p>서브인터프리터 : 여러 개의 독립적인 인터프리터 인스턴스를 생성하여 사용</p>
+<ul>
+<li><p>진정한 병렬 실행인 동시에 멀티프로세싱에 비해 오버헤드가 적음</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Py_NewInterpreter()</span></code>와 같은 저수준 인터프리터 생성 C API 제공</p></li>
+<li><p>모든 파이썬 객체의 포인터가 보관되는 메모리 할당 아레나를 인터프리터 상태에서 관리하므로 각 인터프리터는 다른 인터프리터의 변수에 접근 불가</p>
+<ul>
+<li><p>인터프리터 간 객체 공유를 위해서는 직렬화하거나 <code class="docutils literal notranslate"><span class="pre">ctypes</span></code>를 사용하고 IPC 형태로 공유해야 함</p></li>
+</ul>
+</li>
+<li><p>연관된 소스 파일 목록</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">Lib/_xxsubinterpreters.c</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Python/pylifecycle.c</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="port-scanner-asyncio-async-generator-subinterpreter">
+<h2>6. Port Scanner: <code class="docutils literal notranslate"><span class="pre">asyncio</span></code>, Async Generator, Subinterpreter<a class="headerlink" href="#port-scanner-asyncio-async-generator-subinterpreter" title="Permalink to this heading">#</a></h2>
+<section id="id13">
+<h3>6.1 멀티 스레딩<a class="headerlink" href="#id13" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+<span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+
+<span class="n">timeout</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="k">def</span> <span class="nf">check_port</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span> <span class="k">as</span> <span class="n">sock</span><span class="p">:</span>
+        <span class="n">sock</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">connect_ex</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">port</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>  <span class="c1"># Replace with a host you own</span>
+    <span class="n">open_ports</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">check_port</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">65536</span><span class="p">)]</span>
+        
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">):</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">port</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">open_ports</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">open_ports</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Port </span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2"> is open&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Completed scan in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> seconds&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>3 ~ 3.5초</p></li>
+</ul>
+</section>
+<section id="asyncio">
+<h3>6.2 <code class="docutils literal notranslate"><span class="pre">asyncio</span></code><a class="headerlink" href="#asyncio" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="n">timeout</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">check_port</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">future</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">open_connection</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">future</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>  <span class="c1"># do not throw an exception when port is not open</span>
+        <span class="k">pass</span>
+    <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
+        <span class="k">pass</span> <span class="c1"># closed</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="n">tasks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">check_port</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">results</span><span class="p">))</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">scan</span><span class="p">(</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">65536</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Port </span><span class="si">{0}</span><span class="s2"> is open&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Completed scan in </span><span class="si">{0}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>4 ~4.8초</p></li>
+<li><p>멀티 스레딩 코드와 다른 결과 출력</p></li>
+</ul>
+</section>
+<section id="id14">
+<h3>6.3 비동기 제너레이터<a class="headerlink" href="#id14" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">asyncio</span>
+
+<span class="n">timeout</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">check_ports</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">future</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">open_connection</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">)</span>
+            <span class="n">r</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">future</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">port</span>
+            <span class="n">found</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">found</span> <span class="o">&gt;=</span> <span class="nb">max</span><span class="p">:</span>
+                <span class="k">return</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="ne">ConnectionRefusedError</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">except</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">TimeoutError</span><span class="p">:</span>
+            <span class="k">pass</span> <span class="c1"># closed</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">scan</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">check_ports</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>
+    <span class="n">scan_range</span> <span class="o">=</span> <span class="mi">30000</span><span class="p">,</span> <span class="mi">65536</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">scan</span><span class="p">(</span><span class="o">*</span><span class="n">scan_range</span><span class="p">,</span> <span class="n">host</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Port </span><span class="si">{0}</span><span class="s2"> is open&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Completed scan in </span><span class="si">{0}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>1.5 ~ 1.9초</p></li>
+<li><p>멀티 스레딩 코드와 다른 결과 출력</p></li>
+</ul>
+</section>
+<section id="id15">
+<h3>6.4 서브 인터프리터<a class="headerlink" href="#id15" title="Permalink to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">_xxsubinterpreters</span> <span class="k">as</span> <span class="nn">subinterpreters</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">import</span> <span class="nn">textwrap</span> <span class="k">as</span> <span class="nn">tw</span>
+<span class="kn">from</span> <span class="nn">queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+
+<span class="n">timeout</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># in seconds..</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">Queue</span><span class="p">):</span>
+    <span class="c1"># Create a communication channel</span>
+    <span class="n">channel_id</span> <span class="o">=</span> <span class="n">subinterpreters</span><span class="o">.</span><span class="n">channel_create</span><span class="p">()</span>
+    <span class="n">interpid</span> <span class="o">=</span> <span class="n">subinterpreters</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+    <span class="n">subinterpreters</span><span class="o">.</span><span class="n">run_string</span><span class="p">(</span>
+        <span class="n">interpid</span><span class="p">,</span>
+        <span class="n">tw</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    import socket; import _xxsubinterpreters as subinterpreters</span>
+<span class="sd">    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span>
+<span class="sd">    sock.settimeout(timeout)</span>
+<span class="sd">    result = sock.connect_ex((host, port))</span>
+<span class="sd">    subinterpreters.channel_send(channel_id, result)</span>
+<span class="sd">    sock.close()</span>
+<span class="sd">    &quot;&quot;&quot;</span><span class="p">),</span>
+        <span class="n">shared</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">channel_id</span><span class="o">=</span><span class="n">channel_id</span><span class="p">,</span>
+            <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span>
+            <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span>
+        <span class="p">))</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">subinterpreters</span><span class="o">.</span><span class="n">channel_recv</span><span class="p">(</span><span class="n">channel_id</span><span class="p">)</span>
+    <span class="n">subinterpreters</span><span class="o">.</span><span class="n">channel_release</span><span class="p">(</span><span class="n">channel_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">output</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;localhost&quot;</span>  <span class="c1"># pick a friend</span>
+    <span class="n">threads</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">port</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">30000</span><span class="p">,</span> <span class="mi">65536</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">run</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">results</span><span class="p">))</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">threads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">threads</span><span class="p">:</span>
+        <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">results</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Port </span><span class="si">{0}</span><span class="s2"> is open&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">get</span><span class="p">()))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Completed scan in </span><span class="si">{0}</span><span class="s2"> seconds&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+</section>
 </section>
 
     <script type="text/x-thebe-config">
@@ -435,6 +1500,41 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1. 비동기 프로그래밍</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">2. 제너레이터</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">2.1 제너레이터의 구조</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">2.2 제너레이터 생성하기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">2.3 제너레이터 실행하기</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">3. 코루틴</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">3.1 제너레이터 기반 코루틴</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">3.2 네이티브 코루틴</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">3.3 이벤트 루프</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">4. 비동기 제너레이터</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">5. 서브인터프리터</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#port-scanner-asyncio-async-generator-subinterpreter">6. Port Scanner: <code class="docutils literal notranslate"><span class="pre">asyncio</span></code>, Async Generator, Subinterpreter</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">6.1 멀티 스레딩</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#asyncio">6.2 <code class="docutils literal notranslate"><span class="pre">asyncio</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">6.3 비동기 제너레이터</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">6.4 서브 인터프리터</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
