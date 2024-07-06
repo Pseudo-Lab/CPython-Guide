@@ -168,6 +168,7 @@ const thebe_selector_output = ".output, .cell_output"
 <li class="toctree-l1"><a class="reference internal" href="6_0_rexing_and_parsing.html">6. 렉싱과 파싱</a></li>
 
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">7. 컴파일러</a></li>
+
 <li class="toctree-l1"><a class="reference internal" href="8_0_eval_loop.html">8. 평가 루프</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="9_0_memory.html">9. 메모리 관리</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="9_1_memory_pool.html">메모리 풀</a></li>
@@ -377,6 +378,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">7. 컴파일러</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">컴파일 과정</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">컴파일과 관련된 소스</a></li>
 </ul>
@@ -387,9 +389,19 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">심벌 테이블 구현</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">어셈블리</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python">python에서 컴파일러 사용하기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-api">컴파일러 C API 간단 설명</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">컴파일러 C API</a></li>
 </ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">예제: ‘거의 같음’ 연산자 구현하기</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-3-13-0">정리 (python 3.13.0 기준)</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+
             </nav>
         </div>
     </div>
@@ -575,18 +587,730 @@ Parser → Python.asdl에서 정의한 모든문 타입에 대한 case를 가지
 </section>
 <section id="id8">
 <h2>핵심 컴파일 과정<a class="headerlink" href="#id8" title="Permalink to this heading">#</a></h2>
-<p>PyAST_CompileObject()에 컴파일러 상태와 symtable, AST로 파싱된 모듈이 준비되면 컴파일 시작</p>
-<ol class="arabic simple">
-<li><p>컴파일러 상태, 심벌 테이블, AST를 제어 흐름 그래프로 변환</p></li>
-<li><p>논리 오류나 코드 오류를 탐지, 실행 단계를 런타임 예외로부터 보호</p></li>
-</ol>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="c1">// Python/compile.c</span>
+<span class="w"> </span>
+<span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">This</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">compiles</span><span class="w"> </span><span class="n">an</span><span class="w"> </span><span class="n">abstract</span><span class="w"> </span><span class="n">syntax</span><span class="w"> </span><span class="n">tree</span><span class="w"> </span><span class="p">(</span><span class="n">AST</span><span class="p">)</span><span class="w"> </span><span class="n">into</span><span class="w"> </span><span class="n">Python</span><span class="w"> </span><span class="n">bytecode</span><span class="p">.</span>
+<span class="w"> </span><span class="o">*</span>
+<span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">primary</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">PyAST_Compile</span><span class="p">(),</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="n">returns</span><span class="w"> </span><span class="n">a</span>
+<span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">PyCodeObject</span><span class="p">.</span><span class="w">  </span><span class="n">The</span><span class="w"> </span><span class="n">compiler</span><span class="w"> </span><span class="n">makes</span><span class="w"> </span><span class="n">several</span><span class="w"> </span><span class="n">passes</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">build</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">code</span>
+<span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">object</span><span class="o">:</span>
+<span class="w"> </span><span class="o">*</span><span class="w">   </span><span class="mf">1.</span><span class="w"> </span><span class="n">Checks</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">future</span><span class="w"> </span><span class="n">statements</span><span class="p">.</span><span class="w">  </span><span class="n">See</span><span class="w"> </span><span class="n">future</span><span class="p">.</span><span class="n">c</span>
+<span class="w"> </span><span class="o">*</span><span class="w">   </span><span class="mf">2.</span><span class="w"> </span><span class="n">Builds</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">symbol</span><span class="w"> </span><span class="n">table</span><span class="p">.</span><span class="w">  </span><span class="n">See</span><span class="w"> </span><span class="n">symtable</span><span class="p">.</span><span class="n">c</span><span class="p">.</span>
+<span class="w"> </span><span class="o">*</span><span class="w">   </span><span class="mf">3.</span><span class="w"> </span><span class="n">Generate</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">basic</span><span class="w"> </span><span class="n">blocks</span><span class="p">.</span><span class="w">  </span><span class="n">See</span><span class="w"> </span><span class="n">compiler_mod</span><span class="p">()</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">file</span><span class="p">.</span>
+<span class="w"> </span><span class="o">*</span><span class="w">   </span><span class="mf">4.</span><span class="w"> </span><span class="n">Assemble</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">basic</span><span class="w"> </span><span class="n">blocks</span><span class="w"> </span><span class="n">into</span><span class="w"> </span><span class="n">final</span><span class="w"> </span><span class="n">code</span><span class="p">.</span><span class="w">  </span><span class="n">See</span><span class="w"> </span><span class="n">assemble</span><span class="p">()</span><span class="w"> </span><span class="n">in</span>
+<span class="w"> </span><span class="o">*</span><span class="w">      </span><span class="n">this</span><span class="w"> </span><span class="n">file</span><span class="p">.</span>
+<span class="w"> </span><span class="o">*</span><span class="w">   </span><span class="mf">5.</span><span class="w"> </span><span class="n">Optimize</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">byte</span><span class="w"> </span><span class="n">code</span><span class="w"> </span><span class="p">(</span><span class="n">peephole</span><span class="w"> </span><span class="n">optimizations</span><span class="p">).</span><span class="w">  </span><span class="n">See</span><span class="w"> </span><span class="n">peephole</span><span class="p">.</span><span class="n">c</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>PyAST_CompileObject()에 컴파일러 상태와 symtable, AST로 파싱된 모듈이 준비되면 컴파일이 시작됨</p>
+<ul>
+<li><p>컴파일러 상태(future.c), 심벌 테이블(symtable.c), AST(parser.c)를 Control Flow Graph로 변환</p></li>
+<li><p>논리 오류나 코드 오류를 탐지해 실행 단계를 런타임 예외로부터 보호함</p></li>
+</ul>
+</li>
+</ul>
+<section id="python">
+<h3>python에서 컴파일러 사용하기<a class="headerlink" href="#python" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>내장 함수인 compile()로 컴파일러를 직접 호출할 수 있음</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">co</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="s2">&quot;b + 1&quot;</span><span class="p">,</span> <span class="s2">&quot;test.py&quot;</span><span class="p">,</span> <span class="s2">&quot;eval&quot;</span><span class="p">)</span> <span class="c1"># compile는 code object를 반환함</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">co</span>
+<span class="go">&lt;code object &lt;module&gt; at 0x7f6f8e8e2040, file &quot;test.py&quot;, line 1&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">co</span><span class="o">.</span><span class="n">co_code</span> <span class="c1"># 컴파일된 코드는 co_code 속성에 담김</span>
+<span class="go">b&#39;e\x00d\x00\x17\x00S\x00&#39;</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>컴파일된 코드를 바이트코드 명령어 형태로 보기 위해서는 바이트코드 역어셈블러 모듈 dis를 사용하면 됨</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">dis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dis</span><span class="o">.</span><span class="n">dis</span><span class="p">(</span><span class="n">co</span><span class="o">.</span><span class="n">co_code</span><span class="p">)</span> <span class="c1"># 컴파일된 코드는 바이트코드 명령어 순서로 실행됨</span>
+<span class="go">          0 LOAD_NAME                0 (0)</span>
+<span class="go">          2 LOAD_CONST               0 (0)</span>
+<span class="go">          4 BINARY_ADD</span>
+<span class="go">          6 RETURN_VALUE</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>instaviz 모듈을 이용해서도, code object와 bytecode를 확인할 수 있음</p></li>
+</ul>
+<p><img alt="instaviz" src="../_images/03_compile_instaviz.png" /></p>
+</section>
+<section id="c-api">
+<h3>컴파일러 C API 간단 설명<a class="headerlink" href="#c-api" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>compiler_mod 는 compiler와 mod를 입력으로 받아서 최종적으로 코드 객체를 반환함</p></li>
+<li><p>compiler_mod 내의 compiler_body를 통해서 일련의 명령을 담고 있는 블록 리스트를 얻음</p></li>
+<li><p>compiler_mod 내의 assemble는 일련의 명령을 담고 있는 블록 리스트를 입력으로 받아서 코드 객체를 반환함</p></li>
+<li><p>assemble 내의 dfs를 통해서 일련의 명령을 담고 있는 블록 리스트를 입력으로 받아서 Control Flow Graph 형태로 변환함</p></li>
+<li><p>assemble 내의 makecode를 통해서 Control Flow Graph 형태를 입력으로 받아서 코드 객체를 반환함</p></li>
+<li><p>makecode 내의 PyCode_Optimize를 통해서 핍홀 최적화된 바이트코드를 반환함</p></li>
+<li><p>makecode 내의 PyCode_NewWithPosOnlyArgs를 통해서 최적화된 바이트 코드를 코드 객체를 반환함</p></li>
+</ul>
 </section>
 <section id="id9">
-<h2>어셈블리<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h2>
-<p>컴파일 단계가 끝나면 블록 리스트 완성<br />
-각 프레임 블록은 명령 리스트와 다음 블록을 가리키는 포인터를 가짐<br />
-기본 프레임 블록들에 깊이 우선 탐색(DFS)를 실행, 명령들을 단일한 바이트 코드 시퀀스로 병합</p>
+<h3>컴파일러 C API<a class="headerlink" href="#id9" title="Permalink to this heading">#</a></h3>
+<ul class="simple">
+<li><p>AST 모듈 컴파일의 진입점인 compiler_mod(struct compiler *c, mod_ty mod)는 모듈 타입에 따라 다른 컴파일러 함수를 사용함</p></li>
+<li><p>mod가 Module일 경우 모듈은 컴파일러 유닛으로 컴파일되어 c_stack 프로퍼티에 저장됨</p></li>
+<li><p>컴파일러 유닛 스택에서 PyCodeObject를 생성하기 위해 assemble() 을 실행함</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Python/compile.c</span>
+
+<span class="k">static</span><span class="w"> </span><span class="n">PyCodeObject</span><span class="w"> </span><span class="o">*</span>
+<span class="nf">compiler_mod</span><span class="p">(</span><span class="o">**</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="o">**</span><span class="p">,</span><span class="w"> </span><span class="o">**</span><span class="n">mod_ty</span><span class="w"> </span><span class="n">mod</span><span class="o">**</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="o">**</span><span class="n">PyCodeObject</span><span class="w"> </span><span class="o">*</span><span class="n">co</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">addNone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">module</span><span class="p">;</span><span class="o">**</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_InternFromString</span><span class="p">(</span><span class="s">&quot;&lt;module&gt;&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">module</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="cm">/* Use 0 for firstlineno initially, will fixup in assemble(). */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">compiler_enter_scope</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">module</span><span class="p">,</span><span class="w"> </span><span class="n">COMPILER_SCOPE_MODULE</span><span class="p">,</span><span class="w"> </span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="o">**</span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">kind</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Module_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">compiler_body</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Module</span><span class="p">.</span><span class="n">body</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">compiler_exit_scope</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="o">**</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Interactive_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">find_ann</span><span class="p">(</span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Interactive</span><span class="p">.</span><span class="n">body</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ADDOP</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">SETUP_ANNOTATIONS</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">c_interactive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">VISIT_SEQ_IN_SCOPE</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">stmt</span><span class="p">,</span>
+<span class="w">                                </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Interactive</span><span class="p">.</span><span class="n">body</span><span class="p">);</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Expression_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="n">VISIT_IN_SCOPE</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Expression</span><span class="p">.</span><span class="n">body</span><span class="p">);</span>
+<span class="w">        </span><span class="n">addNone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">default</span><span class="o">:</span>
+<span class="w">        </span><span class="n">PyErr_Format</span><span class="p">(</span><span class="n">PyExc_SystemError</span><span class="p">,</span>
+<span class="w">                     </span><span class="s">&quot;module kind %d should not be possible&quot;</span><span class="p">,</span>
+<span class="w">                     </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">kind</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">**</span><span class="n">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assemble</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">addNone</span><span class="p">);</span><span class="o">**</span>
+<span class="w">    </span><span class="n">compiler_exit_scope</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">co</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>compiler_body() 는 모듈의 각 문(함수, 클래스, for, while …)을 순회하면 방문함</p></li>
+<li><p>AST 노드 타입을 확인하는 asdl_seq_GET() 호출을 통해 이 문의 타입이 결정됨</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Python/compile.c</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span>
+<span class="nf">compiler_body</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">asdl_seq</span><span class="w"> </span><span class="o">*</span><span class="n">stmts</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">stmt_ty</span><span class="w"> </span><span class="n">st</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">docstring</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Set current line number to the line number of first statement.</span>
+<span class="cm">       This way line number for SETUP_ANNOTATIONS will always</span>
+<span class="cm">       coincide with the line number of first &quot;real&quot; statement in module.</span>
+<span class="cm">       If body is empty, then lineno will be set later in assemble. */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_scope_type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">COMPILER_SCOPE_MODULE</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">asdl_seq_LEN</span><span class="p">(</span><span class="n">stmts</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">st</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">stmt_ty</span><span class="p">)</span><span class="n">asdl_seq_GET</span><span class="p">(</span><span class="n">stmts</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="n">SET_LOC</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="cm">/* Every annotated class and module should have __annotations__. */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">find_ann</span><span class="p">(</span><span class="n">stmts</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ADDOP</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">SETUP_ANNOTATIONS</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">asdl_seq_LEN</span><span class="p">(</span><span class="n">stmts</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="cm">/* if not -OO mode, set docstring */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">c_optimize</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">docstring</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyAST_GetDocString</span><span class="p">(</span><span class="n">stmts</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">docstring</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">            </span><span class="n">st</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">stmt_ty</span><span class="p">)</span><span class="n">asdl_seq_GET</span><span class="p">(</span><span class="n">stmts</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">            </span><span class="n">assert</span><span class="p">(</span><span class="n">st</span><span class="o">-&gt;</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Expr_kind</span><span class="p">);</span>
+<span class="w">            </span><span class="n">VISIT</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="n">st</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Expr</span><span class="p">.</span><span class="n">value</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">compiler_nameop</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">__doc__</span><span class="p">,</span><span class="w"> </span><span class="n">Store</span><span class="p">))</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">**</span><span class="k">for</span><span class="w"> </span><span class="p">(;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">asdl_seq_LEN</span><span class="p">(</span><span class="n">stmts</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="n">VISIT</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">stmt</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">stmt_ty</span><span class="p">)</span><span class="n">asdl_seq_GET</span><span class="p">(</span><span class="n">stmts</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">));</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="o">**</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><strong>VISIT</strong> 매크로는 각 문 타입에 해당하는 ****Python/compile.c의 함수를 호출함</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Python/compile.c</span>
+
+<span class="cp">#define VISIT(C, TYPE, V) {\</span>
+<span class="cp">    if (!compiler_visit_ ## TYPE((C), (V))) \</span>
+<span class="cp">        return 0; \</span>
+<span class="cp">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>모든 문을 포괄하는 stmt 타입의 경우 컴파일러는 compiler_visit_stmt를 호출해 Parser/Python.asdl에 정의된 하위문 타입들로 전환함</p></li>
+<li><p>예를 들어 파이썬 for문이 들어오면 compiler_visit_stmt()는 compiler_for()를 호출함</p></li>
+<li><p>모든 문과 표현식 타입에는 해당 타입에 대한 compiler_*() 함수가 존재하며, 간단한 타입들은 인라인으로 바이트코드 명령어를 생성하고, 더 복잡한 문 타입들은 다른 함수를 호출함</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Python/compile.c</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">int</span>
+<span class="nf">compiler_visit_stmt</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">stmt_ty</span><span class="w"> </span><span class="n">s</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Py_ssize_t</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Always assign a lineno to the next instruction for a stmt. */</span>
+<span class="w">    </span><span class="n">SET_LOC</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">kind</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">FunctionDef_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_function</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">ClassDef_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_class</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Return_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_return</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Delete_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="n">VISIT_SEQ</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Delete</span><span class="p">.</span><span class="n">targets</span><span class="p">)</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Assign_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asdl_seq_LEN</span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Assign</span><span class="p">.</span><span class="n">targets</span><span class="p">);</span>
+<span class="w">        </span><span class="n">VISIT</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Assign</span><span class="p">.</span><span class="n">value</span><span class="p">);</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">                </span><span class="n">ADDOP</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">DUP_TOP</span><span class="p">);</span>
+<span class="w">            </span><span class="n">VISIT</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">,</span>
+<span class="w">                  </span><span class="p">(</span><span class="n">expr_ty</span><span class="p">)</span><span class="n">asdl_seq_GET</span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Assign</span><span class="p">.</span><span class="n">targets</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">AugAssign_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_augassign</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">AnnAssign_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_annassign</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="o">**</span><span class="k">case</span><span class="w"> </span><span class="no">For_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_for</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span><span class="o">**</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">While_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_while</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">If_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_if</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Raise_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Raise</span><span class="p">.</span><span class="n">exc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">VISIT</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Raise</span><span class="p">.</span><span class="n">exc</span><span class="p">);</span>
+<span class="w">            </span><span class="n">n</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Raise</span><span class="p">.</span><span class="n">cause</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">VISIT</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Raise</span><span class="p">.</span><span class="n">cause</span><span class="p">);</span>
+<span class="w">                </span><span class="n">n</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">ADDOP_I</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">RAISE_VARARGS</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">n</span><span class="p">);</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Try_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_try</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Assert_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_assert</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Import_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_import</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">ImportFrom_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_from_import</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Global_kind</span><span class="p">:</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Nonlocal_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Expr_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_visit_stmt_expr</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">v</span><span class="p">.</span><span class="n">Expr</span><span class="p">.</span><span class="n">value</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Pass_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Break_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_break</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Continue_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_continue</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">With_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_with</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">AsyncFunctionDef_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_function</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">AsyncWith_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_async_with</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">AsyncFor_kind</span><span class="p">:</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">compiler_async_for</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+</pre></div>
+</div>
+<ul>
+<li><p>컴파일러는 일련의 명령을 담고 있는 블록을 컴파일러 상태로 내보냄</p>
+<ul>
+<li><p>명령 구조체는 명령 코드와 인자, 문장이 위치한 줄번호를 포함함</p>
+<p><img alt="instaviz2" src="../_images/04_compile_instaviz2.png" /></p>
+</li>
+<li><p>점프 명령일 경우 점프할 블록에 대한 포인터도 포함함</p>
+<ul class="simple">
+<li><p>점프 명령은 한 명령에서 다른 명령으로의 점프를 실행하면, 절대 점프 방식(코드 객체 상에서 정확한 명령의 위치를 대상으로 사용)과 상대 점프 방식(다른 명령을 기준으로 점프 대상을 지정)의 점프 명령을 사용할 수 있음</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>컴파일 단계가 끝나면, 블록 리스트가 완성되고, 각 프레임 블록은 명령 리스트와 다음 블록을 가리키는 포인터를 가짐</p></li>
+<li><p>어셈블러는 기본 프레임 블록들에 깊이 우선 탐색(DFS)를 실행하고, 명령들을 단일한 바이트 코드 시퀀스로 병합함</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Python/compile.c</span>
+
+<span class="k">static</span><span class="w"> </span><span class="n">PyCodeObject</span><span class="w"> </span><span class="o">*</span>
+<span class="nf">assemble</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">addNone</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">basicblock</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">entryblock</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">assembler</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">nblocks</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyCodeObject</span><span class="w"> </span><span class="o">*</span><span class="n">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Make sure every block that falls off the end returns None.</span>
+<span class="cm">       XXX NEXT_BLOCK() isn&#39;t quite right, because if the last</span>
+<span class="cm">       block ends with a jump or return b_next shouldn&#39;t set.</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_curblock</span><span class="o">-&gt;</span><span class="n">b_return</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">NEXT_BLOCK</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">addNone</span><span class="p">)</span>
+<span class="w">            </span><span class="n">ADDOP_LOAD_CONST</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">Py_None</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ADDOP</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">RETURN_VALUE</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">nblocks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">entryblock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_blocks</span><span class="p">;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_list</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">nblocks</span><span class="o">++</span><span class="p">;</span>
+<span class="w">        </span><span class="n">entryblock</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="cm">/* Set firstlineno if it wasn&#39;t explicitly set. */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_firstlineno</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">entryblock</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">entryblock</span><span class="o">-&gt;</span><span class="n">b_instr</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">entryblock</span><span class="o">-&gt;</span><span class="n">b_instr</span><span class="o">-&gt;</span><span class="n">i_lineno</span><span class="p">)</span>
+<span class="w">            </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_firstlineno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entryblock</span><span class="o">-&gt;</span><span class="n">b_instr</span><span class="o">-&gt;</span><span class="n">i_lineno</span><span class="p">;</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_firstlineno</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">assemble_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">nblocks</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_firstlineno</span><span class="p">))</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="o">**</span><span class="n">dfs</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">entryblock</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">nblocks</span><span class="p">);</span><span class="o">**</span>
+
+<span class="w">    </span><span class="cm">/* Can&#39;t modify the bytecode after computing jump offsets. */</span>
+<span class="w">    </span><span class="n">assemble_jump_offsets</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/* Emit code in reverse postorder from dfs. */</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">a_nblocks</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">--</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">a_postorder</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_iused</span><span class="p">;</span><span class="w"> </span><span class="n">j</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">assemble_emit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_instr</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+<span class="w">                </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyBytes_Resize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">.</span><span class="n">a_lnotab</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">a_lnotab_off</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_PyBytes_Resize</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">.</span><span class="n">a_bytecode</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">.</span><span class="n">a_offset</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">_Py_CODEUNIT</span><span class="p">))</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+
+<span class="w">    </span><span class="o">**</span><span class="n">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makecode</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">a</span><span class="p">);</span><span class="o">**</span>
+<span class="w"> </span><span class="nl">error</span><span class="p">:</span>
+<span class="w">    </span><span class="n">assemble_free</span><span class="p">(</span><span class="o">&amp;</span><span class="n">a</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">co</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>어셈블러는 기본 프레임 블록 그래프를 DFS로 탐색하는데, 기본 프레임 블록 그래프는 트리 구조인 CST와 AST와 노드가 명령을 담는 헝태의 그래프임</p></li>
+<li><p>어셈블러는 DFS를 사용해 기본 프레임 블록 그래프를 Control Flow Graph 형태로 변환함</p></li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Python/compile.c</span>
+
+<span class="k">static</span><span class="w"> </span><span class="kt">void</span>
+<span class="nf">dfs</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">basicblock</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">assembler</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">end</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/* Get rid of recursion for normal control flow.</span>
+<span class="cm">       Since the number of blocks is limited, unused space in a_postorder</span>
+<span class="cm">       (from a_nblocks to end) can be used as a stack for still not ordered</span>
+<span class="cm">       blocks. */</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">end</span><span class="p">;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_seen</span><span class="p">;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_next</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_seen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">assert</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_nblocks</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">j</span><span class="p">);</span>
+<span class="w">        </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_postorder</span><span class="p">[</span><span class="o">--</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">end</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_postorder</span><span class="p">[</span><span class="n">j</span><span class="o">++</span><span class="p">];</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_iused</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">struct</span><span class="w"> </span><span class="nc">instr</span><span class="w"> </span><span class="o">*</span><span class="n">instr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">b</span><span class="o">-&gt;</span><span class="n">b_instr</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instr</span><span class="o">-&gt;</span><span class="n">i_jrel</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">instr</span><span class="o">-&gt;</span><span class="n">i_jabs</span><span class="p">)</span>
+<span class="w">                </span><span class="n">dfs</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">instr</span><span class="o">-&gt;</span><span class="n">i_target</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">j</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">assert</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_nblocks</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">j</span><span class="p">);</span>
+<span class="w">        </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_postorder</span><span class="p">[</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_nblocks</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>makecode는 compiler와 assembler를 입력으로 받아서 코드 객체를 생성함</p></li>
+<li><p>PyCode_NewWithPosOnlyArgs()를 실행하기 전에 PyCode_Optimize()를 통해서 Python/peephole.c에서 제공하는 바이트코드 최적으로 진행한다</p>
+<ul>
+<li><p>바이트코드 명령을 확인하고 특정 시나리오에 해당될 경우 해당 명령을 다른 명령으로 교체해주는 작업을 함, 예를 들어 return 문 뒤의 도달할 수 없는 명령을 제거하는 것</p></li>
+<li><p>핍홀 최적화는 소규모의 명령 집합을 동등하거나 더 나은 성능을 제공하는 하나의 명령어나 더 짧은 명령어로 변환하는 방식으로 이루어짐</p></li>
+</ul>
+</li>
+</ul>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="n">PyCodeObject</span><span class="w"> </span><span class="o">*</span>
+<span class="nf">makecode</span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">compiler</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">assembler</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">tmp</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyCodeObject</span><span class="w"> </span><span class="o">*</span><span class="n">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">consts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">varnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">freevars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">cellvars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">bytecode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Py_ssize_t</span><span class="w"> </span><span class="n">nlocals</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">nlocals_int</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">posorkeywordargcount</span><span class="p">,</span><span class="w"> </span><span class="n">posonlyargcount</span><span class="p">,</span><span class="w"> </span><span class="n">kwonlyargcount</span><span class="p">,</span><span class="w"> </span><span class="n">maxdepth</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">consts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">consts_dict_keys_inorder</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_consts</span><span class="p">);</span>
+<span class="w">    </span><span class="n">names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dict_keys_inorder</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_names</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">varnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dict_keys_inorder</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_varnames</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">consts</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">names</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">varnames</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">cellvars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dict_keys_inorder</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_cellvars</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">cellvars</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="n">freevars</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dict_keys_inorder</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_freevars</span><span class="p">,</span><span class="w"> </span><span class="n">PyTuple_GET_SIZE</span><span class="p">(</span><span class="n">cellvars</span><span class="p">));</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">freevars</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">merge_const_tuple</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">names</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">            </span><span class="o">!</span><span class="n">merge_const_tuple</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">varnames</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">            </span><span class="o">!</span><span class="n">merge_const_tuple</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">cellvars</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">            </span><span class="o">!</span><span class="n">merge_const_tuple</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">freevars</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">nlocals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyDict_GET_SIZE</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_varnames</span><span class="p">);</span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">nlocals</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">INT_MAX</span><span class="p">);</span>
+<span class="w">    </span><span class="n">nlocals_int</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Py_SAFE_DOWNCAST</span><span class="p">(</span><span class="n">nlocals</span><span class="p">,</span><span class="w"> </span><span class="n">Py_ssize_t</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">compute_code_flags</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">flags</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+
+<span class="w">    </span><span class="o">**</span><span class="n">bytecode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyCode_Optimize</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_bytecode</span><span class="p">,</span><span class="w"> </span><span class="n">consts</span><span class="p">,</span><span class="w"> </span><span class="n">names</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_lnotab</span><span class="p">);</span><span class="o">**</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">bytecode</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyList_AsTuple</span><span class="p">(</span><span class="n">consts</span><span class="p">);</span><span class="w"> </span><span class="cm">/* PyCode_New requires a tuple */</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tmp</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">consts</span><span class="p">);</span>
+<span class="w">    </span><span class="n">consts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tmp</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">merge_const_tuple</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">consts</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">posonlyargcount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Py_SAFE_DOWNCAST</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_posonlyargcount</span><span class="p">,</span><span class="w"> </span><span class="n">Py_ssize_t</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">);</span>
+<span class="w">    </span><span class="n">posorkeywordargcount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Py_SAFE_DOWNCAST</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_argcount</span><span class="p">,</span><span class="w"> </span><span class="n">Py_ssize_t</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">);</span>
+<span class="w">    </span><span class="n">kwonlyargcount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Py_SAFE_DOWNCAST</span><span class="p">(</span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_kwonlyargcount</span><span class="p">,</span><span class="w"> </span><span class="n">Py_ssize_t</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="p">);</span>
+<span class="w">    </span><span class="n">maxdepth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stackdepth</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">maxdepth</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="o">**</span><span class="n">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyCode_NewWithPosOnlyArgs</span><span class="p">(</span><span class="n">posonlyargcount</span><span class="o">+</span><span class="n">posorkeywordargcount</span><span class="p">,</span>
+<span class="w">                                   </span><span class="n">posonlyargcount</span><span class="p">,</span><span class="w"> </span><span class="n">kwonlyargcount</span><span class="p">,</span><span class="w"> </span><span class="n">nlocals_int</span><span class="p">,</span>
+<span class="w">                                   </span><span class="n">maxdepth</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="n">bytecode</span><span class="p">,</span><span class="w"> </span><span class="n">consts</span><span class="p">,</span><span class="w"> </span><span class="n">names</span><span class="p">,</span>
+<span class="w">                                   </span><span class="n">varnames</span><span class="p">,</span><span class="w"> </span><span class="n">freevars</span><span class="p">,</span><span class="w"> </span><span class="n">cellvars</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">c_filename</span><span class="p">,</span>
+<span class="w">                                   </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_name</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">u</span><span class="o">-&gt;</span><span class="n">u_firstlineno</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">a_lnotab</span><span class="p">);</span><span class="o">**</span>
+<span class="w"> </span><span class="nl">error</span><span class="p">:</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">consts</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">names</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">varnames</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">freevars</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">cellvars</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_XDECREF</span><span class="p">(</span><span class="n">bytecode</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">co</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </section>
+</section>
+<section id="id10">
+<h2>예제: ‘거의 같음’ 연산자 구현하기<a class="headerlink" href="#id10" title="Permalink to this heading">#</a></h2>
+<ul>
+<li><p>6장 예제에서 이어서 진행</p></li>
+<li><p>Include/object.h 수정 ← <strong>PyObject의 비교 함수에서 참조할 수 있도록 Py_AlE 연산자에 대한 #define 정의를 추가해야 함</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span>// Include/object.h
+
+/* Rich comparison opcodes */
+#define Py_LT 0
+#define Py_LE 1
+#define Py_EQ 2
+#define Py_NE 3
+#define Py_GT 4
+#define Py_GE 5
+**#define Py_AlE 6 // PyObject의 비교 함수에서 참조할 수 있도록, Py_AlE 연산자에 대한 #define 정의를 추가**
+
+/*
+ * Macro for implementing rich comparisons
+ *
+ * Needs to be a macro because any C-comparable type can be used.
+ */
+#define Py_RETURN_RICHCOMPARE(val1, val2, op)                               \
+    do {                                                                    \
+        switch (op) {                                                       \
+        case Py_EQ: if ((val1) == (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+        case Py_NE: if ((val1) != (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+        case Py_LT: if ((val1) &lt; (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;   \
+        case Py_GT: if ((val1) &gt; (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;   \
+        case Py_LE: if ((val1) &lt;= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+        case Py_GE: if ((val1) &gt;= (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \
+        **case Py_AlE: if ((val1) == (val2)) Py_RETURN_TRUE; Py_RETURN_FALSE;  \ // 비교 연산을 구현하기 위한 매크로에 Py_AlE에 대한 case를 추가**
+        default:                                                            \
+            Py_UNREACHABLE();                                               \
+        }                                                                   \
+    } while (0)
+</pre></div>
+</div>
+</li>
+<li><p>Objects/object.c 수정 ← <strong>Py_AlE도 사용할 수 있도록 해야 함</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Objects/object.c</span>
+
+<span class="cm">/* Map rich comparison operators to their swapped version, e.g. LT &lt;--&gt; GT */</span>
+<span class="o">**</span><span class="kt">int</span><span class="w"> </span><span class="n">_Py_SwappedOp</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="n">Py_GT</span><span class="p">,</span><span class="w"> </span><span class="n">Py_GE</span><span class="p">,</span><span class="w"> </span><span class="n">Py_EQ</span><span class="p">,</span><span class="w"> </span><span class="n">Py_NE</span><span class="p">,</span><span class="w"> </span><span class="n">Py_LT</span><span class="p">,</span><span class="w"> </span><span class="n">Py_LE</span><span class="p">,</span><span class="w"> </span><span class="n">Py_AlE</span><span class="p">};</span><span class="w"> </span><span class="c1">// Py_AlE를 연산자 타입의 값으로 사용할 수 있도록 함**</span>
+
+<span class="o">**</span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">opstrings</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="s">&quot;&lt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&lt;=&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;==&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;!=&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&gt;=&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;~=&quot;</span><span class="p">};</span><span class="w"> </span><span class="c1">// ~=를 클래스에 구현되지 않았을 때 에러메시지를 표시하는데 사용할 수 있도록 함**</span>
+<span class="p">....</span>
+
+<span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
+<span class="n">PyObject_RichCompare</span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">op</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">PyThreadState</span><span class="w"> </span><span class="o">*</span><span class="n">tstate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_PyThreadState_GET</span><span class="p">();</span>
+
+<span class="w">    </span><span class="o">**</span><span class="n">assert</span><span class="p">(</span><span class="n">Py_LT</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">op</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">op</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">Py_AlE</span><span class="p">);</span><span class="w"> </span><span class="c1">// Py_AlE의 값인 6도 혀용할 수 있도록 수정, 기존에는 0 ~ 5 사이의 값을 확인했지만, 이제는 0 ~ 6 사이의 값을 확인함**</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">v</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_PyErr_Occurred</span><span class="p">(</span><span class="n">tstate</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">PyErr_BadInternalCall</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_Py_EnterRecursiveCall</span><span class="p">(</span><span class="n">tstate</span><span class="p">,</span><span class="w"> </span><span class="s">&quot; in comparison&quot;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">do_richcompare</span><span class="p">(</span><span class="n">tstate</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="n">op</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_Py_LeaveRecursiveCall</span><span class="p">(</span><span class="n">tstate</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">res</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>Lib/opcode.py 수정 ← <strong>~= 를 비교 연산자로 사용할 수 있게 함</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Lib/opcode.py</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">_opcode</span> <span class="kn">import</span> <span class="n">stack_effect</span>
+    <span class="n">__all__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;stack_effect&#39;</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="o">**</span><span class="n">cmp_op</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;==&#39;</span><span class="p">,</span> <span class="s1">&#39;!=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;~=&#39;</span><span class="p">)</span> <span class="c1"># 비교 연산자 리스트에 ~= 를 추가**</span>
+</pre></div>
+</div>
+</li>
+<li><p>Python/compile.c 수정 ← <strong>Py_AlE의 바이트 코드를 생성할 수 있도록 함</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">static</span> <span class="nb">int</span> <span class="n">compiler_addcompare</span><span class="p">(</span><span class="n">struct</span> <span class="n">compiler</span> <span class="o">*</span><span class="n">c</span><span class="p">,</span> <span class="n">cmpop_ty</span> <span class="n">op</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nb">int</span> <span class="n">cmp</span><span class="p">;</span>
+    <span class="n">switch</span> <span class="p">(</span><span class="n">op</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">Eq</span><span class="p">:</span>
+        <span class="n">cmp</span> <span class="o">=</span> <span class="n">Py_EQ</span><span class="p">;</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">NotEq</span><span class="p">:</span>
+        <span class="n">cmp</span> <span class="o">=</span> <span class="n">Py_NE</span><span class="p">;</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">Lt</span><span class="p">:</span>
+        <span class="n">cmp</span> <span class="o">=</span> <span class="n">Py_LT</span><span class="p">;</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">LtE</span><span class="p">:</span>
+        <span class="n">cmp</span> <span class="o">=</span> <span class="n">Py_LE</span><span class="p">;</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">Gt</span><span class="p">:</span>
+        <span class="n">cmp</span> <span class="o">=</span> <span class="n">Py_GT</span><span class="p">;</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">GtE</span><span class="p">:</span>
+        <span class="n">cmp</span> <span class="o">=</span> <span class="n">Py_GE</span><span class="p">;</span>
+        <span class="k">break</span><span class="p">;</span>
+    <span class="o">**</span><span class="n">case</span> <span class="n">AlE</span><span class="p">:</span>
+        <span class="n">cmp</span> <span class="o">=</span> <span class="n">Py_AlE</span><span class="p">;</span> <span class="o">//</span> <span class="n">PyCmp_AlE인</span> <span class="n">BinOp</span> <span class="n">노드를</span> <span class="n">처리할</span> <span class="n">수</span> <span class="n">있도록</span> <span class="n">수정</span>
+        <span class="k">break</span><span class="p">;</span><span class="o">**</span>
+    <span class="k">case</span> <span class="n">Is</span><span class="p">:</span>
+        <span class="n">ADDOP_I</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">IS_OP</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">IsNot</span><span class="p">:</span>
+        <span class="n">ADDOP_I</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">IS_OP</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">In</span><span class="p">:</span>
+        <span class="n">ADDOP_I</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">CONTAINS_OP</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="k">case</span> <span class="n">NotIn</span><span class="p">:</span>
+        <span class="n">ADDOP_I</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">CONTAINS_OP</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+    <span class="n">default</span><span class="p">:</span>
+        <span class="n">Py_UNREACHABLE</span><span class="p">();</span>
+    <span class="p">}</span>
+    <span class="n">ADDOP_I</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">COMPARE_OP</span><span class="p">,</span> <span class="n">cmp</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>Objects/floatobject.c 수정 ← <strong>거의 같음 연산자의 로직을 추가함</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="w"> </span><span class="c1">// Objects/floatobject.c</span>
+<span class="w"> </span>
+<span class="w"> </span><span class="nl">Compare</span><span class="p">:</span>
+<span class="w">    </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">op</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Py_EQ</span><span class="p">:</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Py_NE</span><span class="p">:</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Py_LE</span><span class="p">:</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Py_GE</span><span class="p">:</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Py_LT</span><span class="p">:</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="k">case</span><span class="w"> </span><span class="no">Py_GT</span><span class="p">:</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">j</span><span class="p">;</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span>
+<span class="w">    </span><span class="o">**</span><span class="k">case</span><span class="w"> </span><span class="no">Py_AlE</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="c1">// 거의 같음 연산자를 수행할 수 있도록 추가</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">diff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fabs</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">j</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">rel_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-9</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">abs_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(((</span><span class="n">diff</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">fabs</span><span class="p">(</span><span class="n">rel_tol</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">j</span><span class="p">))</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>
+<span class="w">              </span><span class="p">(</span><span class="n">diff</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">fabs</span><span class="p">(</span><span class="n">rel_tol</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">i</span><span class="p">)))</span><span class="w"> </span><span class="o">||</span><span class="w"> </span>
+<span class="w">              </span><span class="p">(</span><span class="n">diff</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">abs_tol</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">break</span><span class="p">;</span><span class="o">**</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">PyBool_FromLong</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+</pre></div>
+</div>
+</li>
+<li><p>Python/ceval.c 수정 ← <strong>거의 같음 연산자의 평가 루프를 추가함</strong></p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="c1">// Python/ceval.c </span>
+
+<span class="k">case</span><span class="w"> </span><span class="no">TARGET</span><span class="p">(</span><span class="no">COMPARE_OP</span><span class="p">):</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">**</span><span class="n">assert</span><span class="p">(</span><span class="n">oparg</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">Py_AlE</span><span class="p">);</span><span class="w"> </span><span class="c1">// 평가 루프 수정, 자세한 내용은 다음 장에서 다룸**</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">right</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">POP</span><span class="p">();</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">left</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TOP</span><span class="p">();</span>
+<span class="w">    </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyObject_RichCompare</span><span class="p">(</span><span class="n">left</span><span class="p">,</span><span class="w"> </span><span class="n">right</span><span class="p">,</span><span class="w"> </span><span class="n">oparg</span><span class="p">);</span>
+<span class="w">    </span><span class="n">SET_TOP</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">left</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Py_DECREF</span><span class="p">(</span><span class="n">right</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span>
+<span class="w">        </span><span class="k">goto</span><span class="w"> </span><span class="n">error</span><span class="p">;</span>
+<span class="w">    </span><span class="n">PREDICT</span><span class="p">(</span><span class="n">POP_JUMP_IF_FALSE</span><span class="p">);</span>
+<span class="w">    </span><span class="n">PREDICT</span><span class="p">(</span><span class="n">POP_JUMP_IF_TRUE</span><span class="p">);</span>
+<span class="w">    </span><span class="n">DISPATCH</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</li>
+<li><p>결과</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>regen-token<span class="w"> </span>regen-pegen
+make<span class="w"> </span>regen-ast
+make<span class="w"> </span>-j2<span class="w"> </span>-s
+./python
+
+<span class="c1"># 결과</span>
+&gt;&gt;&gt;<span class="w"> </span><span class="m">1</span>.0<span class="w"> </span>~<span class="o">=</span><span class="w"> </span><span class="m">1</span>.01
+True
+&gt;&gt;&gt;<span class="w"> </span><span class="m">1</span>.0<span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">1</span>.01
+False
+&gt;&gt;&gt;<span class="w"> </span><span class="m">1</span>.1<span class="w"> </span>~<span class="o">=</span><span class="w"> </span><span class="m">1</span>.101
+True
+&gt;&gt;&gt;<span class="w"> </span><span class="m">1</span>.1<span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">1</span>.101
+False
+&gt;&gt;&gt;<span class="w"> </span><span class="m">1</span>.0<span class="w"> </span>~<span class="o">=</span><span class="w"> </span><span class="m">1</span>.5
+False
+
+<span class="c1"># 추가로 COMPARE_OP에 ~=가 추가되었음을 알 수 있음</span>
+&gt;&gt;&gt;<span class="w"> </span><span class="nv">co</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>compile<span class="o">(</span><span class="s2">&quot;1.0 ~= 1.01&quot;</span>,<span class="w"> </span><span class="s2">&quot;test.py&quot;</span>,<span class="w"> </span><span class="s2">&quot;eval&quot;</span><span class="o">)</span>
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>dis
+&gt;&gt;&gt;<span class="w"> </span>dis.dis<span class="o">(</span>co.co_code<span class="o">)</span>
+<span class="w">          </span><span class="m">0</span><span class="w"> </span>LOAD_CONST<span class="w">               </span><span class="m">0</span><span class="w"> </span><span class="o">(</span><span class="m">0</span><span class="o">)</span>
+<span class="w">          </span><span class="m">2</span><span class="w"> </span>LOAD_CONST<span class="w">               </span><span class="m">1</span><span class="w"> </span><span class="o">(</span><span class="m">1</span><span class="o">)</span>
+<span class="w">          </span><span class="m">4</span><span class="w"> </span>COMPARE_OP<span class="w">               </span><span class="m">6</span><span class="w"> </span><span class="o">(</span>~<span class="o">=)</span>
+<span class="w">          </span><span class="m">6</span><span class="w"> </span>RETURN_VALUE
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="python-3-13-0">
+<h2>정리 (python 3.13.0 기준)<a class="headerlink" href="#python-3-13-0" title="Permalink to this heading">#</a></h2>
+<ul class="simple">
+<li><p>소스 코드 → 리더 → 렉서 → 파서 → 컴파일러 → 어셈블러 → 코드 객체 (컴파일은 모듈 단위로 진행됨)</p>
+<ul>
+<li><p>리더는 소스 코드를 입력 받아 텍스트 형태로 반환함</p></li>
+<li><p>렉서는 텍스트를 입력 받아 토큰 형태(Concrete Syntax Tree)로 반환함 (<a class="reference external" href="https://github.com/python/cpython/blob/main/Parser/lexer/"><code class="docutils literal notranslate"><span class="pre">Parser/lexer/</span></code></a> and <a class="reference external" href="https://github.com/python/cpython/blob/main/Parser/tokenizer/"><code class="docutils literal notranslate"><span class="pre">Parser/tokenizer/</span></code></a>)</p>
+<ul>
+<li><p>여기서 반환된 토큰은 단순히 토큰의 종류만 구분된 상태로, 파이썬 언어 구조와 의미 요소를 반영하고 있지 않음</p></li>
+</ul>
+</li>
+<li><p>파서는 토큰(Concrete Syntax Tree)을 입력 받아 Abstract Syntax Tree로 반환함(<a class="reference external" href="https://github.com/python/cpython/blob/main/Parser/parser.c"><code class="docutils literal notranslate"><span class="pre">Parser/parser.c</span></code></a>)</p>
+<ul>
+<li><p>여기서 반환된 Abstract Syntax Tree는 파이썬 언어 구조와 의미 요소를 반영하고 있음</p></li>
+</ul>
+</li>
+<li><p>컴파일러는 Abstract Syntax Tree을 입력 받아 instruction sequence로 형태로 변환(<a class="reference external" href="https://github.com/python/cpython/blob/main/Python/compile.c"><code class="docutils literal notranslate"><span class="pre">Python/compile.c</span></code></a>)한 후 Control Flow Graph를 구성(<a class="reference external" href="https://github.com/python/cpython/blob/main/Python/flowgraph.c"><code class="docutils literal notranslate"><span class="pre">Python/flowgraph.c</span></code></a>)하고 최적화를 진행함</p>
+<ul>
+<li><p>Control Flow Graph는 논리적 실행 순서를 나타내지만, CPU가 실행하기 위한 명령어 구조는 아님</p></li>
+</ul>
+</li>
+<li><p>어셈블러는 Control Flow Graph를 입력 받아 bytecode 형태로 변환함(<a class="reference external" href="https://github.com/python/cpython/blob/main/Python/assemble.c"><code class="docutils literal notranslate"><span class="pre">Python/assemble.c</span></code></a>)</p>
+<ul>
+<li><p>bytecode는 Control Flow Graph를 CPU에서 실행 가능한 명령으로 순차적으로 나열한 형태임</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>컴파일 과정을 통해서 생성된 코드 객체는 인터프리터로 넘겨저 실행되거나, .pyc 파일에 캐시됨</p></li>
+</ul>
+</section>
+</section>
+<section class="tex2jax_ignore mathjax_ignore" id="references">
+<h1>References<a class="headerlink" href="#references" title="Permalink to this heading">#</a></h1>
+<ul class="simple">
+<li><p><a class="reference external" href="https://devguide.python.org/internals/parser/#">https://devguide.python.org/internals/parser/</a></p></li>
+<li><p><a class="reference external" href="https://devguide.python.org/internals/compiler/">https://devguide.python.org/internals/compiler/</a></p></li>
+<li><p><a class="reference external" href="https://stackoverflow.com/questions/6889747/is-python-interpreted-or-compiled-or-both">https://stackoverflow.com/questions/6889747/is-python-interpreted-or-compiled-or-both</a></p></li>
+</ul>
 </section>
 
     <script type="text/x-thebe-config">
@@ -650,6 +1374,7 @@ Parser → Python.asdl에서 정의한 모든문 타입에 대한 case를 가지
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">7. 컴파일러</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">컴파일 과정</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">컴파일과 관련된 소스</a></li>
 </ul>
@@ -660,9 +1385,19 @@ Parser → Python.asdl에서 정의한 모든문 타입에 대한 case를 가지
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">심벌 테이블 구현</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">어셈블리</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">핵심 컴파일 과정</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python">python에서 컴파일러 사용하기</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-api">컴파일러 C API 간단 설명</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">컴파일러 C API</a></li>
 </ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">예제: ‘거의 같음’ 연산자 구현하기</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-3-13-0">정리 (python 3.13.0 기준)</a></li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+
   </nav></div>
 
 </div></div>
